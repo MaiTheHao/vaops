@@ -1,0 +1,21 @@
+spring:
+
+  datasource:
+    url: jdbc:postgresql://${vaops.databases.primary.host:postgres}:${vaops.databases.primary.port:5432}/${vaops.databases.primary.name:vaops}?currentSchema=public
+    username: ${vaops.databases.primary.username:postgres}
+    password: ${vaops.databases.primary.password:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20} # Maximum number of connections in the pool
+      minimum-idle: ${DB_POOL_MIN:5} # Minimum number of idle connections to maintain
+      connection-timeout: 30000 # Maximum time (ms) to wait for a connection from the pool
+      idle-timeout: 600000 # Maximum time (ms) a connection is allowed to sit idle in the pool (10 minutes)
+      max-lifetime: 1800000 # Maximum lifetime (ms) of a connection in the pool (30 minutes)
+      pool-name: VaopsPrimaryHikariPool # Name of the connection pool for logs and monitoring
+
+server:
+  port: ${vaops.server.port:8000}
+
+vaops:
+  server:
+    port: 8000

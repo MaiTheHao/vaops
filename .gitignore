@@ -1,0 +1,71 @@
+# Custom Local Folder
+local/
+**/local/
+
+# OS / Logs
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.log
+
+# IDEs / Editors
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+gen/
+.vscode/
+.factorypath
+.history/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+.netrwhist
+undo/
+Session.vim
+
+# Maven (Spring Boot backend)
+**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.restoreBackup
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/resources/wrapper/maven-wrapper.jar
+
+# Gradle (Spring Boot alternative)
+**/.gradle/
+**/build/
+
+# Node / Angular (Frontend)
+**/node_modules/
+**/dist/
+**/.angular/
+**/.sass-cache/
+**/connect.lock
+**/coverage/
+**/.nyc_output/
+.npm/
+
+# Docker & Environment files
+**/.env
+**/.env.local
+**/.env.*.local
+**/docker/db_data/
+**/docker/postgres_data/
+**/docker/mysql_data/
+
+# Agent AI
+.agents
