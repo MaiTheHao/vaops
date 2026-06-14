@@ -3,3 +3,25 @@ spring:
     name: vaops
   profiles:
     active: dev
+  threads:
+    virtual:
+      enabled: true
+
+vaops:
+  databases:
+    primary:
+      host: 127.0.0.1
+      port: 5432
+      name: vaops
+      username: postgres
+      password: postgres
+  server:
+    port: 8000
+  security:
+    token:
+      access:
+        secret: your-jwt-access-token-secret-key-at-least-256-bits-long-for-hs256-signature-algorithm
+        expiration: 3600000 # 1 hour (in ms)
+      refresh:
+        secret: your-jwt-refresh-token-secret-key-at-least-256-bits-long-for-hs256-signature-algorithm
+        expiration: 604800000 # 7 days (in ms)
