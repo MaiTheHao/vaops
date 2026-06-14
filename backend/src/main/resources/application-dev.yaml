@@ -1,5 +1,4 @@
 spring:
-
   datasource:
     url: jdbc:postgresql://${vaops.databases.primary.host:127.0.0.1}:${vaops.databases.primary.port:5432}/${vaops.databases.primary.name:vaops}?currentSchema=public
     username: ${vaops.databases.primary.username:postgres}
@@ -33,3 +32,11 @@ vaops:
       password: postgres
   server:
     port: 8000
+  security:
+    token:
+      access:
+        secret: ${JWT_ACCESS_SECRET:your-jwt-access-token-secret-key-at-least-256-bits-long-for-hs256-signature-algorithm}
+        expiration: ${JWT_ACCESS_EXPIRATION:3600000} # 1 hour (in ms)
+      refresh:
+        secret: ${JWT_REFRESH_SECRET:your-jwt-refresh-token-secret-key-at-least-256-bits-long-for-hs256-signature-algorithm}
+        expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days (in ms)

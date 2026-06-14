@@ -3,8 +3,6 @@
 -- ----------------------------------------------------------------------------
 CREATE TABLE users (
     id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code           VARCHAR(256) UNIQUE,
-    username       VARCHAR(256) UNIQUE NOT NULL,
     email          VARCHAR(256) UNIQUE,
     phone          VARCHAR(30) UNIQUE,
     full_name      VARCHAR(256) NOT NULL,
