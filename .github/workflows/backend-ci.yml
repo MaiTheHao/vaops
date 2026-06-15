@@ -11,7 +11,7 @@ on:
       - 'backend/**'
 
 jobs:
-  build:
+  test-and-build:
     runs-on: ubuntu-latest
 
     defaults:
@@ -37,6 +37,26 @@ jobs:
       - name: Build jar file
         run: ./mvnw clean package -DskipTests
 
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaops-backend-jar
+          path: backend/target/vaops-backend.jar
+
+  docker-build-push:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vaops-backend-jar
+          path: backend/target
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
@@ -51,3 +71,27 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/vaops-backend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/vaops-backend:latest
+
+  deploy:
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TAILSCALE_SECRET }}
+          tags: tag:ci
+
+      - name: Deploy via SSH over Tailscale
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/workspace/infra/docker
+            docker compose -f compose.prod.yml pull backend
+            docker compose -f compose.prod.yml up -d --no-deps backend
+            docker image prune -f
+
