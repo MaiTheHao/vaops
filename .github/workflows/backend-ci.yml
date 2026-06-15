@@ -4,10 +4,12 @@ on:
   push:
     branches: ['master']
     paths:
+      - '.github/workflows/backend-ci.yml'
       - 'backend/**'
   pull_request:
     branches: ['master']
     paths:
+      - '.github/workflows/backend-ci.yml'
       - 'backend/**'
 
 jobs:

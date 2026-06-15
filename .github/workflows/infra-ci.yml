@@ -4,10 +4,12 @@ on:
   push:
     branches: ['master']
     paths:
+      - '.github/workflows/infra-ci.yml'
       - 'infra/**'
   pull_request:
     branches: ['master']
     paths:
+      - '.github/workflows/infra-ci.yml'
       - 'infra/**'
 
 jobs:
