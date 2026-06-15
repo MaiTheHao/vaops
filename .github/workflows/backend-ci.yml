@@ -81,7 +81,7 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TAILSCALE_CLIENT_ID }}
           oauth-secret: ${{ secrets.TAILSCALE_SECRET }}
-          tags: tag:ci
+          tags: tag:github
 
       - name: Deploy via SSH over Tailscale
         uses: appleboy/ssh-action@v1.0.3
@@ -94,4 +94,3 @@ jobs:
             docker compose -f compose.prod.yml pull backend
             docker compose -f compose.prod.yml up -d --no-deps backend
             docker image prune -f
-
