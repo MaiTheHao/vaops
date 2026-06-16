@@ -11,10 +11,6 @@ spring:
       idle-timeout: 600000 # Maximum time (ms) a connection is allowed to sit idle in the pool (10 minutes)
       max-lifetime: 1800000 # Maximum lifetime (ms) of a connection in the pool (30 minutes)
       pool-name: VaopsPrimaryHikariPool # Name of the connection pool for logs and monitoring
-
-server:
-  port: ${vaops.server.port}
-
 logging:
   level:
     root: info
