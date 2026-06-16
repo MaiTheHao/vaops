@@ -20,20 +20,17 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
-        .csrf(AbstractHttpConfigurer::disable)
+    return http.csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .formLogin(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
-        .exceptionHandling(ex -> ex
-            .authenticationEntryPoint((request, response, authException) ->
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())
-            )
-        )
-        .authorizeHttpRequests(auth -> auth
-            .anyRequest().authenticated()
-        )
+        .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
+        .authorizeHttpRequests(
+            auth -> auth.requestMatchers("/hello")
+                .permitAll()
+                .anyRequest()
+                .authenticated())
         .build();
   }
 }
