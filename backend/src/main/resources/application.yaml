@@ -7,6 +7,8 @@ spring:
     virtual:
       enabled: true
 
+server:
+  port: 8080
 vaops:
   databases:
     primary:
@@ -15,8 +17,6 @@ vaops:
       name: vaops
       username: postgres
       password: postgres
-  server:
-    port: 8000
   security:
     token:
       access:

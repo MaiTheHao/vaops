@@ -19,9 +19,6 @@ spring:
         hibernate:
           format_sql: true
 
-server:
-  port: ${vaops.server.port}
-
 logging:
   level:
     root: info

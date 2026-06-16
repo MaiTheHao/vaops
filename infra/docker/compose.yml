@@ -33,7 +33,6 @@ services:
       timeout: 5s
       retries: 5
 
-
   flyway:
     image: flyway/flyway:10
     container_name: vaops-flyway
@@ -45,6 +44,7 @@ services:
     volumes:
       - ../database/migrations:/flyway/sql
     environment:
+      - SPRING_PROFILES_ACTIVE=dev
       - FLYWAY_URL=jdbc:postgresql://postgres:5432/${DB_NAME}?currentSchema=public
       - FLYWAY_USER=${POSTGRES_USER}
       - FLYWAY_PASSWORD=${POSTGRES_PASSWORD}
