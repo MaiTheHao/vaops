@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.core.filter;
+package c4f.vannang.vaops.shared.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -64,5 +64,3 @@ public class RequestTraceFilter extends OncePerRequestFilter {
     }
   }
 }
-
-
