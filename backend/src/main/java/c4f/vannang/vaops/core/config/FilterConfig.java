@@ -1,11 +1,12 @@
 package c4f.vannang.vaops.core.config;
 
-import c4f.vannang.vaops.core.filter.RequestLoggingFilter;
-import c4f.vannang.vaops.core.filter.RequestTraceFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+
+import c4f.vannang.vaops.shared.filter.RequestLoggingFilter;
+import c4f.vannang.vaops.shared.filter.RequestTraceFilter;
 
 @Configuration
 public class FilterConfig {
@@ -28,5 +29,3 @@ public class FilterConfig {
     return registration;
   }
 }
-
-
