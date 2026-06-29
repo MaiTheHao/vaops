@@ -1,0 +1,24 @@
+package c4f.vannang.vaops.modules.authentication.api.exception;
+
+import java.util.Map;
+import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
+import c4f.vannang.vaops.shared.exception.ErrorCode;
+
+public class UnauthenticatedException extends AbstractPlatformException {
+
+    public UnauthenticatedException() {
+        super(ErrorCode.UNAUTHENTICATED, "Authentication failed");
+    }
+
+    public UnauthenticatedException(String message) {
+        super(ErrorCode.UNAUTHENTICATED, message);
+    }
+
+    public UnauthenticatedException(String message, Throwable cause) {
+        super(ErrorCode.UNAUTHENTICATED, message, cause);
+    }
+
+    public UnauthenticatedException(String message, Map<String, Object> details) {
+        super(ErrorCode.UNAUTHENTICATED, message, details);
+    }
+}

@@ -15,3 +15,7 @@ logging:
   level:
     root: info
     c4f.vannang.vaops: error
+
+vaops:
+  app:
+    is-prod: true

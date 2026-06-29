@@ -23,3 +23,7 @@ logging:
   level:
     root: info
     c4f.vannang.vaops: debug
+
+vaops:
+  app:
+    is-prod: false
