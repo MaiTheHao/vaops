@@ -19,11 +19,11 @@ vaops:
       name: vaops
       username: postgres
       password: postgres
-  security:
-    token:
-      access:
-        secret: XAYszf4TlHIjVGNDWEaKKb1e6ven3vJF4CJBqid0545 # Dev Secret Key
-        expiration: 3600000 # 1 hour (in ms)
-      refresh:
-        secret: XAYszf4TlHIjVGNDWEaKKb1e6ven3vJF4CJBqid0545 # Dev Secret Key
-        expiration: 604800000 # 7 days (in ms)
+
+  auth:
+    jwt:
+      access-secret: XAYszf4TlHIjVGNDWEaKKb1e6ven3vJF4CJBqid0545
+      access-expiration-ms: 3600000
+      refresh-secret: XAYszf4TlHIjVGNDWEaKKb1e6ven3vJF4CJBqid0545
+      refresh-expiration-ms: 604800000
+

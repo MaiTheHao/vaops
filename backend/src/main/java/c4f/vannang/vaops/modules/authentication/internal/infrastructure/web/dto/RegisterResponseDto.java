@@ -12,5 +12,4 @@ public record RegisterResponseDto(
 
     String avatarUrl
 
-) {
-}
+) {}
