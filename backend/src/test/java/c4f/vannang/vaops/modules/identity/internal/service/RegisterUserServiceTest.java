@@ -60,6 +60,28 @@ class RegisterUserServiceTest {
   }
 
   @Test
+  void execute_shouldThrowValidationExceptionForBlankAccountName() {
+    RegisterDto dto = new RegisterDto("   ", "password123", "Test", "avatar");
+
+    assertThrows(ValidationException.class, () -> registerUserService.execute(dto));
+  }
+
+  @Test
+  void execute_shouldThrowValidationExceptionForNullAccountName() {
+    RegisterDto dto = new RegisterDto(null, "password123", "Test", "avatar");
+
+    assertThrows(ValidationException.class, () -> registerUserService.execute(dto));
+  }
+
+  @Test
+  void execute_shouldThrowValidationExceptionForTooLongAccountName() {
+    String longName = "a".repeat(257);
+    RegisterDto dto = new RegisterDto(longName, "password123", "Test", "avatar");
+
+    assertThrows(ValidationException.class, () -> registerUserService.execute(dto));
+  }
+
+  @Test
   void execute_shouldThrowResourceAlreadyExistsException() {
     RegisterDto dto = new RegisterDto("testuser", "password123", "Test", "avatar");
     when(userQueryRepository.existsByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(true);
