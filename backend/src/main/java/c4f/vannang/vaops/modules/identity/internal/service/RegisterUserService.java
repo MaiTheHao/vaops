@@ -10,7 +10,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
-import c4f.vannang.vaops.modules.identity.internal.infrastructure.mapper.UserDtoMapper;
+import c4f.vannang.vaops.modules.identity.internal.mapper.UserDtoMapper;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
 

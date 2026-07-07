@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.identity.internal.infrastructure.mapper;
+package c4f.vannang.vaops.modules.identity.internal.mapper;
 
 import org.springframework.stereotype.Component;
 

@@ -9,7 +9,7 @@ import java.util.UUID;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
-import c4f.vannang.vaops.modules.identity.internal.infrastructure.mapper.UserDtoMapper;
+import c4f.vannang.vaops.modules.identity.internal.mapper.UserDtoMapper;
 
 @Service
 @RequiredArgsConstructor
