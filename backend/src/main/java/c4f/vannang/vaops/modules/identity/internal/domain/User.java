@@ -1,5 +1,11 @@
 package c4f.vannang.vaops.modules.identity.internal.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Setter;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -7,33 +13,27 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
-@Table(name = "users")
 @Entity
+@Table(name = "users")
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
   @Id
   @UuidGenerator
-  @EqualsAndHashCode.Include
+  @Column(name = "id")
   private UUID id;
 
   @Column(name = "account_name", nullable = false, unique = true, length = 256)
   private String accountName;
+
+  @Column(name = "password_hash", nullable = false, length = 256)
+  private String passwordHash;
 
   @Column(name = "display_name", nullable = true, length = 256)
   private String displayName;
@@ -41,18 +41,13 @@ public class User {
   @Column(name = "avatar_url", nullable = true, length = 1024)
   private String avatarUrl;
 
-  @Column(name = "password_hash", nullable = false, length = 256)
-  private String passwordHash;
-
   @Column(name = "failed_login_count", nullable = false)
-  @Builder.Default
   private int failedLoginCount = 0;
 
   @Column(name = "locked_until", nullable = true)
   private Instant lockedUntil;
 
   @Column(name = "is_active", nullable = false)
-  @Builder.Default
   private boolean active = true;
 
   @Column(name = "last_login_at", nullable = true)
@@ -66,11 +61,67 @@ public class User {
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
-  @Builder.Default
-  private Instant createdAt = Instant.now();
+  private Instant createdAt;
 
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
-  @Builder.Default
-  private Instant updatedAt = Instant.now();
+  private Instant updatedAt;
+
+  public static User register(
+      String accountName,
+      String passwordHash,
+      String displayName,
+      String avatarUrl) {
+
+    User user = new User();
+    user.id = UUID.randomUUID();
+    user.accountName = accountName;
+    user.passwordHash = passwordHash;
+    user.displayName = displayName;
+    user.avatarUrl = avatarUrl;
+    user.failedLoginCount = 0;
+    user.active = true;
+
+    return user;
+  }
+
+  public void recordSuccessfulLogin() {
+    this.failedLoginCount = 0;
+    this.lastLoginAt = Instant.now();
+    this.lockedUntil = null;
+  }
+
+  public void recordFailedLogin(int maxAttempts, Duration lockDuration) {
+    this.failedLoginCount++;
+    if (this.failedLoginCount >= maxAttempts) {
+      this.lockedUntil = Instant.now().plus(lockDuration);
+    }
+  }
+
+  public boolean isLocked() {
+    return lockedUntil != null && Instant.now().isBefore(lockedUntil);
+  }
+
+  public void updateProfile(String displayName, String avatarUrl) {
+    this.displayName = displayName;
+    this.avatarUrl = avatarUrl;
+  }
+
+  public void changePassword(String newPasswordHash) {
+    this.passwordHash = newPasswordHash;
+  }
+
+  public void softDelete(UUID deletedByUserId) {
+    this.deletedAt = Instant.now();
+    this.deletedBy = deletedByUserId;
+    this.active = false;
+  }
+
+  public void activate() {
+    this.active = true;
+  }
+
+  public void deactivate() {
+    this.active = false;
+  }
 }
