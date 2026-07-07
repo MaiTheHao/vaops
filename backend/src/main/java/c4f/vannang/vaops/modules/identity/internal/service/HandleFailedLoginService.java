@@ -23,7 +23,7 @@ public class HandleFailedLoginService {
 
   public void execute(String accountName) {
     if (accountName == null) {
-      throw new ResourceNotFoundException("User not found");
+      throw new IllegalArgumentException("Account name must not be null");
     }
     User user = userQueryRepository.findByAccountNameAndDeletedAtIsNull(accountName.strip())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));

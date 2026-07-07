@@ -74,7 +74,6 @@ public class User {
       String avatarUrl) {
 
     User user = new User();
-    user.id = UUID.randomUUID();
     user.accountName = accountName;
     user.passwordHash = passwordHash;
     user.displayName = displayName;

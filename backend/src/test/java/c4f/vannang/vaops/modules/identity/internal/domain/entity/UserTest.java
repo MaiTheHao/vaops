@@ -23,7 +23,6 @@ class UserTest {
   void register_shouldCreateUserWithCorrectFields() {
     User user = User.register(accountName, passwordHash, displayName, avatarUrl);
 
-    assertNotNull(user.getId());
     assertEquals(accountName, user.getAccountName());
     assertEquals(passwordHash, user.getPasswordHash());
     assertEquals(displayName, user.getDisplayName());
