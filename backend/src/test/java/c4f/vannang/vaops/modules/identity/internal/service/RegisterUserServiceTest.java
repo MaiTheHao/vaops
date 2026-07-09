@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import c4f.vannang.vaops.modules.identity.api.dto.RegisterDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.modules.identity.internal.mapper.UserDtoMapper;
@@ -41,7 +42,7 @@ class RegisterUserServiceTest {
   @Test
   void execute_shouldRegisterUserSuccessfully() {
     RegisterDto dto = new RegisterDto("testuser", "password123", "Test User", "https://example.com/avatar.png");
-    when(userQueryRepository.existsByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(false);
+    when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(false);
     when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
     when(userWriteRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -84,7 +85,7 @@ class RegisterUserServiceTest {
   @Test
   void execute_shouldThrowResourceAlreadyExistsException() {
     RegisterDto dto = new RegisterDto("testuser", "password123", "Test", "avatar");
-    when(userQueryRepository.existsByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(true);
+    when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(true);
 
     assertThrows(ResourceAlreadyExistsException.class, () -> registerUserService.execute(dto));
   }

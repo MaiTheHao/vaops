@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.mapper.UserDtoMapper;
 
@@ -20,19 +21,19 @@ public class FindUserService {
   private final UserDtoMapper userDtoMapper;
 
   public Optional<UserDto> findById(UUID userId) {
-    return userQueryRepository.findByIdAndDeletedAtIsNull(userId)
+    return userQueryRepository.findActiveById(userId)
         .map(userDtoMapper::toDto);
   }
 
   public Optional<UserDto> findByAccountName(String accountName) {
     if (accountName == null) return Optional.empty();
-    return userQueryRepository.findByAccountNameAndDeletedAtIsNull(accountName.strip())
+    return userQueryRepository.findActiveByAccountName(new AccountName(accountName))
         .map(userDtoMapper::toDto);
   }
 
   public Optional<UserAuthDto> findForAuth(String accountName) {
     if (accountName == null) return Optional.empty();
-    return userQueryRepository.findByAccountNameAndDeletedAtIsNull(accountName.strip())
+    return userQueryRepository.findActiveByAccountName(new AccountName(accountName))
         .map(userDtoMapper::toAuthDto);
   }
 }

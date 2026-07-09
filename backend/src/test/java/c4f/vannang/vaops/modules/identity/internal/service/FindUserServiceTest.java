@@ -15,6 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.mapper.UserDtoMapper;
 
@@ -35,9 +39,14 @@ class FindUserServiceTest {
   @Test
   void findById_shouldReturnUserDto() {
     UUID userId = UUID.randomUUID();
-    User user = User.register("testuser", "hashed", "Test", "avatar");
+    User user = User.register(
+        new AccountName("testuser"),
+        new PasswordHash("hashed"),
+        new DisplayName("Test"),
+        new AvatarUrl("avatar")
+    );
     user.setId(userId);
-    when(userQueryRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
 
     Optional<UserDto> result = findUserService.findById(userId);
 
@@ -48,17 +57,21 @@ class FindUserServiceTest {
   @Test
   void findById_shouldReturnEmptyWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findByIdAndDeletedAtIsNull(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
 
     Optional<UserDto> result = findUserService.findById(userId);
-
     assertTrue(result.isEmpty());
   }
 
   @Test
   void findByAccountName_shouldReturnUserDto() {
-    User user = User.register("testuser", "hashed", "Test", "avatar");
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(Optional.of(user));
+    User user = User.register(
+        new AccountName("testuser"),
+        new PasswordHash("hashed"),
+        new DisplayName("Test"),
+        new AvatarUrl("avatar")
+    );
+    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser"))).thenReturn(Optional.of(user));
 
     Optional<UserDto> result = findUserService.findByAccountName("testuser");
 
@@ -68,17 +81,15 @@ class FindUserServiceTest {
 
   @Test
   void findByAccountName_shouldReturnEmptyWhenNotFound() {
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("nonexistent")).thenReturn(Optional.empty());
+    when(userQueryRepository.findActiveByAccountName(new AccountName("nonexistent"))).thenReturn(Optional.empty());
 
     Optional<UserDto> result = findUserService.findByAccountName("nonexistent");
-
     assertTrue(result.isEmpty());
   }
 
   @Test
   void findByAccountName_shouldReturnEmptyForNullInput() {
     Optional<UserDto> result = findUserService.findByAccountName(null);
-
     assertTrue(result.isEmpty());
     verifyNoInteractions(userQueryRepository);
   }
@@ -86,9 +97,14 @@ class FindUserServiceTest {
   @Test
   void findForAuth_shouldReturnUserAuthDto() {
     UUID userId = UUID.randomUUID();
-    User user = User.register("testuser", "hashed-password", "Test", "avatar");
+    User user = User.register(
+        new AccountName("testuser"),
+        new PasswordHash("hashed-password"),
+        new DisplayName("Test"),
+        new AvatarUrl("avatar")
+    );
     user.setId(userId);
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(Optional.of(user));
+    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser"))).thenReturn(Optional.of(user));
 
     Optional<UserAuthDto> result = findUserService.findForAuth("testuser");
 
@@ -100,7 +116,6 @@ class FindUserServiceTest {
   @Test
   void findForAuth_shouldReturnEmptyForNullInput() {
     Optional<UserAuthDto> result = findUserService.findForAuth(null);
-
     assertTrue(result.isEmpty());
     verifyNoInteractions(userQueryRepository);
   }

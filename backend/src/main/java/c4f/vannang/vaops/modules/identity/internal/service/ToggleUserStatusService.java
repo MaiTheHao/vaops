@@ -19,7 +19,7 @@ public class ToggleUserStatusService {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(UUID userId, boolean active) {
-    User user = userQueryRepository.findByIdAndDeletedAtIsNull(userId)
+    User user = userQueryRepository.findActiveById(userId)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     if (active) {

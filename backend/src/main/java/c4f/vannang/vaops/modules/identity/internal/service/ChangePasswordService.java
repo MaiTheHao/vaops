@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.BusinessRuleViolationException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
-import c4f.vannang.vaops.shared.exception.ValidationException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,18 +23,16 @@ public class ChangePasswordService {
   private final PasswordEncoder passwordEncoder;
 
   public void execute(UUID userId, String oldRawPassword, String newRawPassword) {
-    if (newRawPassword == null || newRawPassword.length() < 8) {
-      throw new ValidationException("New password must be at least 8 characters long");
-    }
+    User.validatePasswordStrength(newRawPassword);
 
-    User user = userQueryRepository.findByIdAndDeletedAtIsNull(userId)
+    User user = userQueryRepository.findActiveById(userId)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    if (!passwordEncoder.matches(oldRawPassword, user.getPasswordHash())) {
+    if (!passwordEncoder.matches(oldRawPassword, user.getPasswordHash().value())) {
       throw new BusinessRuleViolationException("Invalid old password");
     }
 
-    user.changePassword(passwordEncoder.encode(newRawPassword));
+    user.changePassword(new PasswordHash(passwordEncoder.encode(newRawPassword)));
     userWriteRepository.save(user);
   }
 }

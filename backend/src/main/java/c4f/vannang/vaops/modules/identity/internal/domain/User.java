@@ -1,9 +1,6 @@
 package c4f.vannang.vaops.modules.identity.internal.domain;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
-import lombok.Setter;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -17,11 +14,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
+import c4f.vannang.vaops.shared.exception.ValidationException;
+
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
   @Id
@@ -30,16 +31,16 @@ public class User {
   private UUID id;
 
   @Column(name = "account_name", nullable = false, unique = true, length = 256)
-  private String accountName;
+  private AccountName accountName;
 
   @Column(name = "password_hash", nullable = false, length = 256)
-  private String passwordHash;
+  private PasswordHash passwordHash;
 
   @Column(name = "display_name", nullable = true, length = 256)
-  private String displayName;
+  private DisplayName displayName;
 
   @Column(name = "avatar_url", nullable = true, length = 1024)
-  private String avatarUrl;
+  private AvatarUrl avatarUrl;
 
   @Column(name = "failed_login_count", nullable = false)
   private int failedLoginCount = 0;
@@ -67,11 +68,18 @@ public class User {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  // --- Only for unit test support ---
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  // --- Factory ---
+
   public static User register(
-      String accountName,
-      String passwordHash,
-      String displayName,
-      String avatarUrl) {
+      AccountName accountName,
+      PasswordHash passwordHash,
+      DisplayName displayName,
+      AvatarUrl avatarUrl) {
 
     User user = new User();
     user.accountName = accountName;
@@ -83,6 +91,8 @@ public class User {
 
     return user;
   }
+
+  // --- Domain behaviour ---
 
   public void recordSuccessfulLogin() {
     this.failedLoginCount = 0;
@@ -101,12 +111,12 @@ public class User {
     return lockedUntil != null && Instant.now().isBefore(lockedUntil);
   }
 
-  public void updateProfile(String displayName, String avatarUrl) {
+  public void updateProfile(DisplayName displayName, AvatarUrl avatarUrl) {
     this.displayName = displayName;
     this.avatarUrl = avatarUrl;
   }
 
-  public void changePassword(String newPasswordHash) {
+  public void changePassword(PasswordHash newPasswordHash) {
     this.passwordHash = newPasswordHash;
   }
 
@@ -122,5 +132,13 @@ public class User {
 
   public void deactivate() {
     this.active = false;
+  }
+
+  // --- Static validation helper ---
+
+  public static void validatePasswordStrength(String rawPassword) {
+    if (rawPassword == null || rawPassword.length() < 8) {
+      throw new ValidationException("Password must be at least 8 characters long");
+    }
   }
 }

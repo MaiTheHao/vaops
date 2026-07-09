@@ -13,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
@@ -34,8 +38,13 @@ class HandleFailedLoginServiceTest {
 
   @Test
   void execute_shouldIncrementFailedLoginCount() {
-    User user = User.register("testuser", "hashed", "Test", "avatar");
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(Optional.of(user));
+    User user = User.register(
+        new AccountName("testuser"),
+        new PasswordHash("hashed"),
+        new DisplayName("Test"),
+        new AvatarUrl("avatar")
+    );
+    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser"))).thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
     handleFailedLoginService.execute("testuser");
@@ -46,11 +55,16 @@ class HandleFailedLoginServiceTest {
 
   @Test
   void execute_shouldLockAccountAfterMaxAttempts() {
-    User user = User.register("testuser", "hashed", "Test", "avatar");
+    User user = User.register(
+        new AccountName("testuser"),
+        new PasswordHash("hashed"),
+        new DisplayName("Test"),
+        new AvatarUrl("avatar")
+    );
     for (int i = 0; i < 4; i++) {
       user.recordFailedLogin(5, Duration.ofMinutes(15));
     }
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("testuser")).thenReturn(Optional.of(user));
+    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser"))).thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
     handleFailedLoginService.execute("testuser");
@@ -61,7 +75,7 @@ class HandleFailedLoginServiceTest {
 
   @Test
   void execute_shouldThrowWhenUserNotFound() {
-    when(userQueryRepository.findByAccountNameAndDeletedAtIsNull("unknown")).thenReturn(Optional.empty());
+    when(userQueryRepository.findActiveByAccountName(new AccountName("unknown"))).thenReturn(Optional.empty());
 
     assertThrows(ResourceNotFoundException.class, () -> handleFailedLoginService.execute("unknown"));
   }

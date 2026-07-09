@@ -6,6 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
@@ -19,10 +21,13 @@ public class UpdateUserProfileService {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(UUID userId, String displayName, String avatarUrl) {
-    User user = userQueryRepository.findByIdAndDeletedAtIsNull(userId)
+    User user = userQueryRepository.findActiveById(userId)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    user.updateProfile(displayName, avatarUrl);
+    DisplayName dn = displayName != null ? new DisplayName(displayName) : null;
+    AvatarUrl au = avatarUrl != null ? new AvatarUrl(avatarUrl) : null;
+
+    user.updateProfile(dn, au);
     userWriteRepository.save(user);
   }
 }

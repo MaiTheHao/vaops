@@ -13,9 +13,9 @@ public class UserDtoMapper {
     if (user == null) return null;
     return new UserDto(
         user.getId(),
-        user.getAccountName(),
-        user.getDisplayName(),
-        user.getAvatarUrl(),
+        user.getAccountName() != null ? user.getAccountName().value() : null,
+        user.getDisplayName() != null ? user.getDisplayName().value() : null,
+        user.getAvatarUrl() != null ? user.getAvatarUrl().value() : null,
         user.isActive(),
         user.getLastLoginAt(),
         user.getCreatedAt(),
@@ -26,7 +26,7 @@ public class UserDtoMapper {
     if (user == null) return null;
     return new UserAuthDto(
         user.getId(),
-        user.getPasswordHash(),
+        user.getPasswordHash() != null ? user.getPasswordHash().value() : null,
         user.getLockedUntil(),
         user.isActive());
   }

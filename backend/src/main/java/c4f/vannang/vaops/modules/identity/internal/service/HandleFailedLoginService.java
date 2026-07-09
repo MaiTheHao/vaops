@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
@@ -25,7 +26,7 @@ public class HandleFailedLoginService {
     if (accountName == null) {
       throw new IllegalArgumentException("Account name must not be null");
     }
-    User user = userQueryRepository.findByAccountNameAndDeletedAtIsNull(accountName.strip())
+    User user = userQueryRepository.findActiveByAccountName(new AccountName(accountName))
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     user.recordFailedLogin(MAX_FAILED_ATTEMPTS, LOCK_DURATION);

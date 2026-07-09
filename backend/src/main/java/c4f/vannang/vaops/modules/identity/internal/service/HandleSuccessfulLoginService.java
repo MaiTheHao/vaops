@@ -19,7 +19,7 @@ public class HandleSuccessfulLoginService {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(UUID userId) {
-    User user = userQueryRepository.findByIdAndDeletedAtIsNull(userId)
+    User user = userQueryRepository.findActiveById(userId)
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     user.recordSuccessfulLogin();
