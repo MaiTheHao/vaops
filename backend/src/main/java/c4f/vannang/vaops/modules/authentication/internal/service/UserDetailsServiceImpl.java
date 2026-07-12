@@ -1,6 +1,7 @@
 package c4f.vannang.vaops.modules.authentication.internal.service;
 
 import c4f.vannang.vaops.modules.authentication.api.exception.AccountLockedException;
+import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String accountName) throws UsernameNotFoundException {
-        UserAuthDto userAuth = identityModuleApi.getUserForAuth(accountName)
+        UserAuthDto userAuth = identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + accountName));
 
         if (!userAuth.active()) {

@@ -1,81 +1,102 @@
 package c4f.vannang.vaops.modules.identity.internal.service;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.FindByAccountNameQuery;
+import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
+import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginCommand;
 import c4f.vannang.vaops.modules.identity.api.dto.RegisterDto;
+import c4f.vannang.vaops.modules.identity.api.dto.SoftDeleteUserCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.ToggleUserStatusCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileCommand;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.api.mapper.UserDtoMapper;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserService;
+import c4f.vannang.vaops.modules.identity.internal.usecase.LoginFailedUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.LoginSuccessfulUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.RegisterUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.ToggleStatusUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class IdentityModuleApiImpl implements IdentityModuleApi {
 
-  private final RegisterUserService registerUserService;
-  private final SoftDeleteUserService softDeleteUserService;
-  private final ToggleUserStatusService toggleUserStatusService;
-  private final UpdateUserProfileService updateUserProfileService;
-  private final ChangePasswordService changePasswordService;
-  private final HandleSuccessfulLoginService handleSuccessfulLoginService;
-  private final HandleFailedLoginService handleFailedLoginService;
+  private final RegisterUseCase RegisterUseCase;
+  private final SoftDeleteUseCase SoftDeleteUseCase;
+  private final ToggleStatusUseCase ToggleStatusUseCase;
+  private final UpdateProfileUseCase UpdateProfileUseCase;
+  private final ChangePasswordUseCase ChangePasswordUseCase;
+  private final LoginSuccessfulUseCase LoginSuccessfulUseCase;
+  private final LoginFailedUseCase LoginFailedUseCase;
   private final FindUserService findUserService;
+  private final UserDtoMapper userDtoMapper;
 
   @Override
-  public Optional<UserAuthDto> getUserForAuth(String accountName) {
-    return findUserService.findForAuth(accountName);
+  public Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query) {
+    return findUserService.findForAuth(query)
+        .map(userDtoMapper::toAuthDto);
   }
 
   @Override
-  public void recordSuccessfulLogin(UUID userId) {
-    handleSuccessfulLoginService.execute(userId);
+  public void recordSuccessfulLogin(RecordSuccessfulLoginCommand command) {
+    LoginSuccessfulUseCase.execute(command);
   }
 
   @Override
-  public void recordFailedLogin(String accountName) {
-    handleFailedLoginService.execute(accountName);
+  public void recordFailedLogin(RecordFailedLoginCommand command) {
+    LoginFailedUseCase.execute(command);
   }
 
   @Override
   public UserDto register(RegisterDto registerDto) {
-    return registerUserService.execute(registerDto);
+    return userDtoMapper.toDto(RegisterUseCase.execute(registerDto));
   }
 
   @Override
-  public void softDelete(UUID userId, UUID deletedBy) {
-    softDeleteUserService.execute(userId, deletedBy);
+  public void softDelete(SoftDeleteUserCommand command) {
+    SoftDeleteUseCase.execute(command);
   }
 
   @Override
-  public void deactivate(UUID userId) {
-    toggleUserStatusService.execute(userId, false);
+  public void deactivate(ToggleUserStatusCommand command) {
+    ToggleStatusUseCase.execute(command);
   }
 
   @Override
-  public void activate(UUID userId) {
-    toggleUserStatusService.execute(userId, true);
+  public void activate(ToggleUserStatusCommand command) {
+    ToggleStatusUseCase.execute(command);
   }
 
   @Override
-  public void updateProfile(UUID userId, String displayName, String avatarUrl) {
-    updateUserProfileService.execute(userId, displayName, avatarUrl);
+  public void updateProfile(UpdateProfileCommand command) {
+    UpdateProfileUseCase.execute(command);
   }
 
   @Override
-  public void changePassword(UUID userId, String oldPassword, String newPassword) {
-    changePasswordService.execute(userId, oldPassword, newPassword);
+  public void changePassword(ChangePasswordCommand command) {
+    ChangePasswordUseCase.execute(command);
   }
 
   @Override
-  public Optional<UserDto> getUserById(UUID userId) {
-    return findUserService.findById(userId);
+  public Optional<UserDto> getUserById(FindByIdQuery query) {
+    return findUserService.findById(query)
+        .map(userDtoMapper::toDto);
   }
 
   @Override
-  public Optional<UserDto> findByAccountName(String accountName) {
-    return findUserService.findByAccountName(accountName);
+  public Optional<UserDto> findByAccountName(FindByAccountNameQuery query) {
+    return findUserService.findByAccountName(query)
+        .map(userDtoMapper::toDto);
   }
 }

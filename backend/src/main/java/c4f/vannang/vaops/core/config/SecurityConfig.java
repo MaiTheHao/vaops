@@ -9,7 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import c4f.vannang.vaops.modules.authentication.internal.infrastructure.web.filter.AuthenticationFilter;
+import c4f.vannang.vaops.modules.authentication.infrastructure.web.filter.AuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
