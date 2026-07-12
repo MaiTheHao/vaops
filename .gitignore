@@ -66,6 +66,3 @@ buildNumber.properties
 **/docker/db_data/
 **/docker/postgres_data/
 **/docker/mysql_data/
-
-# Agent AI
-.agents
