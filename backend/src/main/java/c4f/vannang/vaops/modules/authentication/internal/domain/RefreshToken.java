@@ -3,29 +3,25 @@ package c4f.vannang.vaops.modules.authentication.internal.domain;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Table(name = "refresh_tokens")
 @Entity
+@Table(name = "refresh_tokens")
 @Getter
-@Setter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
 public class RefreshToken {
 
   @Id
   @UuidGenerator
+  @Column(name = "id")
   private UUID id;
 
   @Column(name = "user_id", nullable = false)
@@ -40,8 +36,37 @@ public class RefreshToken {
   @Column(name = "revoked_at", nullable = true)
   private Instant revokedAt;
 
-  @Column(name = "created_at", nullable = false)
-  @Builder.Default
-  private Instant createdAt = Instant.now();
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
 
+  public static RefreshToken create(UUID userId, String tokenHash, Instant expiredAt) {
+    RefreshToken token = new RefreshToken();
+    token.userId = userId;
+    token.tokenHash = tokenHash;
+    token.expiredAt = expiredAt;
+    return token;
+  }
+
+  public void revoke() {
+    if (this.revokedAt == null) {
+      this.revokedAt = Instant.now();
+    }
+  }
+
+  public boolean isExpired() {
+    return Instant.now().isAfter(this.expiredAt);
+  }
+
+  public boolean isRevoked() {
+    return this.revokedAt != null;
+  }
+
+  public boolean isValid() {
+    return !isExpired() && !isRevoked();
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
 }

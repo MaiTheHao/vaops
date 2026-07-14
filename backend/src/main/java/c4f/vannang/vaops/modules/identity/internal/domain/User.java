@@ -1,6 +1,7 @@
 package c4f.vannang.vaops.modules.identity.internal.domain;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,6 +24,7 @@ import c4f.vannang.vaops.shared.exception.ValidationException;
 @Entity
 @Table(name = "users")
 @Getter
+@NoArgsConstructor
 public class User {
 
   @Id
@@ -68,12 +70,9 @@ public class User {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  // --- Only for unit test support ---
   public void setId(UUID id) {
     this.id = id;
   }
-
-  // --- Factory ---
 
   public static User register(
       AccountName accountName,
@@ -91,8 +90,6 @@ public class User {
 
     return user;
   }
-
-  // --- Domain behaviour ---
 
   public void recordSuccessfulLogin() {
     this.failedLoginCount = 0;
@@ -133,8 +130,6 @@ public class User {
   public void deactivate() {
     this.active = false;
   }
-
-  // --- Static validation helper ---
 
   public static void validatePasswordStrength(String rawPassword) {
     if (rawPassword == null || rawPassword.length() < 8) {

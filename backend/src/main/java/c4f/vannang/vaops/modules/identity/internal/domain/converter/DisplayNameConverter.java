@@ -14,6 +14,6 @@ public class DisplayNameConverter implements AttributeConverter<DisplayName, Str
 
   @Override
   public DisplayName convertToEntityAttribute(String dbData) {
-    return dbData == null ? null : new DisplayName(dbData);
+    return (dbData == null || dbData.isBlank()) ? null : new DisplayName(dbData);
   }
 }

@@ -14,6 +14,10 @@ import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginCommand;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginCommand;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
+import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
+import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
+import c4f.vannang.vaops.modules.authentication.internal.util.TokenHashUtil;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +34,8 @@ public class LoginUseCase {
     private final PasswordEncoder passwordEncoder;
     private final IdentityModuleApi identityModuleApi;
     private final TokenProviderFactory tokenServiceFactory;
+    private final AuthProperties authProperties;
+    private final RefreshTokenWriteRepository refreshTokenWriteRepository;
 
     public LoginCommandResultDto execute(LoginCommandDto dto) {
         try {
@@ -57,6 +63,12 @@ public class LoginUseCase {
             TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
             String accessToken = tokenService.createAccessToken(accessClaims);
             String refreshToken = tokenService.createRefreshToken(refreshClaims);
+
+            // Persist refresh token hash for rotation
+            String tokenHash = TokenHashUtil.hash(refreshToken);
+            Instant expiredAt = Instant.now().plusMillis(authProperties.getJwt().getRefreshExpirationMs());
+            RefreshToken entity = RefreshToken.create(userId, tokenHash, expiredAt);
+            refreshTokenWriteRepository.save(entity);
 
             identityModuleApi.recordSuccessfulLogin(new RecordSuccessfulLoginCommand(userId));
 

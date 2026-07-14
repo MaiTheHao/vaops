@@ -4,12 +4,17 @@ import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.modules.authentication.api.AuthenticationModuleApi;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandResultDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandResultDto;
+import c4f.vannang.vaops.modules.authentication.api.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterResponseDto;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -68,5 +73,47 @@ public class AuthenticationController {
         result.id(), result.accountName(), result.displayName(), result.avatarUrl());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<RefreshTokenCommandResultDto> refresh(HttpServletRequest request) {
+    String refreshTokenValue = extractRefreshTokenFromCookie(request);
+    if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
+      throw new UnauthenticatedException("Refresh token is missing");
+    }
+
+    RefreshTokenCommandResultDto result =
+        authModuleApi.refreshToken(new RefreshTokenCommandDto(refreshTokenValue));
+
+    ResponseCookie accessCookie = ResponseCookie.from("access_token", result.accessToken())
+        .httpOnly(true)
+        .secure(appProperties.isProd())
+        .path("/")
+        .maxAge(Duration.ofMillis(authProperties.getJwt().getAccessExpirationMs()))
+        .sameSite("Lax")
+        .build();
+
+    ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", result.refreshToken())
+        .httpOnly(true)
+        .secure(appProperties.isProd())
+        .path("/")
+        .maxAge(Duration.ofMillis(authProperties.getJwt().getRefreshExpirationMs()))
+        .sameSite("Lax")
+        .build();
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+        .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+        .body(result);
+  }
+
+  private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+    if (request.getCookies() == null) return null;
+    for (Cookie cookie : request.getCookies()) {
+      if ("refresh_token".equals(cookie.getName())) {
+        return cookie.getValue();
+      }
+    }
+    return null;
   }
 }

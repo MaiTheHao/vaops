@@ -14,6 +14,6 @@ public class AvatarUrlConverter implements AttributeConverter<AvatarUrl, String>
 
   @Override
   public AvatarUrl convertToEntityAttribute(String dbData) {
-    return dbData == null ? null : new AvatarUrl(dbData);
+    return (dbData == null || dbData.isBlank()) ? null : new AvatarUrl(dbData);
   }
 }
