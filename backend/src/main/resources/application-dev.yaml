@@ -27,3 +27,8 @@ logging:
 vaops:
   app:
     is-prod: false
+  auth:
+    jwt:
+      access-expiration-ms: 20000
+      refresh-expiration-ms: 50000
+

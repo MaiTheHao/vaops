@@ -5,6 +5,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.service.UserDetailsServiceImpl;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,6 +72,15 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(BEARER_PREFIX.length());
         }
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("access_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        
         return null;
     }
 
