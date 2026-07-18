@@ -18,8 +18,11 @@ import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderSt
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.infrastructure.crypto.Sha256DeterministicHashStrategy;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,15 +62,20 @@ class RefreshTokenUseCaseTest {
 
   private RefreshTokenUseCase useCase;
 
+  private DeterministicHashStrategyFactory deterministicHashStrategyFactory;
+
   private final UUID userId = UUID.randomUUID();
   private final String rawToken = "valid-refresh-jwt-token";
 
   @BeforeEach
   void setUp() {
+    deterministicHashStrategyFactory = new DeterministicHashStrategyFactory(
+        List.of(new Sha256DeterministicHashStrategy())
+    );
     when(tokenProviderFactory.getService(TokenType.JWT)).thenReturn(tokenService);
     useCase = new RefreshTokenUseCase(
         identityModuleApi, tokenProviderFactory, authProperties,
-        queryRepository, writeRepository);
+        queryRepository, writeRepository, deterministicHashStrategyFactory);
   }
 
   @Test

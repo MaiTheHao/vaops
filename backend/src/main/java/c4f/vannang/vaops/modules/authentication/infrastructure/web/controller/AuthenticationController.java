@@ -76,7 +76,7 @@ public class AuthenticationController {
   }
 
   @PostMapping("/refresh")
-  public ResponseEntity<RefreshTokenCommandResultDto> refresh(HttpServletRequest request) {
+  public ResponseEntity<Void> refresh(HttpServletRequest request) {
     String refreshTokenValue = extractRefreshTokenFromCookie(request);
     if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
       throw new UnauthenticatedException("Refresh token is missing");
@@ -104,7 +104,7 @@ public class AuthenticationController {
     return ResponseEntity.ok()
         .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
         .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-        .body(result);
+        .build();
   }
 
   private String extractRefreshTokenFromCookie(HttpServletRequest request) {

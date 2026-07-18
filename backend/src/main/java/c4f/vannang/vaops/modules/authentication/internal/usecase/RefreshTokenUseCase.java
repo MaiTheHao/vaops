@@ -12,60 +12,68 @@ import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshToken
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
-import c4f.vannang.vaops.modules.authentication.internal.util.TokenHashUtil;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
+import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenUseCase {
 
-    private final IdentityModuleApi identityModuleApi;
-    private final TokenProviderFactory tokenServiceFactory;
-    private final AuthProperties authProperties;
-    private final RefreshTokenQueryRepository refreshTokenQueryRepository;
-    private final RefreshTokenWriteRepository refreshTokenWriteRepository;
+  private final IdentityModuleApi identityModuleApi;
+  private final TokenProviderFactory tokenServiceFactory;
+  private final AuthProperties authProperties;
+  private final RefreshTokenQueryRepository refreshTokenQueryRepository;
+  private final RefreshTokenWriteRepository refreshTokenWriteRepository;
+  private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
 
-    @Transactional
-    public RefreshTokenCommandResultDto execute(RefreshTokenCommandDto command) {
-        TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
-        RefreshTokenClaims claims = tokenService.validateRefreshToken(command.refreshToken());
+  @Transactional
+  public RefreshTokenCommandResultDto execute(RefreshTokenCommandDto command) {
+    TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
+    RefreshTokenClaims claims = tokenService.validateRefreshToken(command.refreshToken());
 
-        String tokenHash = TokenHashUtil.hash(command.refreshToken());
+    String tokenHash = deterministicHashStrategyFactory
+        .getStrategy(DeterministicHashAlgorithm.SHA_256)
+        .hash(command.refreshToken());
 
-        RefreshToken storedToken = refreshTokenQueryRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new UnauthenticatedException("Invalid refresh token"));
+    RefreshToken storedToken = refreshTokenQueryRepository
+        .findByTokenHash(tokenHash)
+        .orElseThrow(() -> new UnauthenticatedException("Invalid refresh token"));
 
-        if (!storedToken.isValid()) {
-            throw new UnauthenticatedException("Invalid or revoked refresh token");
-        }
-
-        UserDto user = identityModuleApi.getUserById(new FindByIdQuery(claims.userId()))
-                .orElseThrow(() -> new UnauthenticatedException("User not found"));
-        if (!user.active()) {
-            throw new UnauthenticatedException("User account is inactive");
-        }
-
-        storedToken.revoke();
-        refreshTokenWriteRepository.save(storedToken);
-
-        AccessTokenClaims accessClaims = new AccessTokenClaims(claims.userId(), user.accountName());
-        RefreshTokenClaims refreshClaims = new RefreshTokenClaims(claims.userId());
-
-        String newAccessToken = tokenService.createAccessToken(accessClaims);
-        String newRefreshToken = tokenService.createRefreshToken(refreshClaims);
-
-        String newTokenHash = TokenHashUtil.hash(newRefreshToken);
-        Instant expiredAt = Instant.now().plusMillis(authProperties.getJwt().getRefreshExpirationMs());
-        RefreshToken newEntity = RefreshToken.create(claims.userId(), newTokenHash, expiredAt);
-        refreshTokenWriteRepository.save(newEntity);
-
-        return new RefreshTokenCommandResultDto(newAccessToken, newRefreshToken);
+    if (!storedToken.isValid()) {
+      throw new UnauthenticatedException("Invalid or revoked refresh token");
     }
+
+    UserDto user = identityModuleApi
+        .getUserById(new FindByIdQuery(claims.userId()))
+        .orElseThrow(() -> new UnauthenticatedException("User not found"));
+    if (!user.active()) {
+      throw new UnauthenticatedException("User account is inactive");
+    }
+
+    storedToken.revoke();
+    refreshTokenWriteRepository.save(storedToken);
+
+    AccessTokenClaims accessClaims = new AccessTokenClaims(claims.userId(), user.accountName());
+    RefreshTokenClaims refreshClaims = new RefreshTokenClaims(claims.userId());
+
+    String newAccessToken = tokenService.createAccessToken(accessClaims);
+    String newRefreshToken = tokenService.createRefreshToken(refreshClaims);
+
+    String newTokenHash = deterministicHashStrategyFactory
+        .getStrategy(DeterministicHashAlgorithm.SHA_256)
+        .hash(newRefreshToken);
+        
+    Instant expiredAt = Instant.now().plusMillis(authProperties.getJwt().getRefreshExpirationMs());
+    RefreshToken newEntity = RefreshToken.create(claims.userId(), newTokenHash, expiredAt);
+    refreshTokenWriteRepository.save(newEntity);
+
+    return new RefreshTokenCommandResultDto(newAccessToken, newRefreshToken);
+  }
 }

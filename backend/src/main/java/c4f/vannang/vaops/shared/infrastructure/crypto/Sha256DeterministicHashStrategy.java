@@ -1,0 +1,30 @@
+package c4f.vannang.vaops.shared.infrastructure.crypto;
+
+import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
+import c4f.vannang.vaops.shared.service.DeterministicHashStrategy;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
+import org.springframework.stereotype.Component;
+
+@Component
+public class Sha256DeterministicHashStrategy implements DeterministicHashStrategy {
+
+  @Override
+  public String hash(String input) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hashBytes = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(hashBytes);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException("SHA-256 algorithm not available", e);
+    }
+  }
+
+  @Override
+  public DeterministicHashAlgorithm getAlgorithm() {
+    return DeterministicHashAlgorithm.SHA_256;
+  }
+}
