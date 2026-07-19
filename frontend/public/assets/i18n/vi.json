@@ -29,6 +29,10 @@
       "loginSubmit": "Đăng nhập hệ thống",
       "registerSubmit": "Đăng ký tài khoản"
     },
+    "dialog": {
+      "registerError": "Lỗi đăng ký",
+      "passwordMismatch": "Mật khẩu xác nhận không khớp."
+    },
     "footer": {
       "noAccountText": "Chưa có tài khoản truy cập?",
       "hasAccountText": "Đã có tài khoản truy cập?",

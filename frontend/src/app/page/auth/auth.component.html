@@ -6,24 +6,24 @@
 
   <main class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0 max-w-md" [class.sm:max-w-2xl]="mode() === 'register'">
     <div class="bg-surface-container-lowest border border-outline-variant p-6 sm:p-8 md:p-10 shadow-sm relative">
-      <!-- Language Selector -->
+
       <div class="absolute top-4 right-4 flex gap-2 z-30">
-        <button 
-          (click)="switchLanguage('vi')" 
-          [class.font-bold]="currentLang() === 'vi'" 
-          [class.text-primary]="currentLang() === 'vi'" 
-          [class.text-outline]="currentLang() !== 'vi'"
+        <button
+          (click)="langService.switchLang('vi')"
+          [class.font-bold]="langService.currentLang() === 'vi'"
+          [class.text-primary]="langService.currentLang() === 'vi'"
+          [class.text-outline]="langService.currentLang() !== 'vi'"
           class="text-xs uppercase hover:underline cursor-pointer bg-transparent border-none p-0"
           type="button"
         >
           VI
         </button>
         <span class="text-outline text-xs">|</span>
-        <button 
-          (click)="switchLanguage('en')" 
-          [class.font-bold]="currentLang() === 'en'" 
-          [class.text-primary]="currentLang() === 'en'" 
-          [class.text-outline]="currentLang() !== 'en'"
+        <button
+          (click)="langService.switchLang('en')"
+          [class.font-bold]="langService.currentLang() === 'en'"
+          [class.text-primary]="langService.currentLang() === 'en'"
+          [class.text-outline]="langService.currentLang() !== 'en'"
           class="text-xs uppercase hover:underline cursor-pointer bg-transparent border-none p-0"
           type="button"
         >
@@ -50,8 +50,8 @@
           <p class="font-body-md text-on-secondary-container text-sm leading-relaxed text-center">
             {{ 'auth.loggedInSuccess' | translate }}
           </p>
-          <button 
-            (click)="logout()" 
+          <button
+            (click)="logout()"
             class="w-full bg-primary-container text-white font-button text-button py-4 uppercase tracking-widest hover:bg-primary transition-all active:scale-[0.98] border border-transparent cursor-pointer"
           >
             {{ 'auth.logoutBtn' | translate }}
@@ -64,123 +64,45 @@
 
         <form (ngSubmit)="onSubmit()" #authForm="ngForm" class="flex flex-col gap-6">
           <div [class]="mode() === 'register' ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4' : 'flex flex-col gap-6'">
-            <div class="flex flex-col gap-2">
-              <label class="font-label-technical text-label-technical text-primary uppercase" for="accountName">{{ 'auth.label.accountName' | translate }} <span class="text-error">*</span></label>
-              <div class="relative">
-                <svg lucideUser class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
-                <input 
-                  class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
-                  id="accountName" 
-                  name="accountName" 
-                  [ngModel]="accountName()"
-                  (ngModelChange)="accountName.set($event)"
-                  [placeholder]="'auth.placeholder.accountName' | translate" 
-                  required
-                  [disabled]="authService.loading()"
-                  type="text"
-                />
-              </div>
-            </div>
+
+            <app-input
+              name="accountName"
+              [config]="accountNameCfg()"
+              [(value)]="accountName"
+              [disabled]="authService.loading()"
+            />
 
             @if (mode() === 'register') {
-              <div class="flex flex-col gap-2">
-                <label class="font-label-technical text-label-technical text-primary uppercase" for="displayName">{{ 'auth.label.displayName' | translate }} <span class="text-error">*</span></label>
-                <div class="relative">
-                  <svg lucideIdCard class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
-                  <input 
-                    class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
-                    id="displayName" 
-                    name="displayName" 
-                    [ngModel]="displayName()"
-                    (ngModelChange)="displayName.set($event)"
-                    [placeholder]="'auth.placeholder.displayName' | translate" 
-                    required
-                    [disabled]="authService.loading()"
-                    type="text"
-                  />
-                </div>
-              </div>
+              <app-input
+                name="displayName"
+                [config]="displayNameCfg()"
+                [(value)]="displayName"
+                [disabled]="authService.loading()"
+              />
             }
 
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center">
-                <label class="font-label-technical text-label-technical text-primary uppercase" for="password">{{ 'auth.label.password' | translate }} <span class="text-error">*</span></label>
-              </div>
-              <div class="relative">
-                <svg lucideLock class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
-                <input 
-                  class="w-full pl-11 pr-12 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
-                  id="password" 
-                  name="password" 
-                  [ngModel]="password()"
-                  (ngModelChange)="password.set($event)"
-                  placeholder="••••••••" 
-                  required
-                  [disabled]="authService.loading()"
-                  [type]="showPassword() ? 'text' : 'password'"
-                />
-                <button 
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors cursor-pointer flex items-center justify-center" 
-                  type="button"
-                  (click)="showPassword.set(!showPassword())"
-                >
-                  @if (showPassword()) {
-                    <svg lucideEyeOff class="size-5"></svg>
-                  } @else {
-                    <svg lucideEye class="size-5"></svg>
-                  }
-                </button>
-              </div>
-            </div>
+            <app-password-input
+              name="password"
+              [config]="passwordCfg()"
+              [(value)]="password"
+              [disabled]="authService.loading()"
+            />
 
             @if (mode() === 'register') {
-              <div class="flex flex-col gap-2">
-                <label class="font-label-technical text-label-technical text-primary uppercase" for="confirmPassword">{{ 'auth.label.confirmPassword' | translate }} <span class="text-error">*</span></label>
-                <div class="relative">
-                  <svg lucideLock class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
-                  <input 
-                    class="w-full pl-11 pr-12 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
-                    id="confirmPassword" 
-                    name="confirmPassword" 
-                    [ngModel]="confirmPassword()"
-                    (ngModelChange)="confirmPassword.set($event)"
-                    placeholder="••••••••" 
-                    required
-                    [disabled]="authService.loading()"
-                    [type]="showConfirmPassword() ? 'text' : 'password'"
-                  />
-                  <button 
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors cursor-pointer flex items-center justify-center" 
-                    type="button"
-                    (click)="showConfirmPassword.set(!showConfirmPassword())"
-                  >
-                    @if (showConfirmPassword()) {
-                      <svg lucideEyeOff class="size-5"></svg>
-                    } @else {
-                      <svg lucideEye class="size-5"></svg>
-                    }
-                  </button>
-                </div>
-              </div>
-            }
+              <app-password-input
+                name="confirmPassword"
+                [config]="confirmPasswordCfg()"
+                [(value)]="confirmPassword"
+                [disabled]="authService.loading()"
+              />
 
-            @if (mode() === 'register') {
-              <div class="flex flex-col gap-2 col-span-1 sm:col-span-2">
-                <label class="font-label-technical text-label-technical text-primary uppercase" for="avatarUrl">{{ 'auth.label.avatarUrl' | translate }}</label>
-                <div class="relative">
-                  <svg lucideLink class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
-                  <input 
-                    class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
-                    id="avatarUrl" 
-                    name="avatarUrl" 
-                    [ngModel]="avatarUrl()"
-                    (ngModelChange)="avatarUrl.set($event)"
-                    placeholder="https://example.com/avatar.png"
-                    [disabled]="authService.loading()"
-                    type="url"
-                  />
-                </div>
-              </div>
+              <app-input
+                name="avatarUrl"
+                class="sm:col-span-2"
+                [config]="avatarUrlCfg()"
+                [(value)]="avatarUrl"
+                [disabled]="authService.loading()"
+              />
             }
           </div>
 
@@ -194,22 +116,11 @@
             </div>
           }
 
-          <button 
-            class="w-full bg-primary-container text-white font-button text-button py-4 uppercase tracking-widest hover:bg-primary transition-all active:scale-[0.98] border border-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
-            type="submit"
+          <app-submit-button
+            [config]="buttonFactory.createConfig({ label: submitLabel() })"
+            [loading]="authService.loading()"
             [disabled]="authService.loading()"
-          >
-            @if (authService.loading()) {
-              <svg lucideLoader2 class="animate-spin size-5 shrink-0"></svg>
-              <span>{{ 'auth.btn.loading' | translate }}</span>
-            } @else {
-              @if (mode() === 'login') {
-                <span>{{ 'auth.btn.loginSubmit' | translate }}</span>
-              } @else {
-                <span>{{ 'auth.btn.registerSubmit' | translate }}</span>
-              }
-            }
-          </button>
+          />
         </form>
 
         <div class="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-outline-variant text-center">
@@ -219,9 +130,9 @@
             } @else {
               <span>{{ 'auth.footer.hasAccountText' | translate }}</span>
             }
-            <button 
-              (click)="toggleMode()" 
-              class="font-button text-primary font-bold hover:underline underline-offset-4 bg-transparent border-none cursor-pointer p-0" 
+            <button
+              (click)="toggleMode()"
+              class="font-button text-primary font-bold hover:underline underline-offset-4 bg-transparent border-none cursor-pointer p-0"
               [disabled]="authService.loading()"
               type="button"
             >

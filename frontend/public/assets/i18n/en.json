@@ -29,6 +29,10 @@
       "loginSubmit": "Log in",
       "registerSubmit": "Register account"
     },
+    "dialog": {
+      "registerError": "Registration Error",
+      "passwordMismatch": "Confirm password does not match."
+    },
     "footer": {
       "noAccountText": "Don't have an account?",
       "hasAccountText": "Already have an account?",
