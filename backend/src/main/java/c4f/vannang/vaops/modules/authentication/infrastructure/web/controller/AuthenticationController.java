@@ -4,6 +4,7 @@ import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.modules.authentication.api.AuthenticationModuleApi;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandResultDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandDto;
@@ -98,6 +99,35 @@ public class AuthenticationController {
         .secure(appProperties.isProd())
         .path("/")
         .maxAge(Duration.ofMillis(authProperties.getJwt().getRefreshExpirationMs()))
+        .sameSite("Lax")
+        .build();
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+        .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+        .build();
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout(HttpServletRequest request) {
+    String refreshTokenValue = extractRefreshTokenFromCookie(request);
+    if (refreshTokenValue != null && !refreshTokenValue.isBlank()) {
+      authModuleApi.logout(new LogoutCommandDto(refreshTokenValue));
+    }
+
+    ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
+        .httpOnly(true)
+        .secure(appProperties.isProd())
+        .path("/")
+        .maxAge(0)
+        .sameSite("Lax")
+        .build();
+
+    ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
+        .httpOnly(true)
+        .secure(appProperties.isProd())
+        .path("/")
+        .maxAge(0)
         .sameSite("Lax")
         .build();
 

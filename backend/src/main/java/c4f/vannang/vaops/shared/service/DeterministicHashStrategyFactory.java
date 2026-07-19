@@ -14,8 +14,7 @@ public class DeterministicHashStrategyFactory {
   private final Map<DeterministicHashAlgorithm, DeterministicHashStrategy> strategies;
 
   public DeterministicHashStrategyFactory(List<DeterministicHashStrategy> strategyList) {
-    this.strategies =
-        strategyList.stream().collect(Collectors.toMap(s -> s.getAlgorithm(), Function.identity()));
+    this.strategies = strategyList.stream().collect(Collectors.toMap(s -> s.getAlgorithm(), Function.identity()));
   }
 
   public DeterministicHashStrategy getStrategy(DeterministicHashAlgorithm algorithm) {

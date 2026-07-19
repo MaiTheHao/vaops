@@ -80,7 +80,6 @@ class RefreshTokenUseCaseTest {
 
   @Test
   void execute_shouldRotateTokenSuccessfully() {
-    // Arrange
     RefreshTokenClaims claims = new RefreshTokenClaims(userId);
     RefreshToken oldToken = RefreshToken.create(userId, "old-hash", Instant.now().plus(1, ChronoUnit.HOURS));
     UserDto activeUser = new UserDto(userId, "testuser", "Test User", null, true, null, null, null);
@@ -93,19 +92,15 @@ class RefreshTokenUseCaseTest {
     when(tokenService.createAccessToken(any())).thenReturn("new-access-token");
     when(tokenService.createRefreshToken(any())).thenReturn("new-refresh-token");
 
-    // Act
     RefreshTokenCommandResultDto result = useCase.execute(new RefreshTokenCommandDto(rawToken));
 
-    // Assert
     assertNotNull(result);
     assertEquals("new-access-token", result.accessToken());
     assertEquals("new-refresh-token", result.refreshToken());
 
-    // Verify old token was revoked
     assertTrue(oldToken.isRevoked());
     verify(writeRepository).save(oldToken);
 
-    // Verify new token was persisted
     verify(writeRepository, times(2)).save(tokenCaptor.capture());
     RefreshToken savedNewToken = tokenCaptor.getAllValues().get(1);
     assertNotNull(savedNewToken.getTokenHash());

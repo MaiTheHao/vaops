@@ -16,8 +16,11 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
+import c4f.vannang.vaops.shared.service.DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,42 +40,43 @@ public class RefreshTokenUseCase {
   public RefreshTokenCommandResultDto execute(RefreshTokenCommandDto command) {
     TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
     RefreshTokenClaims claims = tokenService.validateRefreshToken(command.refreshToken());
+    DeterministicHashStrategy hashStrategy =
+        deterministicHashStrategyFactory.getStrategy(DeterministicHashAlgorithm.SHA_256);
 
-    String tokenHash = deterministicHashStrategyFactory
-        .getStrategy(DeterministicHashAlgorithm.SHA_256)
-        .hash(command.refreshToken());
-
+    String tokenHash = hashStrategy.hash(command.refreshToken());
     RefreshToken storedToken = refreshTokenQueryRepository
         .findByTokenHash(tokenHash)
         .orElseThrow(() -> new UnauthenticatedException("Invalid refresh token"));
 
-    if (!storedToken.isValid()) {
-      throw new UnauthenticatedException("Invalid or revoked refresh token");
+    if (storedToken.isExpired()) throw new UnauthenticatedException("Refresh token is expired");
+    if (storedToken.isRevoked()) {
+      List<RefreshToken> activeTokens = refreshTokenQueryRepository.findValidRefreshTokensByUserId(claims.userId());
+      activeTokens.forEach(refreshToken -> refreshToken.revoke());
+      refreshTokenWriteRepository.saveAll(activeTokens);
+
+      throw new UnauthenticatedException("Refresh token has been revoked previously. Potential breach detected.");
     }
 
     UserDto user = identityModuleApi
         .getUserById(new FindByIdQuery(claims.userId()))
         .orElseThrow(() -> new UnauthenticatedException("User not found"));
-    if (!user.active()) {
-      throw new UnauthenticatedException("User account is inactive");
-    }
 
+    if (!user.active()) throw new UnauthenticatedException("User account is inactive");
+    
+    List<RefreshToken> tokensToSave = new ArrayList<>();
     storedToken.revoke();
-    refreshTokenWriteRepository.save(storedToken);
+    tokensToSave.add(storedToken);
 
     AccessTokenClaims accessClaims = new AccessTokenClaims(claims.userId(), user.accountName());
     RefreshTokenClaims refreshClaims = new RefreshTokenClaims(claims.userId());
-
     String newAccessToken = tokenService.createAccessToken(accessClaims);
     String newRefreshToken = tokenService.createRefreshToken(refreshClaims);
+    String newTokenHash = hashStrategy.hash(newRefreshToken);
 
-    String newTokenHash = deterministicHashStrategyFactory
-        .getStrategy(DeterministicHashAlgorithm.SHA_256)
-        .hash(newRefreshToken);
-        
     Instant expiredAt = Instant.now().plusMillis(authProperties.getJwt().getRefreshExpirationMs());
     RefreshToken newEntity = RefreshToken.create(claims.userId(), newTokenHash, expiredAt);
-    refreshTokenWriteRepository.save(newEntity);
+    tokensToSave.add(newEntity);
+    refreshTokenWriteRepository.saveAll(tokensToSave);
 
     return new RefreshTokenCommandResultDto(newAccessToken, newRefreshToken);
   }

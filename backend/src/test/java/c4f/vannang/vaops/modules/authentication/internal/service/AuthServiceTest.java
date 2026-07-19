@@ -10,6 +10,7 @@ import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandResultDto;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.LoginUseCase;
+import c4f.vannang.vaops.modules.authentication.internal.usecase.LogoutUseCase;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.RefreshTokenUseCase;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.RegisterUseCase;
 import c4f.vannang.vaops.modules.identity.api.dto.RegisterDto;
@@ -60,7 +61,7 @@ class AuthServiceTest {
     void authenticationModuleApiImpl_ShouldDelegateLoginToLoginUseCase() {
         var LoginUseCase = mock(LoginUseCase.class);
         var RegisterUseCaseMock = mock(RegisterUseCase.class);
-        var api = new AuthenticationModuleApiImpl(LoginUseCase, RegisterUseCaseMock, mock(RefreshTokenUseCase.class));
+        var api = new AuthenticationModuleApiImpl(LoginUseCase, RegisterUseCaseMock, mock(RefreshTokenUseCase.class), mock(LogoutUseCase.class));
 
         LoginCommandDto dto = new LoginCommandDto("user", "pass");
         LoginCommandResultDto expected = new LoginCommandResultDto("access", "refresh");
@@ -76,7 +77,7 @@ class AuthServiceTest {
     void authenticationModuleApiImpl_ShouldDelegateRegisterToRegisterUseCase() {
         var LoginUseCase = mock(LoginUseCase.class);
         var RegisterUseCaseMock = mock(RegisterUseCase.class);
-        var api = new AuthenticationModuleApiImpl(LoginUseCase, RegisterUseCaseMock, mock(RefreshTokenUseCase.class));
+        var api = new AuthenticationModuleApiImpl(LoginUseCase, RegisterUseCaseMock, mock(RefreshTokenUseCase.class), mock(LogoutUseCase.class));
 
         RegisterCommandDto dto = new RegisterCommandDto("user", "pass", "User", "av");
         RegisterCommandResultDto expected = new RegisterCommandResultDto(UUID.randomUUID(), "user", "User", "av");
