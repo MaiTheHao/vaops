@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { DialogRef, DIALOG_DATA } from '@angular/cdk/dialog';
-import { NgClass } from '@angular/common';
 import { LucideCircleAlert, LucideCircleHelp, LucideInfo, LucideX } from '@lucide/angular';
 
 export interface DialogDataPayload {
@@ -14,7 +13,7 @@ export interface DialogDataPayload {
 @Component({
   standalone: true,
   selector: 'app-generic-dialog',
-  imports: [NgClass, LucideCircleAlert, LucideCircleHelp, LucideInfo, LucideX],
+  imports: [LucideCircleAlert, LucideCircleHelp, LucideInfo, LucideX],
   template: `
     <div class="bg-surface-container-lowest border border-outline-variant p-6 shadow-sm max-w-[27.5rem] w-full font-body-md text-on-background">
       <!-- Header -->
