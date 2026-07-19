@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.authentication.infrastructure.web.filter;
+package c4f.vannang.vaops.shared.filter;
 
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;

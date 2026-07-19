@@ -1,7 +1,7 @@
 package c4f.vannang.vaops.core.config;
 
 import c4f.vannang.vaops.core.env.CorsProperties;
-import c4f.vannang.vaops.modules.authentication.infrastructure.web.filter.AuthenticationFilter;
+import c4f.vannang.vaops.shared.filter.AuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +40,8 @@ public class SecurityConfig {
             .permitAll()
             .requestMatchers("/api/v1/auth/refresh")
             .permitAll()
+            .requestMatchers("/api/v1/profile/**")
+            .authenticated()
             .anyRequest()
             .authenticated())
         .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
