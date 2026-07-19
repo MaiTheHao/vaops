@@ -1,10 +1,9 @@
 package c4f.vannang.vaops.modules.authentication.infrastructure.web.filter;
 
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.service.UserDetailsServiceImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,6 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,10 +31,10 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final TokenProviderStrategy tokenService;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
-    public AuthenticationFilter(TokenProviderFactory tokenServiceFactory, UserDetailsServiceImpl userDetailsService,
+    public AuthenticationFilter(TokenProviderFactory tokenServiceFactory, UserDetailsService userDetailsService,
             ObjectMapper objectMapper) {
         this.tokenService = tokenServiceFactory.getService(TokenType.JWT);
         this.userDetailsService = userDetailsService;
@@ -87,11 +87,11 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private void writeErrorResponse(HttpServletResponse response, Exception e) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
 
-        if (e instanceof c4f.vannang.vaops.modules.authentication.api.exception.TokenExpiredException) {
+        if (e instanceof c4f.vannang.vaops.modules.authentication.internal.exception.TokenExpiredException) {
             response.setStatus(401);
             objectMapper.writeValue(response.getWriter(), Map.of("timestamp", Instant.now().toString(), "status", 401,
                     "code", "TOKEN_EXPIRED", "message", e.getMessage()));
-        } else if (e instanceof c4f.vannang.vaops.modules.authentication.api.exception.AccountLockedException) {
+        } else if (e instanceof c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException) {
             response.setStatus(423);
             objectMapper.writeValue(response.getWriter(), Map.of("timestamp", Instant.now().toString(), "status", 423,
                     "code", "ACCOUNT_LOCKED", "message", e.getMessage()));

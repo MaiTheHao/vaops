@@ -3,8 +3,8 @@ package c4f.vannang.vaops.modules.authentication.internal.usecase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandResultDto;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
@@ -50,7 +50,7 @@ class LogoutUseCaseTest {
 
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(storedToken));
 
-    LogoutCommandResultDto result = useCase.execute(new LogoutCommandDto(rawToken));
+    LogoutCommandResult result = useCase.execute(new LogoutCommand(rawToken));
 
     assertTrue(result.success());
     assertTrue(storedToken.isRevoked());
@@ -61,7 +61,7 @@ class LogoutUseCaseTest {
   void execute_shouldReturnFalse_whenTokenNotFound() {
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
 
-    LogoutCommandResultDto result = useCase.execute(new LogoutCommandDto(rawToken));
+    LogoutCommandResult result = useCase.execute(new LogoutCommand(rawToken));
 
     assertFalse(result.success());
     verify(writeRepository, never()).save(any());
@@ -75,7 +75,7 @@ class LogoutUseCaseTest {
 
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(revokedToken));
 
-    LogoutCommandResultDto result = useCase.execute(new LogoutCommandDto(rawToken));
+    LogoutCommandResult result = useCase.execute(new LogoutCommand(rawToken));
 
     assertTrue(result.success());
     assertTrue(revokedToken.isRevoked());

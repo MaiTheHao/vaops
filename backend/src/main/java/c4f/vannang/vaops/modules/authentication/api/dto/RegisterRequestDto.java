@@ -1,12 +1,10 @@
 package c4f.vannang.vaops.modules.authentication.api.dto;
 
-import java.util.UUID;
-
-public record RegisterCommandResultDto(
-
-		UUID id,
+public record RegisterRequestDto(
 
 		String accountName,
+
+		String password,
 
 		String displayName,
 

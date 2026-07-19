@@ -1,20 +1,20 @@
 package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.exception.AccountLockedException;
-import c4f.vannang.vaops.modules.authentication.api.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
-import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginCommand;
-import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
@@ -37,10 +37,10 @@ public class LoginUseCase {
   private final RefreshTokenWriteRepository refreshTokenWriteRepository;
   private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
 
-  public LoginCommandResultDto execute(LoginCommandDto dto) {
+  public LoginCommandResult execute(LoginCommand command) {
     try {
       UserAuthDto userAuth = identityModuleApi
-          .getUserForAuth(new FindForAuthQuery(dto.accountName()))
+          .getUserForAuth(new FindForAuthQuery(command.accountName()))
           .orElseThrow(() -> new UnauthenticatedException("Invalid credentials"));
 
       if (userAuth.lockedUntil() != null && Instant.now().isBefore(userAuth.lockedUntil())) {
@@ -51,14 +51,14 @@ public class LoginUseCase {
         throw new UnauthenticatedException("Account is deactivated");
       }
 
-      if (!passwordEncoder.matches(dto.password(), userAuth.passwordHash())) {
-        identityModuleApi.recordFailedLogin(new RecordFailedLoginCommand(dto.accountName()));
+      if (!passwordEncoder.matches(command.password(), userAuth.passwordHash())) {
+        identityModuleApi.recordFailedLogin(new RecordFailedLoginRequest(command.accountName()));
         throw new UnauthenticatedException("Invalid credentials");
       }
 
       UUID userId = userAuth.id();
 
-      AccessTokenClaims accessClaims = new AccessTokenClaims(userId, dto.accountName());
+      AccessTokenClaims accessClaims = new AccessTokenClaims(userId, command.accountName());
       RefreshTokenClaims refreshClaims = new RefreshTokenClaims(userId);
 
       TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
@@ -74,9 +74,9 @@ public class LoginUseCase {
       RefreshToken entity = RefreshToken.create(userId, tokenHash, expiredAt);
       refreshTokenWriteRepository.save(entity);
 
-      identityModuleApi.recordSuccessfulLogin(new RecordSuccessfulLoginCommand(userId));
+      identityModuleApi.recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
 
-      return new LoginCommandResultDto(accessToken, refreshToken);
+      return new LoginCommandResult(accessToken, refreshToken);
 
     } catch (UnauthenticatedException | AccountLockedException e) {
       throw e;

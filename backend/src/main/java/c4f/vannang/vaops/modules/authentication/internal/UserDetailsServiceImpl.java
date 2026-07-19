@@ -1,6 +1,6 @@
-package c4f.vannang.vaops.modules.authentication.internal.service;
+package c4f.vannang.vaops.modules.authentication.internal;
 
-import c4f.vannang.vaops.modules.authentication.api.exception.AccountLockedException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
@@ -16,7 +16,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class UserDetailsServiceImpl implements UserDetailsService {
+class UserDetailsServiceImpl implements UserDetailsService {
 
     private final IdentityModuleApi identityModuleApi;
 

@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.authentication.api.exception;
+package c4f.vannang.vaops.modules.authentication.internal.exception;
 
 import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
 import c4f.vannang.vaops.shared.exception.ErrorCode;

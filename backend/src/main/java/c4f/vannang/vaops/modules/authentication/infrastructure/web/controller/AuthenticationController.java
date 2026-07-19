@@ -2,17 +2,17 @@ package c4f.vannang.vaops.modules.authentication.infrastructure.web.controller;
 
 import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.modules.authentication.api.AuthenticationModuleApi;
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.exception.UnauthenticatedException;
-import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginRequestDto;
-import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterRequestDto;
-import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LoginRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LoginResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LogoutRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RegisterRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RegisterResponseDto;
+import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginWebRequestDto;
+import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebRequestDto;
+import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebResponseDto;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,9 +38,9 @@ public class AuthenticationController {
   private final AuthProperties authProperties;
 
   @PostMapping("/login")
-  public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDto request) {
-    LoginCommandResultDto result =
-        authModuleApi.login(new LoginCommandDto(request.accountName(), request.password()));
+  public ResponseEntity<Void> login(@Valid @RequestBody LoginWebRequestDto request) {
+    LoginResponseDto result =
+        authModuleApi.login(new LoginRequestDto(request.accountName(), request.password()));
 
     ResponseCookie accessCookie = ResponseCookie.from("access_token", result.accessToken())
         .httpOnly(true)
@@ -65,12 +65,12 @@ public class AuthenticationController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<RegisterResponseDto> register(
-      @Valid @RequestBody RegisterRequestDto request) {
-    RegisterCommandResultDto result = authModuleApi.register(new RegisterCommandDto(
+  public ResponseEntity<RegisterWebResponseDto> register(
+      @Valid @RequestBody RegisterWebRequestDto request) {
+    RegisterResponseDto result = authModuleApi.register(new RegisterRequestDto(
         request.accountName(), request.password(), request.displayName(), request.avatarUrl()));
 
-    RegisterResponseDto response = new RegisterResponseDto(
+    RegisterWebResponseDto response = new RegisterWebResponseDto(
         result.id(), result.accountName(), result.displayName(), result.avatarUrl());
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -83,8 +83,8 @@ public class AuthenticationController {
       throw new UnauthenticatedException("Refresh token is missing");
     }
 
-    RefreshTokenCommandResultDto result =
-        authModuleApi.refreshToken(new RefreshTokenCommandDto(refreshTokenValue));
+    RefreshTokenResponseDto result =
+        authModuleApi.refreshToken(new RefreshTokenRequestDto(refreshTokenValue));
 
     ResponseCookie accessCookie = ResponseCookie.from("access_token", result.accessToken())
         .httpOnly(true)
@@ -112,7 +112,7 @@ public class AuthenticationController {
   public ResponseEntity<Void> logout(HttpServletRequest request) {
     String refreshTokenValue = extractRefreshTokenFromCookie(request);
     if (refreshTokenValue != null && !refreshTokenValue.isBlank()) {
-      authModuleApi.logout(new LogoutCommandDto(refreshTokenValue));
+      authModuleApi.logout(new LogoutRequestDto(refreshTokenValue));
     }
 
     ResponseCookie accessCookie = ResponseCookie.from("access_token", "")

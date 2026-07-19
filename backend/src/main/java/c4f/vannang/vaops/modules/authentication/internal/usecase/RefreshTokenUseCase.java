@@ -1,17 +1,17 @@
 package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
+import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
@@ -37,7 +37,7 @@ public class RefreshTokenUseCase {
   private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
 
   @Transactional
-  public RefreshTokenCommandResultDto execute(RefreshTokenCommandDto command) {
+  public RefreshTokenCommandResult execute(RefreshTokenCommand command) {
     TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
     RefreshTokenClaims claims = tokenService.validateRefreshToken(command.refreshToken());
     DeterministicHashStrategy hashStrategy =
@@ -50,11 +50,13 @@ public class RefreshTokenUseCase {
 
     if (storedToken.isExpired()) throw new UnauthenticatedException("Refresh token is expired");
     if (storedToken.isRevoked()) {
-      List<RefreshToken> activeTokens = refreshTokenQueryRepository.findValidRefreshTokensByUserId(claims.userId());
+      List<RefreshToken> activeTokens =
+          refreshTokenQueryRepository.findValidRefreshTokensByUserId(claims.userId());
       activeTokens.forEach(refreshToken -> refreshToken.revoke());
       refreshTokenWriteRepository.saveAll(activeTokens);
 
-      throw new UnauthenticatedException("Refresh token has been revoked previously. Potential breach detected.");
+      throw new UnauthenticatedException(
+          "Refresh token has been revoked previously. Potential breach detected.");
     }
 
     UserDto user = identityModuleApi
@@ -62,7 +64,7 @@ public class RefreshTokenUseCase {
         .orElseThrow(() -> new UnauthenticatedException("User not found"));
 
     if (!user.active()) throw new UnauthenticatedException("User account is inactive");
-    
+
     List<RefreshToken> tokensToSave = new ArrayList<>();
     storedToken.revoke();
     tokensToSave.add(storedToken);
@@ -78,6 +80,6 @@ public class RefreshTokenUseCase {
     tokensToSave.add(newEntity);
     refreshTokenWriteRepository.saveAll(tokensToSave);
 
-    return new RefreshTokenCommandResultDto(newAccessToken, newRefreshToken);
+    return new RefreshTokenCommandResult(newAccessToken, newRefreshToken);
   }
 }

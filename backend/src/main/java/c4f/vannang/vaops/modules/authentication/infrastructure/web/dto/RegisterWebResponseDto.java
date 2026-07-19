@@ -2,7 +2,7 @@ package c4f.vannang.vaops.modules.authentication.infrastructure.web.dto;
 
 import java.util.UUID;
 
-public record RegisterResponseDto(
+public record RegisterWebResponseDto(
 
     UUID id,
 

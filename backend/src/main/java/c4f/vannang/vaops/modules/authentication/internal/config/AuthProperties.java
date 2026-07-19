@@ -14,9 +14,9 @@ public class AuthProperties {
     @Data
     public static class Jwt {
         private String accessSecret;
-        private long accessExpirationMs = 900_000; // 15 min default
+        private long accessExpirationMs = 900_000;
         private String refreshSecret;
-        private long refreshExpirationMs = 604_800_000; // 7 days default
+        private long refreshExpirationMs = 604_800_000;
         private String issuer = "vaops";
     }
 }

@@ -3,7 +3,7 @@ package c4f.vannang.vaops.modules.authentication.infrastructure.web.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record RegisterRequestDto(
+public record RegisterWebRequestDto(
 
 
     @NotBlank(message = "Account name is required")

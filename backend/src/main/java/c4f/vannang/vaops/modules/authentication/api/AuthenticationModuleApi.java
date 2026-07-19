@@ -1,17 +1,17 @@
 package c4f.vannang.vaops.modules.authentication.api;
 
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LogoutCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.RegisterCommandResultDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LoginRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LoginResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LogoutRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.LogoutResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenResponseDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RegisterRequestDto;
+import c4f.vannang.vaops.modules.authentication.api.dto.RegisterResponseDto;
 
 public interface AuthenticationModuleApi {
-    LoginCommandResultDto login(LoginCommandDto dto);
-    RegisterCommandResultDto register(RegisterCommandDto dto);
-    RefreshTokenCommandResultDto refreshToken(RefreshTokenCommandDto command);
-    LogoutCommandResultDto logout(LogoutCommandDto command);
+    LoginResponseDto login(LoginRequestDto request);
+    RegisterResponseDto register(RegisterRequestDto request);
+    RefreshTokenResponseDto refreshToken(RefreshTokenRequestDto request);
+    LogoutResponseDto logout(LogoutRequestDto request);
 }

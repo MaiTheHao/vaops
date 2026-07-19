@@ -1,10 +1,11 @@
-package c4f.vannang.vaops.modules.authentication.internal.service;
+package c4f.vannang.vaops.modules.authentication.internal;
 
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 
 public interface TokenProviderStrategy {
+    
     TokenType getType();
 
     String createAccessToken(AccessTokenClaims claims);

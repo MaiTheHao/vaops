@@ -1,9 +1,8 @@
-package c4f.vannang.vaops.modules.authentication.internal.service;
+package c4f.vannang.vaops.modules.authentication.internal;
 
 import org.springframework.stereotype.Component;
 
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

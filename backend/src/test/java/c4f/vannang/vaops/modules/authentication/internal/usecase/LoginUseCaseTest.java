@@ -4,19 +4,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandDto;
-import c4f.vannang.vaops.modules.authentication.api.dto.LoginCommandResultDto;
-import c4f.vannang.vaops.modules.authentication.api.exception.AccountLockedException;
-import c4f.vannang.vaops.modules.authentication.api.exception.UnauthenticatedException;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
+import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
-import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginCommand;
-import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginCommand;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
@@ -83,7 +83,7 @@ class LoginUseCaseTest {
 
   @Test
   void execute_shouldLoginSuccessfully() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto userAuth = new UserAuthDto(userId, passwordHash, null, true);
 
     when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
@@ -96,19 +96,19 @@ class LoginUseCaseTest {
     when(authProperties.getJwt()).thenReturn(jwtProperties);
     when(jwtProperties.getRefreshExpirationMs()).thenReturn(604800000L);
 
-    LoginCommandResultDto result = loginUseCase.execute(command);
+    LoginCommandResult result = loginUseCase.execute(command);
 
     assertNotNull(result);
     assertEquals("mock-access-token", result.accessToken());
     assertEquals("mock-refresh-token", result.refreshToken());
 
     verify(refreshTokenWriteRepository, times(1)).save(any(RefreshToken.class));
-    verify(identityModuleApi, times(1)).recordSuccessfulLogin(new RecordSuccessfulLoginCommand(userId));
+    verify(identityModuleApi, times(1)).recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
   }
 
   @Test
   void execute_shouldThrowUnauthenticatedException_whenUserNotFound() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
 
     when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.empty());
@@ -122,7 +122,7 @@ class LoginUseCaseTest {
 
   @Test
   void execute_shouldThrowAccountLockedException_whenAccountLocked() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
     Instant lockedUntil = Instant.now().plus(1, ChronoUnit.HOURS);
     UserAuthDto lockedUser = new UserAuthDto(userId, passwordHash, lockedUntil, true);
 
@@ -137,7 +137,7 @@ class LoginUseCaseTest {
 
   @Test
   void execute_shouldThrowUnauthenticatedException_whenAccountDeactivated() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto inactiveUser = new UserAuthDto(userId, passwordHash, null, false);
 
     when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
@@ -151,7 +151,7 @@ class LoginUseCaseTest {
 
   @Test
   void execute_shouldThrowUnauthenticatedException_andRecordFailedLogin_whenPasswordIncorrect() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto userAuth = new UserAuthDto(userId, passwordHash, null, true);
 
     when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
@@ -160,14 +160,14 @@ class LoginUseCaseTest {
 
     assertThrows(UnauthenticatedException.class, () -> loginUseCase.execute(command));
 
-    verify(identityModuleApi, times(1)).recordFailedLogin(new RecordFailedLoginCommand(accountName));
+    verify(identityModuleApi, times(1)).recordFailedLogin(new RecordFailedLoginRequest(accountName));
     verify(refreshTokenWriteRepository, never()).save(any());
     verify(identityModuleApi, never()).recordSuccessfulLogin(any());
   }
 
   @Test
   void execute_shouldWrapInInternalServerException_whenUnexpectedError() {
-    LoginCommandDto command = new LoginCommandDto(accountName, password);
+    LoginCommand command = new LoginCommand(accountName, password);
 
     when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenThrow(new RuntimeException("Database connection failed"));

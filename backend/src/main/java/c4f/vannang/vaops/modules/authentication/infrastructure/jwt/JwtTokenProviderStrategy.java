@@ -1,27 +1,27 @@
 package c4f.vannang.vaops.modules.authentication.infrastructure.jwt;
 
-import c4f.vannang.vaops.modules.authentication.api.exception.TokenExpiredException;
+import c4f.vannang.vaops.modules.authentication.internal.exception.TokenExpiredException;
+import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-import c4f.vannang.vaops.modules.authentication.internal.service.TokenProviderStrategy;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
-public class JwtTokenService implements TokenProviderStrategy {
+@Component
+class JwtTokenProviderStrategy implements TokenProviderStrategy {
 
   private final AuthProperties authProperties;
   private final SecretKey accessKey;
   private final SecretKey refreshKey;
 
-  public JwtTokenService(AuthProperties authProperties) {
+  public JwtTokenProviderStrategy(AuthProperties authProperties) {
     this.authProperties = authProperties;
     this.accessKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(authProperties.getJwt().getAccessSecret()));
     this.refreshKey = Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(authProperties.getJwt().getRefreshSecret()));
