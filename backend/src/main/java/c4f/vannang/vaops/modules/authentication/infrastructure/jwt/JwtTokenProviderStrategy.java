@@ -1,6 +1,6 @@
 package c4f.vannang.vaops.modules.authentication.infrastructure.jwt;
 
-import c4f.vannang.vaops.modules.authentication.internal.exception.TokenExpiredException;
+import c4f.vannang.vaops.shared.exception.TokenExpiredException;
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;

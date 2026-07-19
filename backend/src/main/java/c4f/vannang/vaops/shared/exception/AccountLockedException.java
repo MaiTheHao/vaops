@@ -1,7 +1,5 @@
-package c4f.vannang.vaops.modules.authentication.internal.exception;
+package c4f.vannang.vaops.shared.exception;
 
-import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
-import c4f.vannang.vaops.shared.exception.ErrorCode;
 import java.util.Map;
 
 public class AccountLockedException extends AbstractPlatformException {

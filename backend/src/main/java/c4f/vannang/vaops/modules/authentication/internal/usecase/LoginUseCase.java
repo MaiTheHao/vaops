@@ -1,7 +1,7 @@
 package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
-import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
-import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
+import c4f.vannang.vaops.shared.exception.AccountLockedException;
+import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;

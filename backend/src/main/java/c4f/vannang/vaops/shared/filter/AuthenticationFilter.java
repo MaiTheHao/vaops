@@ -4,9 +4,12 @@ import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-import jakarta.servlet.http.Cookie;
+import c4f.vannang.vaops.shared.exception.AccountLockedException;
+import c4f.vannang.vaops.shared.exception.TokenExpiredException;
+import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tools.jackson.databind.ObjectMapper;
@@ -23,6 +26,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class AuthenticationFilter extends OncePerRequestFilter {
@@ -34,7 +38,8 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
-    public AuthenticationFilter(TokenProviderFactory tokenServiceFactory, UserDetailsService userDetailsService,
+    public AuthenticationFilter(TokenProviderFactory tokenServiceFactory,
+            UserDetailsService userDetailsService,
             ObjectMapper objectMapper) {
         this.tokenService = tokenServiceFactory.getService(TokenType.JWT);
         this.userDetailsService = userDetailsService;
@@ -42,19 +47,25 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String token = extractToken(request);
 
         if (token != null) {
             try {
-                AccessTokenClaims validation = tokenService.validateAccessToken(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(validation.accountName());
+                AccessTokenClaims claims = tokenService.validateAccessToken(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(claims.accountName());
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
+                        UUID.fromString(userDetails.getUsername()),
+                        claims.accountName());
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                principal, null, userDetails.getAuthorities());
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } catch (Exception e) {
@@ -80,25 +91,34 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
-        
+
         return null;
     }
 
     private void writeErrorResponse(HttpServletResponse response, Exception e) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
 
-        if (e instanceof c4f.vannang.vaops.modules.authentication.internal.exception.TokenExpiredException) {
+        if (e instanceof TokenExpiredException) {
             response.setStatus(401);
-            objectMapper.writeValue(response.getWriter(), Map.of("timestamp", Instant.now().toString(), "status", 401,
-                    "code", "TOKEN_EXPIRED", "message", e.getMessage()));
-        } else if (e instanceof c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException) {
+            objectMapper.writeValue(response.getWriter(), Map.of(
+                    "timestamp", Instant.now().toString(),
+                    "status", 401,
+                    "code", "TOKEN_EXPIRED",
+                    "message", e.getMessage()));
+        } else if (e instanceof AccountLockedException) {
             response.setStatus(423);
-            objectMapper.writeValue(response.getWriter(), Map.of("timestamp", Instant.now().toString(), "status", 423,
-                    "code", "ACCOUNT_LOCKED", "message", e.getMessage()));
+            objectMapper.writeValue(response.getWriter(), Map.of(
+                    "timestamp", Instant.now().toString(),
+                    "status", 423,
+                    "code", "ACCOUNT_LOCKED",
+                    "message", e.getMessage()));
         } else {
             response.setStatus(401);
-            objectMapper.writeValue(response.getWriter(), Map.of("timestamp", Instant.now().toString(), "status", 401,
-                    "code", "AUTHENTICATION_FAILED", "message", "Invalid or expired token"));
+            objectMapper.writeValue(response.getWriter(), Map.of(
+                    "timestamp", Instant.now().toString(),
+                    "status", 401,
+                    "code", "AUTHENTICATION_FAILED",
+                    "message", "Invalid or expired token"));
         }
     }
 }

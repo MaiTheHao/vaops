@@ -1,6 +1,6 @@
-package c4f.vannang.vaops.modules.authentication.internal;
+package c4f.vannang.vaops.shared.security;
 
-import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
+import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
@@ -33,8 +33,14 @@ class UserDetailsServiceImpl implements UserDetailsService {
             throw new AccountLockedException("Account is locked until " + userAuth.lockedUntil());
         }
 
-        return User.builder().username(userAuth.id().toString()).password(userAuth.passwordHash())
-                .authorities(Collections.emptyList()).accountExpired(false).accountLocked(false)
-                .credentialsExpired(false).disabled(!userAuth.active()).build();
+        return User.builder()
+                .username(userAuth.id().toString())
+                .password(userAuth.passwordHash())
+                .authorities(Collections.emptyList())
+                .accountExpired(false)
+                .accountLocked(false)
+                .credentialsExpired(false)
+                .disabled(!userAuth.active())
+                .build();
     }
 }

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.exception.AccountLockedException;
+import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;

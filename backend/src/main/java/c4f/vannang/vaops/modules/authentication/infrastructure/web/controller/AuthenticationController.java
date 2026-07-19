@@ -12,7 +12,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
+import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.LoginUseCase;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.LogoutUseCase;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.RefreshTokenUseCase;
