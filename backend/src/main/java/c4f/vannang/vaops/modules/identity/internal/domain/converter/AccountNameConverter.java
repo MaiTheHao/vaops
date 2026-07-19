@@ -5,7 +5,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class AccountNameConverter implements AttributeConverter<AccountName, String> {
+class AccountNameConverter implements AttributeConverter<AccountName, String> {
 
   @Override
   public String convertToDatabaseColumn(AccountName attribute) {

@@ -2,8 +2,7 @@ package c4f.vannang.vaops.modules.identity.api.dto;
 
 import java.util.UUID;
 
-public record ChangePasswordCommand(
+public record SoftDeleteUserRequest(
     UUID userId,
-    String oldPassword,
-    String newPassword
+    UUID deletedBy
 ) {}

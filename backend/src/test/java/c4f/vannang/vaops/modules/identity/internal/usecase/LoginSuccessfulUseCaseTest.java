@@ -3,7 +3,7 @@ package c4f.vannang.vaops.modules.identity.internal.usecase;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.RecordSuccessfulLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;

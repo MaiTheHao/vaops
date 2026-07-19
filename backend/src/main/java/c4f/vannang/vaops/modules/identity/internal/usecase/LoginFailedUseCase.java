@@ -5,9 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginCommand;
+
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
+import c4f.vannang.vaops.modules.identity.internal.dto.RecordFailedLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;

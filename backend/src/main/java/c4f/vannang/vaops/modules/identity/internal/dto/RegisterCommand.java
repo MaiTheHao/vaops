@@ -1,6 +1,6 @@
-package c4f.vannang.vaops.modules.identity.api.dto;
+package c4f.vannang.vaops.modules.identity.internal.dto;
 
-public record RegisterDto(
+public record RegisterCommand(
     String accountName,
     String rawPassword,
     String displayName,

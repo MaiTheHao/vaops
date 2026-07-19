@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileCommand;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
+import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;

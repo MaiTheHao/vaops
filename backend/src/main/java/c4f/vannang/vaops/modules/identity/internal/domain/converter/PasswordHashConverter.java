@@ -5,7 +5,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class PasswordHashConverter implements AttributeConverter<PasswordHash, String> {
+class PasswordHashConverter implements AttributeConverter<PasswordHash, String> {
 
   @Override
   public String convertToDatabaseColumn(PasswordHash attribute) {

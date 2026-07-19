@@ -1,9 +1,8 @@
 package c4f.vannang.vaops.modules.identity.api.dto;
 
-import java.util.UUID;
-
-public record UpdateProfileCommand(
-    UUID userId,
+public record RegisterRequest(
+    String accountName,
+    String rawPassword,
     String displayName,
     String avatarUrl
 ) {}

@@ -5,7 +5,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class AvatarUrlConverter implements AttributeConverter<AvatarUrl, String> {
+class AvatarUrlConverter implements AttributeConverter<AvatarUrl, String> {
 
   @Override
   public String convertToDatabaseColumn(AvatarUrl attribute) {

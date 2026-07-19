@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.identity.api.exception;
+package c4f.vannang.vaops.modules.identity.internal.exception;
 
 import java.util.Map;
 import c4f.vannang.vaops.shared.exception.AbstractPlatformException;

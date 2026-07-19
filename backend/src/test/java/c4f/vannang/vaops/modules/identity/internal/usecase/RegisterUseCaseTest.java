@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import c4f.vannang.vaops.modules.identity.api.dto.RegisterDto;
+import c4f.vannang.vaops.modules.identity.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
@@ -40,8 +40,8 @@ class RegisterUseCaseTest {
 
   @Test
   void execute_shouldRegisterUserSuccessfully() {
-    RegisterDto dto =
-        new RegisterDto("testuser", "password123", "Test User", "https://example.com/avatar.png");
+    RegisterCommand dto =
+        new RegisterCommand("testuser", "password123", "Test User", "https://example.com/avatar.png");
     when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(false);
     when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
     when(userWriteRepository.save(any(User.class)))
@@ -56,21 +56,21 @@ class RegisterUseCaseTest {
 
   @Test
   void execute_shouldThrowValidationExceptionForShortPassword() {
-    RegisterDto dto = new RegisterDto("testuser", "short", "Test", "avatar");
+    RegisterCommand dto = new RegisterCommand("testuser", "short", "Test", "avatar");
 
     assertThrows(ValidationException.class, () -> RegisterUseCase.execute(dto));
   }
 
   @Test
   void execute_shouldThrowValidationExceptionForBlankAccountName() {
-    RegisterDto dto = new RegisterDto("   ", "password123", "Test", "avatar");
+    RegisterCommand dto = new RegisterCommand("   ", "password123", "Test", "avatar");
 
     assertThrows(ValidationException.class, () -> RegisterUseCase.execute(dto));
   }
 
   @Test
   void execute_shouldThrowValidationExceptionForNullAccountName() {
-    RegisterDto dto = new RegisterDto(null, "password123", "Test", "avatar");
+    RegisterCommand dto = new RegisterCommand(null, "password123", "Test", "avatar");
 
     assertThrows(ValidationException.class, () -> RegisterUseCase.execute(dto));
   }
@@ -78,14 +78,14 @@ class RegisterUseCaseTest {
   @Test
   void execute_shouldThrowValidationExceptionForTooLongAccountName() {
     String longName = "a".repeat(257);
-    RegisterDto dto = new RegisterDto(longName, "password123", "Test", "avatar");
+    RegisterCommand dto = new RegisterCommand(longName, "password123", "Test", "avatar");
 
     assertThrows(ValidationException.class, () -> RegisterUseCase.execute(dto));
   }
 
   @Test
   void execute_shouldThrowResourceAlreadyExistsException() {
-    RegisterDto dto = new RegisterDto("testuser", "password123", "Test", "avatar");
+    RegisterCommand dto = new RegisterCommand("testuser", "password123", "Test", "avatar");
     when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(true);
 
     assertThrows(ResourceAlreadyExistsException.class, () -> RegisterUseCase.execute(dto));

@@ -2,7 +2,8 @@ package c4f.vannang.vaops.modules.identity.api.dto;
 
 import java.util.UUID;
 
-public record ToggleUserStatusCommand(
+public record UpdateProfileRequest(
     UUID userId,
-    boolean active
+    String displayName,
+    String avatarUrl
 ) {}
