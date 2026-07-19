@@ -5,8 +5,6 @@ import { AuthService } from './auth.service';
 import { AuthContextService } from '../../context/auth-context.service';
 import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
 import {
-  LucideCircleAlert,
-  LucideCircleCheck,
   LucideLoader2,
   LucideUser,
   LucideLock,
@@ -21,8 +19,6 @@ import {
   standalone: true,
   imports: [
     FormsModule,
-    LucideCircleAlert,
-    LucideCircleCheck,
     LucideLoader2,
     LucideUser,
     LucideLock,
