@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
-import { AuthContextService } from '../../context/auth-context.service';
+import { IdentityContextService } from '../../context/identity-context.service';
 import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
 
 import { LanguageService } from '../../shared/service/language.service';
@@ -34,7 +34,7 @@ export class AuthComponent {
   readonly inputFactory = inject(InputFactoryService);
   readonly buttonFactory = inject(ButtonFactoryService);
   readonly dialogService = inject(DialogFactoryService);
-  readonly authContext = inject(AuthContextService);
+  readonly authContext = inject(IdentityContextService);
 
   readonly mode = signal<'login' | 'register'>('login');
   readonly accountName = signal('');
@@ -42,7 +42,6 @@ export class AuthComponent {
   readonly displayName = signal('');
   readonly avatarUrl = signal('');
   readonly confirmPassword = signal('');
-  readonly isLoggedIn = this.authContext.isLoggedIn;
   readonly userProfile = this.authContext.userProfile;
 
   readonly accountNameCfg = computed(() => {

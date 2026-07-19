@@ -1,21 +1,17 @@
 import { Injectable, signal } from '@angular/core';
-
 import { UserProfile } from '../type/auth.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthContextService {
-  readonly isLoggedIn = signal<boolean>(false);
+export class IdentityContextService {
   readonly userProfile = signal<UserProfile | null>(null);
 
-  setLogin(user: UserProfile) {
-    this.isLoggedIn.set(true);
+  setProfile(user: UserProfile) {
     this.userProfile.set(user);
   }
 
-  setLogout() {
-    this.isLoggedIn.set(false);
+  clearProfile() {
     this.userProfile.set(null);
   }
 }
