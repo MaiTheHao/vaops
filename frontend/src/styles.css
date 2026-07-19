@@ -1,3 +1,66 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@theme {
+  --color-background: #faf9fb;
+  --color-on-background: #1b1c1e;
+  --color-surface: #faf9fb;
+  --color-primary: #000f22;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #0a2540;
+  --color-on-primary-container: #768dad;
+  --color-secondary: #545f72;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #d5e0f7;
+  --color-on-secondary-container: #586377;
+  --color-on-tertiary: #ffffff;
+  --color-outline: #74777e;
+  --color-outline-variant: #c4c6ce;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f5f3f6;
+  --color-surface-container: #efedf0;
+  --color-surface-container-high: #e9e8ea;
+  --color-surface-container-highest: #e3e2e5;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --font-display-lg: "Outfit", sans-serif;
+  --font-label-technical: "Outfit", sans-serif;
+  --font-body-md: "Outfit", sans-serif;
+  --font-body-lg: "Outfit", sans-serif;
+  --font-display-lg-mobile: "Outfit", sans-serif;
+  --font-headline-md: "Outfit", sans-serif;
+  --font-button: "Outfit", sans-serif;
+
+  --border-radius-default: 0.125rem;
+  --border-radius-lg: 0.25rem;
+  --border-radius-xl: 0.5rem;
+  --border-radius-full: 0.75rem;
+
+  --spacing-base: 8px;
+  --spacing-margin-mobile: 16px;
+  --spacing-margin-desktop: 40px;
+  --spacing-gutter: 24px;
+  --spacing-container-max: 1280px;
+}
+
+.industrial-overlay {
+  background: linear-gradient(rgba(250, 249, 251, 0.85), rgba(250, 249, 251, 0.92));
+}
+
+.input-focus-ring:focus {
+  outline: none;
+  border-color: #000f22;
+  box-shadow: 0 0 0 2px rgba(0, 15, 34, 0.1);
+}
+
+/* Custom dialog backdrop layout */
+.custom-dialog-backdrop {
+  background-color: rgba(27, 28, 30, 0.45);
+  backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
