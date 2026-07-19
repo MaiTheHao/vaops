@@ -1,0 +1,244 @@
+<div class="bg-background text-on-background font-body-md min-h-screen w-full flex items-center justify-center relative overflow-hidden p-4">
+  <div class="absolute inset-0 z-0">
+    <div class="w-full h-full bg-cover bg-center filter blur-sm scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRbahh9fhvpfDATg979j1ZhVeflXzBOYTuukWnDJ8XpEHth-aJJTJ6RhIuyS6NqAsI77FpEa5No2Wg-kNosVej875oSMHrTa0aLJ8mBhd4eRlVwMXY00uXWrhD7BIfJrpqa780PfaX5zZ4Yck9dqjaJSIuS-HsqfjSecoAQXCv4F49k1jdQzLypk8cnQ8qJuABfflCXRjN9eMfIPjWuZu51_7eZ9nA7eS8eKndZncFEj5Q2DZKku5cJ8i7D7Il0ebd85YR6plVmw')"></div>
+    <div class="absolute inset-0 industrial-overlay z-10"></div>
+  </div>
+
+  <main class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0" [class.max-w-md]="mode() === 'login'" [class.sm:max-w-2xl]="mode() === 'register'">
+    <div class="bg-surface-container-lowest border border-outline-variant p-8 md:p-10 shadow-sm relative">
+      <!-- Language Selector -->
+      <div class="absolute top-4 right-4 flex gap-2 z-30">
+        <button 
+          (click)="switchLanguage('vi')" 
+          [class.font-bold]="currentLang() === 'vi'" 
+          [class.text-primary]="currentLang() === 'vi'" 
+          [class.text-outline]="currentLang() !== 'vi'"
+          class="text-xs uppercase hover:underline cursor-pointer bg-transparent border-none p-0"
+          type="button"
+        >
+          VI
+        </button>
+        <span class="text-outline text-xs">|</span>
+        <button 
+          (click)="switchLanguage('en')" 
+          [class.font-bold]="currentLang() === 'en'" 
+          [class.text-primary]="currentLang() === 'en'" 
+          [class.text-outline]="currentLang() !== 'en'"
+          class="text-xs uppercase hover:underline cursor-pointer bg-transparent border-none p-0"
+          type="button"
+        >
+          EN
+        </button>
+      </div>
+
+      @if (isLoggedIn()) {
+        <div class="flex flex-col items-center mb-6">
+          <div class="relative group mb-6">
+            @if (userProfile()?.avatarUrl) {
+              <img [src]="userProfile()!.avatarUrl" [alt]="'auth.avatar.alt' | translate" class="w-24 h-24 rounded-full border border-outline-variant object-cover shadow-sm transition-transform duration-300" />
+            } @else {
+              <div class="w-24 h-24 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-3xl font-bold shadow-sm">
+                {{ userProfile()?.displayName?.charAt(0)?.toUpperCase() || 'U' }}
+              </div>
+            }
+          </div>
+          <h1 class="font-headline-md text-headline-md text-primary text-center tracking-tight">{{ 'auth.greeting' | translate:{ name: userProfile()?.displayName } }}</h1>
+          <p class="font-label-technical text-label-technical text-on-secondary-container mt-2">&#64;{{ userProfile()?.accountName }}</p>
+        </div>
+
+        <div class="flex flex-col gap-6">
+          <p class="font-body-md text-on-secondary-container text-sm leading-relaxed text-center">
+            {{ 'auth.loggedInSuccess' | translate }}
+          </p>
+          <button 
+            (click)="logout()" 
+            class="w-full bg-primary-container text-white font-button text-button py-4 uppercase tracking-widest hover:bg-primary transition-all active:scale-[0.98] border border-transparent cursor-pointer"
+          >
+            {{ 'auth.logoutBtn' | translate }}
+          </button>
+        </div>
+      } @else {
+        <div class="flex flex-col items-center mb-10">
+          <img [alt]="'auth.logo.alt' | translate" class="h-28 w-auto mb-4" src="/logo/logo-full--blue-blue-orange.svg"/>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #authForm="ngForm" class="flex flex-col gap-6">
+          <div [class]="mode() === 'register' ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4' : 'flex flex-col gap-6'">
+            <div class="flex flex-col gap-2">
+              <label class="font-label-technical text-label-technical text-primary uppercase" for="accountName">{{ 'auth.label.accountName' | translate }} <span class="text-error">*</span></label>
+              <div class="relative">
+                <svg lucideUser class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
+                <input 
+                  class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
+                  id="accountName" 
+                  name="accountName" 
+                  [ngModel]="accountName()"
+                  (ngModelChange)="accountName.set($event)"
+                  [placeholder]="'auth.placeholder.accountName' | translate" 
+                  required
+                  [disabled]="authService.loading()"
+                  type="text"
+                />
+              </div>
+            </div>
+
+            @if (mode() === 'register') {
+              <div class="flex flex-col gap-2">
+                <label class="font-label-technical text-label-technical text-primary uppercase" for="displayName">{{ 'auth.label.displayName' | translate }} <span class="text-error">*</span></label>
+                <div class="relative">
+                  <svg lucideIdCard class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
+                  <input 
+                    class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
+                    id="displayName" 
+                    name="displayName" 
+                    [ngModel]="displayName()"
+                    (ngModelChange)="displayName.set($event)"
+                    [placeholder]="'auth.placeholder.displayName' | translate" 
+                    required
+                    [disabled]="authService.loading()"
+                    type="text"
+                  />
+                </div>
+              </div>
+            }
+
+            <div class="flex flex-col gap-2">
+              <div class="flex justify-between items-center">
+                <label class="font-label-technical text-label-technical text-primary uppercase" for="password">{{ 'auth.label.password' | translate }} <span class="text-error">*</span></label>
+              </div>
+              <div class="relative">
+                <svg lucideLock class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
+                <input 
+                  class="w-full pl-11 pr-12 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
+                  id="password" 
+                  name="password" 
+                  [ngModel]="password()"
+                  (ngModelChange)="password.set($event)"
+                  placeholder="••••••••" 
+                  required
+                  [disabled]="authService.loading()"
+                  [type]="showPassword() ? 'text' : 'password'"
+                />
+                <button 
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors cursor-pointer flex items-center justify-center" 
+                  type="button"
+                  (click)="showPassword.set(!showPassword())"
+                >
+                  @if (showPassword()) {
+                    <svg lucideEyeOff class="size-5"></svg>
+                  } @else {
+                    <svg lucideEye class="size-5"></svg>
+                  }
+                </button>
+              </div>
+            </div>
+
+            @if (mode() === 'register') {
+              <div class="flex flex-col gap-2">
+                <label class="font-label-technical text-label-technical text-primary uppercase" for="confirmPassword">{{ 'auth.label.confirmPassword' | translate }} <span class="text-error">*</span></label>
+                <div class="relative">
+                  <svg lucideLock class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
+                  <input 
+                    class="w-full pl-11 pr-12 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
+                    id="confirmPassword" 
+                    name="confirmPassword" 
+                    [ngModel]="confirmPassword()"
+                    (ngModelChange)="confirmPassword.set($event)"
+                    placeholder="••••••••" 
+                    required
+                    [disabled]="authService.loading()"
+                    [type]="showConfirmPassword() ? 'text' : 'password'"
+                  />
+                  <button 
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors cursor-pointer flex items-center justify-center" 
+                    type="button"
+                    (click)="showConfirmPassword.set(!showConfirmPassword())"
+                  >
+                    @if (showConfirmPassword()) {
+                      <svg lucideEyeOff class="size-5"></svg>
+                    } @else {
+                      <svg lucideEye class="size-5"></svg>
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+
+            @if (mode() === 'register') {
+              <div class="flex flex-col gap-2 col-span-1 sm:col-span-2">
+                <label class="font-label-technical text-label-technical text-primary uppercase" for="avatarUrl">{{ 'auth.label.avatarUrl' | translate }}</label>
+                <div class="relative">
+                  <svg lucideLink class="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-outline"></svg>
+                  <input 
+                    class="w-full pl-11 pr-4 py-3 bg-surface border border-outline-variant rounded-none font-body-md text-on-surface input-focus-ring transition-all disabled:opacity-50" 
+                    id="avatarUrl" 
+                    name="avatarUrl" 
+                    [ngModel]="avatarUrl()"
+                    (ngModelChange)="avatarUrl.set($event)"
+                    placeholder="https://example.com/avatar.png"
+                    [disabled]="authService.loading()"
+                    type="url"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (mode() === 'login') {
+            <div class="flex items-center justify-between pt-1">
+              <label class="flex items-center space-x-2 cursor-pointer group">
+                <input class="w-4 h-4 rounded-none border-outline-variant text-primary focus:ring-primary cursor-pointer" type="checkbox"/>
+                <span class="font-body-md text-on-secondary-container text-sm group-hover:text-primary transition-colors">{{ 'auth.label.rememberLogin' | translate }}</span>
+              </label>
+              <a class="text-sm font-button text-on-primary-container hover:text-primary transition-colors underline decoration-outline-variant underline-offset-4" href="#">{{ 'auth.link.forgotPassword' | translate }}</a>
+            </div>
+          }
+
+          <button 
+            class="w-full bg-primary-container text-white font-button text-button py-4 uppercase tracking-widest hover:bg-primary transition-all active:scale-[0.98] border border-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
+            type="submit"
+            [disabled]="authService.loading()"
+          >
+            @if (authService.loading()) {
+              <svg lucideLoader2 class="animate-spin size-5 shrink-0"></svg>
+              <span>{{ 'auth.btn.loading' | translate }}</span>
+            } @else {
+              @if (mode() === 'login') {
+                <span>{{ 'auth.btn.loginSubmit' | translate }}</span>
+              } @else {
+                <span>{{ 'auth.btn.registerSubmit' | translate }}</span>
+              }
+            }
+          </button>
+        </form>
+
+        <div class="mt-10 pt-8 border-t border-outline-variant text-center">
+          <p class="font-body-md text-on-secondary-container text-sm">
+            @if (mode() === 'login') {
+              <span>{{ 'auth.footer.noAccountText' | translate }}</span>
+            } @else {
+              <span>{{ 'auth.footer.hasAccountText' | translate }}</span>
+            }
+            <button 
+              (click)="toggleMode()" 
+              class="font-button text-primary font-bold ml-1 hover:underline underline-offset-4 bg-transparent border-none cursor-pointer p-0" 
+              [disabled]="authService.loading()"
+              type="button"
+            >
+              @if (mode() === 'login') {
+                <span>{{ 'auth.footer.gotoRegister' | translate }}</span>
+              } @else {
+                <span>{{ 'auth.footer.gotoLogin' | translate }}</span>
+              }
+            </button>
+          </p>
+        </div>
+      }
+    </div>
+
+    <div class="mt-8 flex flex-col items-center space-y-2 opacity-60">
+      <p class="font-label-technical text-[10px] sm:text-xs text-on-secondary-container uppercase">{{ 'auth.footer.companyCopyright' | translate }}</p>
+      <span class="font-label-technical text-[10px] text-outline">{{ 'auth.footer.taxId' | translate }}</span>
+    </div>
+  </main>
+</div>
