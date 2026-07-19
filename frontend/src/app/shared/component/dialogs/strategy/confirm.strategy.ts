@@ -11,7 +11,7 @@ export class ConfirmStrategy implements DialogStrategy<boolean> {
     extra?: { confirmText?: string; cancelText?: string }
   ): Observable<boolean> {
     return wrapper.open<boolean>(GenericDialogComponent, {
-      width: '440px',
+      width: '27.5rem',
       data: { title, message, type: 'confirm', ...extra }
     }).pipe(map(result => !!result));
   }

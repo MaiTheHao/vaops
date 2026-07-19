@@ -6,7 +6,7 @@ import { GenericDialogComponent } from '../component/generic-dialog.component';
 export class InfoStrategy implements DialogStrategy<void> {
   execute(wrapper: CdkDialogWrapper, title: string, message: string): Observable<void> {
     return wrapper.open<void>(GenericDialogComponent, {
-      width: '440px',
+      width: '27.5rem',
       data: { title, message, type: 'info' }
     }).pipe(map(() => undefined as void));
   }

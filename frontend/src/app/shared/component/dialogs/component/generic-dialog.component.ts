@@ -16,7 +16,7 @@ export interface DialogDataPayload {
   selector: 'app-generic-dialog',
   imports: [NgClass, LucideCircleAlert, LucideCircleHelp, LucideInfo, LucideX],
   template: `
-    <div class="bg-surface-container-lowest border border-outline-variant p-6 shadow-sm max-w-[440px] w-full font-body-md text-on-background">
+    <div class="bg-surface-container-lowest border border-outline-variant p-6 shadow-sm max-w-[27.5rem] w-full font-body-md text-on-background">
       <!-- Header -->
       <div class="flex justify-between items-center pb-4 border-b border-outline-variant mb-4">
         <div class="flex items-center gap-2">

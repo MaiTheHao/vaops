@@ -11,7 +11,7 @@ export class CdkDialogWrapper {
     config: { data: any; width?: string; disableClose?: boolean }
   ): Observable<R | undefined> {
     const dialogRef = this.cdkDialog.open<R>(component, {
-      width: config.width || '440px',
+      width: config.width || '27.5rem',
       disableClose: config.disableClose ?? true,
       data: config.data,
       backdropClass: 'custom-dialog-backdrop'
