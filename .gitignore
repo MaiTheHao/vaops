@@ -60,9 +60,8 @@ buildNumber.properties
 .npm/
 
 # Docker & Environment files
-**/.env
-**/.env.local
-**/.env.*.local
+**/.env*
+!**/.env*example
 **/docker/db_data/
 **/docker/postgres_data/
 **/docker/mysql_data/

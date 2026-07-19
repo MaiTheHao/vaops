@@ -19,3 +19,6 @@ logging:
 vaops:
   app:
     is-prod: true
+  cors:
+    allowed-origins:
+      - "${CORS_ALLOWED_ORIGINS:https://yourproductiondomain01.com,https://yourproductiondomain02.com}"
