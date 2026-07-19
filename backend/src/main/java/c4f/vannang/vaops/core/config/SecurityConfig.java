@@ -25,7 +25,7 @@ public class SecurityConfig {
         .httpBasic((abstractHttpConfig) -> abstractHttpConfig.disable())
         .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) ->
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
-        .authorizeHttpRequests(auth -> auth.requestMatchers("/hello", "/v1/hello")
+        .authorizeHttpRequests(auth -> auth.requestMatchers("/hello", "/api/v1/hello")
             .permitAll()
             .requestMatchers("/api/v1/auth/login")
             .permitAll()
