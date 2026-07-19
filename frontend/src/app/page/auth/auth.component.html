@@ -1,11 +1,11 @@
-<div class="bg-background text-on-background font-body-md min-h-screen w-full flex items-center justify-center relative overflow-hidden p-4">
-  <div class="absolute inset-0 z-0">
+<div class="bg-background text-on-background font-body-md min-h-screen w-full flex items-center justify-center relative p-0 sm:p-6 md:p-8">
+  <div class="fixed inset-0 z-0">
     <div class="w-full h-full bg-cover bg-center filter blur-sm scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRbahh9fhvpfDATg979j1ZhVeflXzBOYTuukWnDJ8XpEHth-aJJTJ6RhIuyS6NqAsI77FpEa5No2Wg-kNosVej875oSMHrTa0aLJ8mBhd4eRlVwMXY00uXWrhD7BIfJrpqa780PfaX5zZ4Yck9dqjaJSIuS-HsqfjSecoAQXCv4F49k1jdQzLypk8cnQ8qJuABfflCXRjN9eMfIPjWuZu51_7eZ9nA7eS8eKndZncFEj5Q2DZKku5cJ8i7D7Il0ebd85YR6plVmw')"></div>
     <div class="absolute inset-0 industrial-overlay z-10"></div>
   </div>
 
-  <main class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0" [class.max-w-md]="mode() === 'login'" [class.sm:max-w-2xl]="mode() === 'register'">
-    <div class="bg-surface-container-lowest border border-outline-variant p-8 md:p-10 shadow-sm relative">
+  <main class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0 max-w-md" [class.sm:max-w-2xl]="mode() === 'register'">
+    <div class="bg-surface-container-lowest border border-outline-variant p-6 sm:p-8 md:p-10 shadow-sm relative">
       <!-- Language Selector -->
       <div class="absolute top-4 right-4 flex gap-2 z-30">
         <button 
@@ -58,8 +58,8 @@
           </button>
         </div>
       } @else {
-        <div class="flex flex-col items-center mb-10">
-          <img [alt]="'auth.logo.alt' | translate" class="h-28 w-auto mb-4" src="/logo/logo-full--blue-blue-orange.svg"/>
+        <div class="flex flex-col items-center mb-6 sm:mb-10">
+          <img [alt]="'auth.logo.alt' | translate" class="h-20 sm:h-28 w-auto mb-4" src="/logo/logo-full--blue-blue-orange.svg"/>
         </div>
 
         <form (ngSubmit)="onSubmit()" #authForm="ngForm" class="flex flex-col gap-6">
@@ -185,7 +185,7 @@
           </div>
 
           @if (mode() === 'login') {
-            <div class="flex items-center justify-between pt-1">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
               <label class="flex items-center space-x-2 cursor-pointer group">
                 <input class="w-4 h-4 rounded-none border-outline-variant text-primary focus:ring-primary cursor-pointer" type="checkbox"/>
                 <span class="font-body-md text-on-secondary-container text-sm group-hover:text-primary transition-colors">{{ 'auth.label.rememberLogin' | translate }}</span>
@@ -212,8 +212,8 @@
           </button>
         </form>
 
-        <div class="mt-10 pt-8 border-t border-outline-variant text-center">
-          <p class="font-body-md text-on-secondary-container text-sm">
+        <div class="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-outline-variant text-center">
+          <p class="font-body-md text-on-secondary-container text-sm flex flex-col sm:flex-row items-center justify-center gap-1">
             @if (mode() === 'login') {
               <span>{{ 'auth.footer.noAccountText' | translate }}</span>
             } @else {
@@ -221,7 +221,7 @@
             }
             <button 
               (click)="toggleMode()" 
-              class="font-button text-primary font-bold ml-1 hover:underline underline-offset-4 bg-transparent border-none cursor-pointer p-0" 
+              class="font-button text-primary font-bold hover:underline underline-offset-4 bg-transparent border-none cursor-pointer p-0" 
               [disabled]="authService.loading()"
               type="button"
             >

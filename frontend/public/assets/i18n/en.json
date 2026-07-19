@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "avatar": {
+      "alt": "Avatar"
+    },
+    "greeting": "Hello, {{ name }}!",
+    "loggedInSuccess": "You have successfully logged into the system. Access keys are securely stored within the browser session.",
+    "logoutBtn": "Log out",
+    "logo": {
+      "alt": "Van Nang Mechanical Logo"
+    },
+    "label": {
+      "accountName": "Username",
+      "displayName": "Display name",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "avatarUrl": "Avatar URL",
+      "rememberLogin": "Remember me"
+    },
+    "placeholder": {
+      "accountName": "Enter your username",
+      "displayName": "Enter your display name"
+    },
+    "link": {
+      "forgotPassword": "Forgot password?"
+    },
+    "btn": {
+      "loading": "Processing...",
+      "loginSubmit": "Log in",
+      "registerSubmit": "Register account"
+    },
+    "footer": {
+      "noAccountText": "Don't have an account?",
+      "hasAccountText": "Already have an account?",
+      "gotoRegister": "Register now",
+      "gotoLogin": "Log in now",
+      "companyCopyright": "© 2026 VAN NANG MECHANICAL CO., LTD",
+      "taxId": "Tax Code: 3703143102"
+    }
+  }
+}

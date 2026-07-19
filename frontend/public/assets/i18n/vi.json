@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "avatar": {
+      "alt": "Avatar"
+    },
+    "greeting": "Xin chào, {{ name }}!",
+    "loggedInSuccess": "Bạn đã đăng nhập thành công vào hệ thống. Các khóa truy cập được bảo mật an toàn trong phiên làm việc của trình duyệt.",
+    "logoutBtn": "Đăng xuất hệ thống",
+    "logo": {
+      "alt": "Cơ Khí Vạn Năng Logo"
+    },
+    "label": {
+      "accountName": "Tài khoản",
+      "displayName": "Tên hiển thị",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "avatarUrl": "Đường dẫn ảnh đại diện",
+      "rememberLogin": "Ghi nhớ đăng nhập"
+    },
+    "placeholder": {
+      "accountName": "Nhập tài khoản của bạn",
+      "displayName": "Nhập tên hiển thị của bạn"
+    },
+    "link": {
+      "forgotPassword": "Quên mật khẩu?"
+    },
+    "btn": {
+      "loading": "Đang xử lý...",
+      "loginSubmit": "Đăng nhập hệ thống",
+      "registerSubmit": "Đăng ký tài khoản"
+    },
+    "footer": {
+      "noAccountText": "Chưa có tài khoản truy cập?",
+      "hasAccountText": "Đã có tài khoản truy cập?",
+      "gotoRegister": "Đăng ký ngay",
+      "gotoLogin": "Đăng nhập ngay",
+      "companyCopyright": "© 2026 CÔNG TY TNHH CƠ KHÍ VẠN NĂNG",
+      "taxId": "MST: 3703143102"
+    }
+  }
+}

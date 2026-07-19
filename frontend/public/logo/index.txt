@@ -1,0 +1,24 @@
+# Logo Naming Pattern & Specification
+# Used for automated indexing and selection by LLMs.
+
+# Filename Format:
+# logo-{type}--{color_spec}.svg
+
+# 1. TYPES
+# - full: Icon + Text (Dimensions: 559x317)
+# - mini: Icon only (Dimensions: 331x317, square aspect ratio)
+
+# 2. COLOR SPECIFICATION
+# The color spec is dash-separated: {color1}[-{color2}[-{color3}]]
+#
+# - Single color (e.g., --white):
+#   All components are of the specified color.
+#
+# - Two colors (e.g., --blue-white):
+#   - color1: Main icon color
+#   - color2: Main text color
+#
+# - Three colors (e.g., --blue-white-orange):
+#   - color1: Main icon color
+#   - color2: Main text color
+#   - color3: Sub-text/accent color
