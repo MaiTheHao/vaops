@@ -27,12 +27,12 @@ All files will be created under `frontend/src/app/shared/component/dialogs/`:
 frontend/src/app/shared/component/dialogs/
 ├── core/
 │   └── cdk-dialog.wrapper.ts         # Wrapper hiding CDK dialog package
-├── strategies/
+├── strategy/
 │   ├── dialog.strategy.ts            # Strategy Interface
 │   ├── confirm.strategy.ts           # Confirm Strategy
 │   ├── info.strategy.ts              # Info Strategy
 │   └── error.strategy.ts             # Error Strategy
-├── components/
+├── component/
 │   └── generic-dialog.component.ts   # Standalone UI Component with Tailwind CSS v4
 └── dialog-factory.service.ts         # Central Factory Service
 ```
@@ -43,7 +43,7 @@ frontend/src/app/shared/component/dialogs/
 * Wraps the opening of `@angular/cdk/dialog` Dialog ref.
 * Configures default modal options (backdrop, dimensions, ESC/Backdrop close behavior).
 
-#### [NEW] [dialog.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategies/dialog.strategy.ts)
+#### [NEW] [dialog.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategy/dialog.strategy.ts)
 * Common interface:
   ```typescript
   import { Observable } from 'rxjs';
@@ -54,16 +54,16 @@ frontend/src/app/shared/component/dialogs/
   }
   ```
 
-#### [NEW] [confirm.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategies/confirm.strategy.ts)
+#### [NEW] [confirm.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategy/confirm.strategy.ts)
 * Handles confirmation dialog setup. Maps dialog closed stream to `boolean`.
 
-#### [NEW] [info.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategies/info.strategy.ts)
+#### [NEW] [info.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategy/info.strategy.ts)
 * Handles standard announcements/information alerts. Maps stream to `void`.
 
-#### [NEW] [error.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategies/error.strategy.ts)
+#### [NEW] [error.strategy.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/strategy/error.strategy.ts)
 * Handles warning/API error popups. Maps stream to `void`.
 
-#### [NEW] [generic-dialog.component.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/components/generic-dialog.component.ts)
+#### [NEW] [generic-dialog.component.ts](file:///home/maithehao/Workspace/projects/vaops/frontend/src/app/shared/component/dialogs/component/generic-dialog.component.ts)
 * A standalone UI component displaying the dialog modal.
 * Layout: Styled container, header title, type icon, scrollable body description, and context-dependent buttons.
 * Integrates `lucide-angular` icons for visual indication.
