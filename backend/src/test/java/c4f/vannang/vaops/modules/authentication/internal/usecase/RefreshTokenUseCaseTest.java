@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.exception.UnauthenticatedException;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
@@ -19,6 +18,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.infrastructure.crypto.Sha256DeterministicHashStrategy;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
