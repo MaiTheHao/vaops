@@ -1,9 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
 import { IdentityContextService } from '../../context/identity-context.service';
 import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
+import { EventManager } from '../../shared/service/event-manager.service';
+import { AppEventKey } from '../../shared/const/app-event.const';
+import { UserProfile } from '../../type/profile.model';
+import { Subscription } from 'rxjs';
 
 import { LanguageService } from '../../shared/service/language.service';
 import { InputComponent } from '../../shared/component/input/input.component';
@@ -28,13 +32,14 @@ import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angula
   templateUrl: './auth.component.html',
   providers: [AuthService],
 })
-export class AuthComponent {
+export class AuthComponent implements OnInit, OnDestroy {
   readonly authService = inject(AuthService);
   readonly langService = inject(LanguageService);
   readonly inputFactory = inject(InputFactoryService);
   readonly buttonFactory = inject(ButtonFactoryService);
   readonly dialogService = inject(DialogFactoryService);
   readonly authContext = inject(IdentityContextService);
+  private readonly eventManager = inject(EventManager);
 
   readonly mode = signal<'login' | 'register'>('login');
   readonly accountName = signal('');
@@ -43,6 +48,20 @@ export class AuthComponent {
   readonly avatarUrl = signal('');
   readonly confirmPassword = signal('');
   readonly userProfile = this.authContext.userProfile;
+  readonly lastSyncedTime = signal<string | null>(null);
+
+  private sub?: Subscription;
+
+  ngOnInit() {
+    this.sub = this.eventManager.listen<UserProfile>(AppEventKey.PROFILE_SYNCED).subscribe(() => {
+      const now = new Date().toLocaleTimeString();
+      this.lastSyncedTime.set(now);
+    });
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
 
   readonly accountNameCfg = computed(() => {
     this.langService.currentLang();

@@ -1,17 +1,16 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthApiService } from '../../api/auth.api.service';
-import { IdentityContextService } from '../../context/identity-context.service';
 import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
+import { EventManager } from '../../shared/service/event-manager.service';
+import { AppEventKey } from '../../shared/const/app-event.const';
 
 @Injectable()
 export class AuthService {
   readonly loading = signal(false);
   private readonly dialogService = inject(DialogFactoryService);
+  private readonly eventManager = inject(EventManager);
 
-  constructor(
-    private readonly authApi: AuthApiService,
-    private readonly authContext: IdentityContextService
-  ) {}
+  constructor(private readonly authApi: AuthApiService) {}
 
   login(accountName: string, password: string): void {
     if (!accountName) {
@@ -27,10 +26,7 @@ export class AuthService {
     this.authApi.login({ accountName, password }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.authContext.setProfile({
-          accountName,
-          displayName: accountName
-        });
+        this.eventManager.publish(AppEventKey.LOGIN_SUCCESS);
         this.dialogService.open('info', 'Thông báo', 'Đăng nhập thành công!').subscribe();
       },
       error: (err) => {
@@ -79,12 +75,12 @@ export class AuthService {
     this.authApi.logout().subscribe({
       next: () => {
         this.loading.set(false);
-        this.authContext.clearProfile();
+        this.eventManager.publish(AppEventKey.LOGOUT);
         this.dialogService.open('info', 'Thông báo', 'Đăng xuất thành công.').subscribe();
       },
       error: () => {
         this.loading.set(false);
-        this.authContext.clearProfile();
+        this.eventManager.publish(AppEventKey.LOGOUT);
         this.dialogService.open('info', 'Thông báo', 'Đăng xuất thành công.').subscribe();
       }
     });

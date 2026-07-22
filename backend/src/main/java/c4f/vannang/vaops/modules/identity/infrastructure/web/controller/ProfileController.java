@@ -2,7 +2,7 @@ package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
-import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.UpdateProfileWebRequest;
+import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
@@ -37,8 +37,8 @@ public class ProfileController {
     }
 
     @PutMapping
-    public ResponseEntity<ProfileWebResponse> updateProfile(
-            @Valid @RequestBody UpdateProfileWebRequest request,
+    public ResponseEntity<ProfileWebResponse> putUpdateProfile(
+            @Valid @RequestBody PutUpdateProfileWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
         User user = updateProfileUseCase.execute(
             new UpdateProfileCommand(principal.userId(), request.displayName(), request.avatarUrl()));
