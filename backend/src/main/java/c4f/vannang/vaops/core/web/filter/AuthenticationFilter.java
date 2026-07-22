@@ -1,5 +1,6 @@
 package c4f.vannang.vaops.core.web.filter;
 
+import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
 import c4f.vannang.vaops.shared.security.UserAuthenticationToken;
@@ -45,7 +46,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
       try {
         AccessTokenClaims claims = accessTokenSpec.validateAccessToken(token);
 
-        identityModuleApi.checkAvailableUser(claims.userId());
+        identityModuleApi.checkAvailableUser(new CheckAvailableUserQuery(claims.userId()));
 
         AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
             claims.userId(), claims.accountName());
