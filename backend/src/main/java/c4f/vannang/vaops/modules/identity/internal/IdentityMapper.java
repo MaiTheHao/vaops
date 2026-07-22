@@ -1,6 +1,7 @@
 package c4f.vannang.vaops.modules.identity.internal;
 
 import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByAccountNameQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
@@ -11,6 +12,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.SoftDeleteUserRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.ToggleUserStatusRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
 import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindForAuthCommand;
@@ -32,6 +34,8 @@ public interface IdentityMapper {
   FindByAccountNameCommand toInternal(FindByAccountNameQuery query);
 
   FindForAuthCommand toInternal(FindForAuthQuery query);
+
+  CheckAvailableUserCommand toInternal(CheckAvailableUserQuery query);
 
   RecordFailedLoginCommand toInternal(RecordFailedLoginRequest command);
 

@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByAccountNameQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
@@ -19,6 +20,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.mapper.UserDtoMapper;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindForAuthCommand;
@@ -29,6 +31,7 @@ import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.ToggleUserStatusCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
 import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.CheckAvailableUserUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByAccountNameUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByIdUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserForAuthUseCase;
@@ -54,6 +57,7 @@ class IdentityModuleApiImpl implements IdentityModuleApi {
   private final FindUserByIdUseCase findUserByIdUseCase;
   private final FindUserByAccountNameUseCase findUserByAccountNameUseCase;
   private final FindUserForAuthUseCase findUserForAuthUseCase;
+  private final CheckAvailableUserUseCase checkAvailableUserUseCase;
   private final UserDtoMapper userDtoMapper;
   private final IdentityMapper identityMapper;
 
@@ -62,6 +66,12 @@ class IdentityModuleApiImpl implements IdentityModuleApi {
     FindForAuthCommand internalQuery = identityMapper.toInternal(query);
     return findUserForAuthUseCase.execute(internalQuery)
         .map(userDtoMapper::toAuthDto);
+  }
+
+  @Override
+  public void checkAvailableUser(CheckAvailableUserQuery query) {
+    CheckAvailableUserCommand internalQuery = identityMapper.toInternal(query);
+    checkAvailableUserUseCase.execute(internalQuery);
   }
 
   @Override

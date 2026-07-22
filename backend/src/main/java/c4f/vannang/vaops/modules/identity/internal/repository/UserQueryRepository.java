@@ -10,6 +10,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserQueryRepository extends Repository<User, UUID> {
 
+  @Query("SELECT u FROM User u WHERE u.id = :id")
+  Optional<User> findById(@Param("id") UUID id);
+
   @Query("SELECT u FROM User u WHERE u.id = :id AND u.deletedAt IS NULL")
   Optional<User> findActiveById(@Param("id") UUID id);
 

@@ -1,6 +1,8 @@
 package c4f.vannang.vaops.core.web.filter;
 
+import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
+import c4f.vannang.vaops.shared.security.UserAuthenticationToken;
 import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
 import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
 import jakarta.servlet.FilterChain;
@@ -9,13 +11,10 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.UUID;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -33,7 +32,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
   private final HandlerExceptionResolver handlerExceptionResolver;
 
   private final AccessTokenSpec accessTokenSpec;
-  private final UserDetailsService userDetailsService;
+  private final IdentityModuleApi identityModuleApi;
 
   @Override
   protected void doFilterInternal(
@@ -45,13 +44,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     if (token != null) {
       try {
         AccessTokenClaims claims = accessTokenSpec.validateAccessToken(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(claims.accountName());
+
+        identityModuleApi.checkAvailableUser(claims.userId());
 
         AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
-            UUID.fromString(userDetails.getUsername()), claims.accountName());
+            claims.userId(), claims.accountName());
 
-        UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(principal, null, userDetails.getAuthorities());
+        UserAuthenticationToken authentication =
+            new UserAuthenticationToken(principal, Collections.emptyList());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
