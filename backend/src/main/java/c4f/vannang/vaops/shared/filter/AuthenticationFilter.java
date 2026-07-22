@@ -1,12 +1,10 @@
 package c4f.vannang.vaops.shared.filter;
 
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
-import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
-import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.TokenExpiredException;
 import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
+import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -34,14 +32,14 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private final TokenProviderStrategy tokenService;
+    private final AccessTokenSpec accessTokenSpec;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
 
-    public AuthenticationFilter(TokenProviderFactory tokenServiceFactory,
+    public AuthenticationFilter(AccessTokenSpec accessTokenSpec,
             UserDetailsService userDetailsService,
             ObjectMapper objectMapper) {
-        this.tokenService = tokenServiceFactory.getService(TokenType.JWT);
+        this.accessTokenSpec = accessTokenSpec;
         this.userDetailsService = userDetailsService;
         this.objectMapper = objectMapper;
     }
@@ -54,7 +52,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
         if (token != null) {
             try {
-                AccessTokenClaims claims = tokenService.validateAccessToken(token);
+                AccessTokenClaims claims = accessTokenSpec.validateAccessToken(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(claims.accountName());
 
                 AuthenticatedPrincipal principal = new AuthenticatedPrincipal(

@@ -9,10 +9,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
-import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
@@ -22,6 +19,10 @@ import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.infrastructure.crypto.Sha256DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
+import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
+import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -44,10 +45,10 @@ class LoginUseCaseTest {
   private IdentityModuleApi identityModuleApi;
 
   @Mock
-  private TokenProviderFactory tokenProviderFactory;
+  private AccessTokenSpec accessTokenSpec;
 
   @Mock
-  private TokenProviderStrategy tokenProviderStrategy;
+  private RefreshTokenSpec refreshTokenSpec;
 
   @Mock
   private AuthProperties authProperties;
@@ -75,7 +76,8 @@ class LoginUseCaseTest {
     loginUseCase = new LoginUseCase(
         passwordEncoder,
         identityModuleApi,
-        tokenProviderFactory,
+        accessTokenSpec,
+        refreshTokenSpec,
         authProperties,
         refreshTokenWriteRepository,
         deterministicHashStrategyFactory);
@@ -90,9 +92,8 @@ class LoginUseCaseTest {
         .thenReturn(Optional.of(userAuth));
 
     when(passwordEncoder.matches(password, passwordHash)).thenReturn(true);
-    when(tokenProviderFactory.getService(TokenType.JWT)).thenReturn(tokenProviderStrategy);
-    when(tokenProviderStrategy.createAccessToken(any())).thenReturn("mock-access-token");
-    when(tokenProviderStrategy.createRefreshToken(any())).thenReturn("mock-refresh-token");
+    when(accessTokenSpec.generate(any(AccessTokenClaims.class))).thenReturn("mock-access-token");
+    when(refreshTokenSpec.generate(any(RefreshTokenClaims.class))).thenReturn("mock-refresh-token");
     when(authProperties.getJwt()).thenReturn(jwtProperties);
     when(jwtProperties.getRefreshExpirationMs()).thenReturn(604800000L);
 

@@ -8,18 +8,18 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
-import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
-import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.infrastructure.crypto.Sha256DeterministicHashStrategy;
+import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
+import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
+import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -43,10 +43,10 @@ class RefreshTokenUseCaseTest {
   private RefreshTokenWriteRepository writeRepository;
 
   @Mock
-  private TokenProviderFactory tokenProviderFactory;
+  private AccessTokenSpec accessTokenSpec;
 
   @Mock
-  private TokenProviderStrategy tokenService;
+  private RefreshTokenSpec refreshTokenSpec;
 
   @Mock
   private IdentityModuleApi identityModuleApi;
@@ -72,9 +72,8 @@ class RefreshTokenUseCaseTest {
     deterministicHashStrategyFactory = new DeterministicHashStrategyFactory(
         List.of(new Sha256DeterministicHashStrategy())
     );
-    when(tokenProviderFactory.getService(TokenType.JWT)).thenReturn(tokenService);
     useCase = new RefreshTokenUseCase(
-        identityModuleApi, tokenProviderFactory, authProperties,
+        identityModuleApi, accessTokenSpec, refreshTokenSpec, authProperties,
         queryRepository, writeRepository, deterministicHashStrategyFactory);
   }
 
@@ -86,11 +85,11 @@ class RefreshTokenUseCaseTest {
 
     when(authProperties.getJwt()).thenReturn(jwtProperties);
     when(jwtProperties.getRefreshExpirationMs()).thenReturn(604_800_000L);
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
     when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(activeUser));
-    when(tokenService.createAccessToken(any())).thenReturn("new-access-token");
-    when(tokenService.createRefreshToken(any())).thenReturn("new-refresh-token");
+    when(accessTokenSpec.generate(any(AccessTokenClaims.class))).thenReturn("new-access-token");
+    when(refreshTokenSpec.generate(any(RefreshTokenClaims.class))).thenReturn("new-refresh-token");
 
     RefreshTokenCommandResult result = useCase.execute(new RefreshTokenCommand(rawToken));
 
@@ -114,7 +113,7 @@ class RefreshTokenUseCaseTest {
   @Test
   void execute_shouldThrowException_whenTokenNotFoundInDb() {
     RefreshTokenClaims claims = new RefreshTokenClaims(userId);
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.empty());
 
     assertThrows(UnauthenticatedException.class,
@@ -126,7 +125,7 @@ class RefreshTokenUseCaseTest {
     RefreshTokenClaims claims = new RefreshTokenClaims(userId);
     RefreshToken expiredToken = RefreshToken.create(userId, "old-hash", Instant.now().minus(1, ChronoUnit.HOURS));
 
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(expiredToken));
 
     assertThrows(UnauthenticatedException.class,
@@ -139,7 +138,7 @@ class RefreshTokenUseCaseTest {
     RefreshToken revokedToken = RefreshToken.create(userId, "old-hash", Instant.now().plus(1, ChronoUnit.HOURS));
     revokedToken.revoke();
 
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(revokedToken));
 
     assertThrows(UnauthenticatedException.class,
@@ -151,7 +150,7 @@ class RefreshTokenUseCaseTest {
     RefreshTokenClaims claims = new RefreshTokenClaims(userId);
     RefreshToken oldToken = RefreshToken.create(userId, "old-hash", Instant.now().plus(1, ChronoUnit.HOURS));
 
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
     when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.empty());
 
@@ -165,7 +164,7 @@ class RefreshTokenUseCaseTest {
     RefreshToken oldToken = RefreshToken.create(userId, "old-hash", Instant.now().plus(1, ChronoUnit.HOURS));
     UserDto inactiveUser = new UserDto(userId, "testuser", "Test User", null, false, null, null, null);
 
-    when(tokenService.validateRefreshToken(rawToken)).thenReturn(claims);
+    when(refreshTokenSpec.validateRefreshToken(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
     when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(inactiveUser));
 
@@ -175,7 +174,7 @@ class RefreshTokenUseCaseTest {
 
   @Test
   void execute_shouldThrowException_whenJwtIsInvalid() {
-    when(tokenService.validateRefreshToken(rawToken))
+    when(refreshTokenSpec.validateRefreshToken(rawToken))
         .thenThrow(new UnauthenticatedException("Invalid token"));
 
     assertThrows(UnauthenticatedException.class,

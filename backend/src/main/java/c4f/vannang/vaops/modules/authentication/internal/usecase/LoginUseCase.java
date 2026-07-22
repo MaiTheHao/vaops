@@ -2,15 +2,10 @@ package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
-import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
-import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
@@ -20,6 +15,10 @@ import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
+import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
+import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,8 @@ public class LoginUseCase {
 
   private final PasswordEncoder passwordEncoder;
   private final IdentityModuleApi identityModuleApi;
-  private final TokenProviderFactory tokenServiceFactory;
+  private final AccessTokenSpec accessTokenSpec;
+  private final RefreshTokenSpec refreshTokenSpec;
   private final AuthProperties authProperties;
   private final RefreshTokenWriteRepository refreshTokenWriteRepository;
   private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
@@ -61,9 +61,8 @@ public class LoginUseCase {
       AccessTokenClaims accessClaims = new AccessTokenClaims(userId, command.accountName());
       RefreshTokenClaims refreshClaims = new RefreshTokenClaims(userId);
 
-      TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
-      String accessToken = tokenService.createAccessToken(accessClaims);
-      String refreshToken = tokenService.createRefreshToken(refreshClaims);
+      String accessToken = accessTokenSpec.generate(accessClaims);
+      String refreshToken = refreshTokenSpec.generate(refreshClaims);
 
       String tokenHash = deterministicHashStrategyFactory
           .getStrategy(DeterministicHashAlgorithm.SHA_256)

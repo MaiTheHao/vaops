@@ -1,15 +1,10 @@
 package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderFactory;
-import c4f.vannang.vaops.modules.authentication.internal.TokenProviderStrategy;
 import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
-import c4f.vannang.vaops.modules.authentication.internal.dto.AccessTokenClaims;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenClaims;
-import c4f.vannang.vaops.modules.authentication.internal.enumeration.TokenType;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
@@ -18,6 +13,10 @@ import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
+import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
+import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class RefreshTokenUseCase {
 
   private final IdentityModuleApi identityModuleApi;
-  private final TokenProviderFactory tokenServiceFactory;
+  private final AccessTokenSpec accessTokenSpec;
+  private final RefreshTokenSpec refreshTokenSpec;
   private final AuthProperties authProperties;
   private final RefreshTokenQueryRepository refreshTokenQueryRepository;
   private final RefreshTokenWriteRepository refreshTokenWriteRepository;
@@ -38,8 +38,7 @@ public class RefreshTokenUseCase {
 
   @Transactional
   public RefreshTokenCommandResult execute(RefreshTokenCommand command) {
-    TokenProviderStrategy tokenService = tokenServiceFactory.getService(TokenType.JWT);
-    RefreshTokenClaims claims = tokenService.validateRefreshToken(command.refreshToken());
+    RefreshTokenClaims claims = refreshTokenSpec.validateRefreshToken(command.refreshToken());
     DeterministicHashStrategy hashStrategy =
         deterministicHashStrategyFactory.getStrategy(DeterministicHashAlgorithm.SHA_256);
 
@@ -71,8 +70,8 @@ public class RefreshTokenUseCase {
 
     AccessTokenClaims accessClaims = new AccessTokenClaims(claims.userId(), user.accountName());
     RefreshTokenClaims refreshClaims = new RefreshTokenClaims(claims.userId());
-    String newAccessToken = tokenService.createAccessToken(accessClaims);
-    String newRefreshToken = tokenService.createRefreshToken(refreshClaims);
+    String newAccessToken = accessTokenSpec.generate(accessClaims);
+    String newRefreshToken = refreshTokenSpec.generate(refreshClaims);
     String newTokenHash = hashStrategy.hash(newRefreshToken);
 
     Instant expiredAt = Instant.now().plusMillis(authProperties.getJwt().getRefreshExpirationMs());
