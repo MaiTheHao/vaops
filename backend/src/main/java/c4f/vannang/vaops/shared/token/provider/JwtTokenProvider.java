@@ -1,11 +1,10 @@
-package c4f.vannang.vaops.shared.infrastructure.token.jwt;
+package c4f.vannang.vaops.shared.token.provider;
 
-import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
+import c4f.vannang.vaops.core.config.AuthProperties;
 import c4f.vannang.vaops.shared.exception.TokenExpiredException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
 import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
-import c4f.vannang.vaops.shared.token.provider.TokenProvider;
 import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
 import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
 import io.jsonwebtoken.Claims;

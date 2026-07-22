@@ -5,8 +5,9 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
+import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
-import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

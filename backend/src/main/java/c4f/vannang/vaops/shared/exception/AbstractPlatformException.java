@@ -2,6 +2,8 @@ package c4f.vannang.vaops.shared.exception;
 
 import java.util.Map;
 
+import c4f.vannang.vaops.shared.enumeration.ErrorCode;
+
 public abstract class AbstractPlatformException extends RuntimeException {
 
     private final ErrorCode errorCode;

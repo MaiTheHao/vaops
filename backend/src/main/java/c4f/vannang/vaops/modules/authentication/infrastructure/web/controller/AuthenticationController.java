@@ -4,7 +4,7 @@ import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginWebRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebResponseDto;
-import c4f.vannang.vaops.modules.authentication.internal.config.AuthProperties;
+import c4f.vannang.vaops.core.config.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommand;

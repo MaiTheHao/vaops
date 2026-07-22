@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.filter;
+package c4f.vannang.vaops.core.web.filter;
 
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.TokenExpiredException;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {

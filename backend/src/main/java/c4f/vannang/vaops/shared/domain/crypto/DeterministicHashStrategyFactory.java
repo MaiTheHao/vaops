@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.service;
+package c4f.vannang.vaops.shared.crypto;
 
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import java.util.List;

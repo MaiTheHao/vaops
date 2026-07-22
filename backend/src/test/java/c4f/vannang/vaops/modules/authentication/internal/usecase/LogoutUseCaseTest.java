@@ -8,8 +8,9 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.LogoutCommandResult
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
-import c4f.vannang.vaops.shared.infrastructure.crypto.Sha256DeterministicHashStrategy;
-import c4f.vannang.vaops.shared.service.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.crypto.Sha256DeterministicHashStrategy;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

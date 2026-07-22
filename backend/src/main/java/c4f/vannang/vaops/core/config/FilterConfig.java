@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
-import c4f.vannang.vaops.shared.filter.RequestLoggingFilter;
-import c4f.vannang.vaops.shared.filter.RequestTraceFilter;
+import c4f.vannang.vaops.core.web.filter.RequestLoggingFilter;
+import c4f.vannang.vaops.core.web.filter.RequestTraceFilter;
 
 @Configuration
 public class FilterConfig {

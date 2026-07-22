@@ -1,7 +1,7 @@
 package c4f.vannang.vaops.core.config;
 
 import c4f.vannang.vaops.core.env.CorsProperties;
-import c4f.vannang.vaops.shared.filter.AuthenticationFilter;
+import c4f.vannang.vaops.core.web.filter.AuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

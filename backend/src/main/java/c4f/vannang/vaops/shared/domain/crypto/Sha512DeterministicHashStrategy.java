@@ -1,7 +1,7 @@
-package c4f.vannang.vaops.shared.infrastructure.crypto;
+package c4f.vannang.vaops.shared.crypto;
 
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
-import c4f.vannang.vaops.shared.service.DeterministicHashStrategy;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

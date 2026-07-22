@@ -2,6 +2,8 @@ package c4f.vannang.vaops.shared.exception;
 
 import java.util.Map;
 
+import c4f.vannang.vaops.shared.enumeration.ErrorCode;
+
 public class LimitExceededException extends AbstractPlatformException {
 
 

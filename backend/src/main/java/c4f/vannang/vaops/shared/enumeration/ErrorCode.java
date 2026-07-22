@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.exception;
+package c4f.vannang.vaops.shared.enumeration;
 
 import org.springframework.http.HttpStatus;
 
