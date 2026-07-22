@@ -29,7 +29,7 @@ public class RegisterUseCase {
 
     AccountName accountName = new AccountName(dto.accountName());
 
-    if (userQueryRepository.existsActiveByAccountName(accountName)) {
+    if (userQueryRepository.existsByAccountName(accountName)) {
       throw new ResourceAlreadyExistsException("Account name already exists");
     }
 

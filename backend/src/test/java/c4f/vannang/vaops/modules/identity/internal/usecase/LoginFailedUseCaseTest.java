@@ -43,7 +43,7 @@ class LoginFailedUseCaseTest {
         new PasswordHash("hashed"),
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
-    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser")))
+    when(userQueryRepository.findByAccountName(new AccountName("testuser")))
         .thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
@@ -63,7 +63,7 @@ class LoginFailedUseCaseTest {
     for (int i = 0; i < 4; i++) {
       user.recordFailedLogin(5, Duration.ofMinutes(15));
     }
-    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser")))
+    when(userQueryRepository.findByAccountName(new AccountName("testuser")))
         .thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
@@ -75,7 +75,7 @@ class LoginFailedUseCaseTest {
 
   @Test
   void execute_shouldThrowWhenUserNotFound() {
-    when(userQueryRepository.findActiveByAccountName(new AccountName("unknown")))
+    when(userQueryRepository.findByAccountName(new AccountName("unknown")))
         .thenReturn(Optional.empty());
 
     assertThrows(

@@ -28,7 +28,7 @@ public class LoginFailedUseCase {
     if (command.accountName() == null) {
       throw new IllegalArgumentException("Account name must not be null");
     }
-    User user = userQueryRepository.findActiveByAccountName(new AccountName(command.accountName()))
+    User user = userQueryRepository.findByAccountName(new AccountName(command.accountName()))
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     user.recordFailedLogin(MAX_FAILED_ATTEMPTS, LOCK_DURATION);

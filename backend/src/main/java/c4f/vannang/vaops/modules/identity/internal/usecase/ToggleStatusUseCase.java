@@ -19,7 +19,7 @@ public class ToggleStatusUseCase {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(ToggleUserStatusCommand command) {
-    User user = userQueryRepository.findActiveById(command.userId())
+    User user = userQueryRepository.findById(command.userId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     if (command.active()) {

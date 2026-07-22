@@ -37,7 +37,7 @@ class FindUserByAccountNameUseCaseTest {
         new PasswordHash("hashed"),
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
-    when(userQueryRepository.findActiveByAccountName(new AccountName("testuser")))
+    when(userQueryRepository.findByAccountName(new AccountName("testuser")))
         .thenReturn(Optional.of(user));
 
     Optional<User> result =
@@ -49,7 +49,7 @@ class FindUserByAccountNameUseCaseTest {
 
   @Test
   void execute_shouldReturnEmptyWhenNotFound() {
-    when(userQueryRepository.findActiveByAccountName(new AccountName("nonexistent")))
+    when(userQueryRepository.findByAccountName(new AccountName("nonexistent")))
         .thenReturn(Optional.empty());
 
     Optional<User> result =

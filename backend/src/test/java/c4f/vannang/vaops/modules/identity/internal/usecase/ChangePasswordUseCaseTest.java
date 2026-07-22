@@ -52,7 +52,7 @@ class ChangePasswordUseCaseTest {
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
     user.setId(userId);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("old-password", "old-hash")).thenReturn(true);
     when(passwordEncoder.encode("new-password-123")).thenReturn("new-hash");
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
@@ -67,7 +67,7 @@ class ChangePasswordUseCaseTest {
   @Test
   void execute_shouldThrowWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     assertThrows(
         ResourceNotFoundException.class,
@@ -84,7 +84,7 @@ class ChangePasswordUseCaseTest {
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
     user.setId(userId);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("wrong-password", "old-hash")).thenReturn(false);
 
     assertThrows(

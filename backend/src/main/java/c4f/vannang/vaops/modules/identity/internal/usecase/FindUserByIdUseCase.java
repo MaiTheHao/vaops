@@ -18,6 +18,6 @@ public class FindUserByIdUseCase {
   private final UserQueryRepository userQueryRepository;
 
   public Optional<User> execute(FindByIdCommand command) {
-    return userQueryRepository.findActiveById(command.userId());
+    return userQueryRepository.findById(command.userId());
   }
 }

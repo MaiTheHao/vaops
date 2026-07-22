@@ -46,7 +46,7 @@ class SoftDeleteUseCaseTest {
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
     user.setId(userId);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
     SoftDeleteUseCase.execute(new SoftDeleteUserCommand(userId, deletedBy));
@@ -60,7 +60,7 @@ class SoftDeleteUseCaseTest {
   @Test
   void execute_shouldThrowWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     assertThrows(
         ResourceNotFoundException.class,

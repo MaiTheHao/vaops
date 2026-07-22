@@ -21,7 +21,7 @@ public class UpdateProfileUseCase {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(UpdateProfileCommand command) {
-    User user = userQueryRepository.findActiveById(command.userId())
+    User user = userQueryRepository.findById(command.userId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     DisplayName dn = command.displayName() != null ? new DisplayName(command.displayName()) : null;

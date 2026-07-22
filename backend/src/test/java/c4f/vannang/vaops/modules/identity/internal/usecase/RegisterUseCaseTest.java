@@ -42,7 +42,7 @@ class RegisterUseCaseTest {
   void execute_shouldRegisterUserSuccessfully() {
     RegisterCommand dto =
         new RegisterCommand("testuser", "password123", "Test User", "https://example.com/avatar.png");
-    when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(false);
+    when(userQueryRepository.existsByAccountName(any(AccountName.class))).thenReturn(false);
     when(passwordEncoder.encode("password123")).thenReturn("hashed-password");
     when(userWriteRepository.save(any(User.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
@@ -86,7 +86,7 @@ class RegisterUseCaseTest {
   @Test
   void execute_shouldThrowResourceAlreadyExistsException() {
     RegisterCommand dto = new RegisterCommand("testuser", "password123", "Test", "avatar");
-    when(userQueryRepository.existsActiveByAccountName(any(AccountName.class))).thenReturn(true);
+    when(userQueryRepository.existsByAccountName(any(AccountName.class))).thenReturn(true);
 
     assertThrows(ResourceAlreadyExistsException.class, () -> RegisterUseCase.execute(dto));
   }

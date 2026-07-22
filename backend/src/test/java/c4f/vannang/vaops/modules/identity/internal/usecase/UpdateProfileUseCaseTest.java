@@ -45,7 +45,7 @@ class UpdateProfileUseCaseTest {
         new DisplayName("Old Name"),
         new AvatarUrl("old-avatar"));
     user.setId(userId);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
     UpdateProfileUseCase.execute(new UpdateProfileCommand(userId, "New Name", "new-avatar"));
@@ -58,7 +58,7 @@ class UpdateProfileUseCaseTest {
   @Test
   void execute_shouldThrowWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     assertThrows(
         ResourceNotFoundException.class,

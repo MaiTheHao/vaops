@@ -46,7 +46,7 @@ class LoginSuccessfulUseCaseTest {
         new AvatarUrl("avatar"));
     user.setId(userId);
     user.recordFailedLogin(5, java.time.Duration.ofMinutes(15));
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(userWriteRepository.save(any(User.class))).thenReturn(user);
 
     LoginSuccessfulUseCase.execute(new RecordSuccessfulLoginCommand(userId));
@@ -60,7 +60,7 @@ class LoginSuccessfulUseCaseTest {
   @Test
   void execute_shouldThrowWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     assertThrows(
         ResourceNotFoundException.class,

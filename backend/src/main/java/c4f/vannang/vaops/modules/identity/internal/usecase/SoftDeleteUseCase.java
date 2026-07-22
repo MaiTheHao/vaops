@@ -19,7 +19,7 @@ public class SoftDeleteUseCase {
   private final UserWriteRepository userWriteRepository;
 
   public void execute(SoftDeleteUserCommand command) {
-    User user = userQueryRepository.findActiveById(command.userId())
+    User user = userQueryRepository.findById(command.userId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found or already deleted"));
 
     user.softDelete(command.deletedBy());

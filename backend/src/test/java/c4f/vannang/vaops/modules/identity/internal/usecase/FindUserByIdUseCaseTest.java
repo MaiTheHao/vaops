@@ -40,7 +40,7 @@ class FindUserByIdUseCaseTest {
         new DisplayName("Test"),
         new AvatarUrl("avatar"));
     user.setId(userId);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
     Optional<User> result = findUserByIdUseCase.execute(new FindByIdCommand(userId));
 
@@ -51,7 +51,7 @@ class FindUserByIdUseCaseTest {
   @Test
   void execute_shouldReturnEmptyWhenUserNotFound() {
     UUID userId = UUID.randomUUID();
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     Optional<User> result = findUserByIdUseCase.execute(new FindByIdCommand(userId));
 

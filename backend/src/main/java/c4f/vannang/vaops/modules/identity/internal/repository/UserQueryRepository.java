@@ -16,10 +16,17 @@ public interface UserQueryRepository extends Repository<User, UUID> {
   @Query("SELECT u FROM User u WHERE u.id = :id AND u.deletedAt IS NULL")
   Optional<User> findActiveById(@Param("id") UUID id);
 
+  @Query("SELECT u FROM User u WHERE u.accountName = :accountName")
+  Optional<User> findByAccountName(@Param("accountName") AccountName accountName);
+
   @Query("SELECT u FROM User u WHERE u.accountName = :accountName AND u.deletedAt IS NULL")
   Optional<User> findActiveByAccountName(@Param("accountName") AccountName accountName);
 
   @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.accountName ="
       + " :accountName AND u.deletedAt IS NULL")
   boolean existsActiveByAccountName(@Param("accountName") AccountName accountName);
+
+  @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.accountName ="
+      + " :accountName")
+  boolean existsByAccountName(@Param("accountName") AccountName accountName);
 }

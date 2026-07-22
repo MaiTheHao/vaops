@@ -40,14 +40,14 @@ class CheckAvailableUserUseCaseTest {
     User user = mock(User.class);
     when(user.isActive()).thenReturn(true);
     when(user.isLocked()).thenReturn(false);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
     assertDoesNotThrow(() -> checkAvailableUserUseCase.execute(new CheckAvailableUserCommand(userId)));
   }
 
   @Test
   void execute_shouldThrowUnauthenticatedException_whenUserNotFound() {
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.empty());
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
     assertThrows(
         UnauthenticatedException.class,
@@ -58,7 +58,7 @@ class CheckAvailableUserUseCaseTest {
   void execute_shouldThrowUnauthenticatedException_whenUserInactive() {
     User user = mock(User.class);
     when(user.isActive()).thenReturn(false);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
     assertThrows(
         UnauthenticatedException.class,
@@ -70,7 +70,7 @@ class CheckAvailableUserUseCaseTest {
     User user = mock(User.class);
     when(user.isActive()).thenReturn(true);
     when(user.isLocked()).thenReturn(true);
-    when(userQueryRepository.findActiveById(userId)).thenReturn(Optional.of(user));
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
     assertThrows(
         AccountLockedException.class,

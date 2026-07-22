@@ -25,7 +25,7 @@ public class ChangePasswordUseCase {
   public void execute(ChangePasswordCommand command) {
     User.validatePasswordStrength(command.newPassword());
 
-    User user = userQueryRepository.findActiveById(command.userId())
+    User user = userQueryRepository.findById(command.userId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     if (!passwordEncoder.matches(command.oldPassword(), user.getPasswordHash().value())) {

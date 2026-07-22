@@ -23,7 +23,6 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.FindForAuthCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RecordFailedLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RecordSuccessfulLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RegisterCommand;
@@ -34,7 +33,6 @@ import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase
 import c4f.vannang.vaops.modules.identity.internal.usecase.CheckAvailableUserUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByAccountNameUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByIdUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserForAuthUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.LoginFailedUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.LoginSuccessfulUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.RegisterUseCase;
@@ -56,15 +54,14 @@ class IdentityModuleApiImpl implements IdentityModuleApi {
   private final LoginFailedUseCase loginFailedUseCase;
   private final FindUserByIdUseCase findUserByIdUseCase;
   private final FindUserByAccountNameUseCase findUserByAccountNameUseCase;
-  private final FindUserForAuthUseCase findUserForAuthUseCase;
   private final CheckAvailableUserUseCase checkAvailableUserUseCase;
   private final UserDtoMapper userDtoMapper;
   private final IdentityMapper identityMapper;
 
   @Override
   public Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query) {
-    FindForAuthCommand internalQuery = identityMapper.toInternal(query);
-    return findUserForAuthUseCase.execute(internalQuery)
+    FindByAccountNameCommand internalQuery = identityMapper.toInternal(query);
+    return findUserByAccountNameUseCase.execute(internalQuery)
         .map(userDtoMapper::toAuthDto);
   }
 

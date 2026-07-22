@@ -20,6 +20,6 @@ public class FindUserByAccountNameUseCase {
 
   public Optional<User> execute(FindByAccountNameCommand command) {
     if (command.accountName() == null) return Optional.empty();
-    return userQueryRepository.findActiveByAccountName(new AccountName(command.accountName()));
+    return userQueryRepository.findByAccountName(new AccountName(command.accountName()));
   }
 }

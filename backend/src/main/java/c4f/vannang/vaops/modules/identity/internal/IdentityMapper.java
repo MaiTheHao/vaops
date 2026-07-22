@@ -15,7 +15,6 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.FindForAuthCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RecordFailedLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RecordSuccessfulLoginCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.RegisterCommand;
@@ -33,7 +32,7 @@ public interface IdentityMapper {
 
   FindByAccountNameCommand toInternal(FindByAccountNameQuery query);
 
-  FindForAuthCommand toInternal(FindForAuthQuery query);
+  FindByAccountNameCommand toInternal(FindForAuthQuery query);
 
   CheckAvailableUserCommand toInternal(CheckAvailableUserQuery query);
 
