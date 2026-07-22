@@ -1,18 +1,19 @@
 package c4f.vannang.vaops.core.web.filter;
 
-import java.io.IOException;
-import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
     final long startTime = System.nanoTime();
@@ -24,7 +25,14 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     final String clientIp = getClientIp(request);
     final String userAgent = sanitize(request.getHeader("User-Agent"));
 
-    log.info("REQ_START requestId={} method={} uri={} query={} clientIp={} userAgent={}", requestId, method, uri, query, clientIp, userAgent);
+    log.info(
+        "REQ_START requestId={} method={} uri={} query={} clientIp={} userAgent={}",
+        requestId,
+        method,
+        uri,
+        query,
+        clientIp,
+        userAgent);
 
     if (log.isDebugEnabled()) {
       log.debug("REQ_HEADERS requestId={} headers=[{}]", requestId, getRequestHeaders(request));
@@ -33,14 +41,26 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     try {
       filterChain.doFilter(request, response);
     } catch (Exception ex) {
-      log.error("REQ_ERROR requestId={} method={} uri={} exceptionClass={} message={}", requestId, method, uri, ex.getClass().getName(),
-          sanitize(ex.getMessage()), ex);
+      log.error(
+          "REQ_ERROR requestId={} method={} uri={} exceptionClass={} message={}",
+          requestId,
+          method,
+          uri,
+          ex.getClass().getName(),
+          sanitize(ex.getMessage()),
+          ex);
       throw ex;
     } finally {
       final long durationMs = (System.nanoTime() - startTime) / 1_000_000;
 
-      log.info("REQ_END requestId={} method={} uri={} status={} duration={}ms contentLength={}", requestId, method, uri, response.getStatus(),
-          durationMs, response.getHeader("Content-Length"));
+      log.info(
+          "REQ_END requestId={} method={} uri={} status={} duration={}ms contentLength={}",
+          requestId,
+          method,
+          uri,
+          response.getStatus(),
+          durationMs,
+          response.getHeader("Content-Length"));
 
       if (log.isTraceEnabled()) {
         log.trace("RES_HEADERS requestId={} headers=[{}]", requestId, getResponseHeaders(response));
