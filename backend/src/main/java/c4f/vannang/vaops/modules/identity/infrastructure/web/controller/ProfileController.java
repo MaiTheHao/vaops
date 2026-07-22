@@ -9,15 +9,14 @@ import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
 import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByIdUseCase;
+import c4f.vannang.vaops.modules.identity.internal.usecase.GetProfileUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
-import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
+import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
 import jakarta.validation.Valid;
-import java.security.Principal;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,43 +24,40 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final FindUserByIdUseCase findUserByIdUseCase;
+    private final GetProfileUseCase getProfileUseCase;
     private final UpdateProfileUseCase updateProfileUseCase;
     private final ChangePasswordUseCase changePasswordUseCase;
     private final SoftDeleteUseCase softDeleteUseCase;
 
     @GetMapping
-    public ResponseEntity<ProfileWebResponse> getMyProfile(Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        User user = findUserByIdUseCase.execute(new FindByIdCommand(userId))
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    public ResponseEntity<ProfileWebResponse> getMyProfile(
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        User user = getProfileUseCase.execute(new FindByIdCommand(principal.userId()));
         return ResponseEntity.ok(toResponse(user));
     }
 
     @PutMapping
     public ResponseEntity<ProfileWebResponse> updateProfile(
             @Valid @RequestBody UpdateProfileWebRequest request,
-            Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        updateProfileUseCase.execute(new UpdateProfileCommand(userId, request.displayName(), request.avatarUrl()));
-        User user = findUserByIdUseCase.execute(new FindByIdCommand(userId))
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        User user = updateProfileUseCase.execute(
+            new UpdateProfileCommand(principal.userId(), request.displayName(), request.avatarUrl()));
         return ResponseEntity.ok(toResponse(user));
     }
 
     @PutMapping("/password")
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordWebRequest request,
-            Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        changePasswordUseCase.execute(new ChangePasswordCommand(userId, request.oldPassword(), request.newPassword()));
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        changePasswordUseCase.execute(
+            new ChangePasswordCommand(principal.userId(), request.oldPassword(), request.newPassword()));
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteAccount(Principal principal) {
-        UUID userId = UUID.fromString(principal.getName());
-        softDeleteUseCase.execute(new SoftDeleteUserCommand(userId, userId));
+    public ResponseEntity<Void> deleteAccount(
+            @AuthenticationPrincipal AuthenticatedPrincipal principal) {
+        softDeleteUseCase.execute(new SoftDeleteUserCommand(principal.userId(), principal.userId()));
         return ResponseEntity.noContent().build();
     }
 

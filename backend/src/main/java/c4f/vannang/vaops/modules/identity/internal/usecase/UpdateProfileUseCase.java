@@ -20,7 +20,7 @@ public class UpdateProfileUseCase {
   private final UserQueryRepository userQueryRepository;
   private final UserWriteRepository userWriteRepository;
 
-  public void execute(UpdateProfileCommand command) {
+  public User execute(UpdateProfileCommand command) {
     User user = userQueryRepository.findById(command.userId())
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -28,6 +28,6 @@ public class UpdateProfileUseCase {
     AvatarUrl au = command.avatarUrl() != null ? new AvatarUrl(command.avatarUrl()) : null;
 
     user.updateProfile(dn, au);
-    userWriteRepository.save(user);
+    return userWriteRepository.save(user);
   }
 }
