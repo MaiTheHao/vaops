@@ -1,8 +1,8 @@
-name: vaops-dev
+name: vaops
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: vaops-db-dev
+    container_name: vaops-db
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -71,6 +71,29 @@ services:
         condition: service_healthy
       flyway:
         condition: service_completed_successfully
+
+  frontend:
+    image: c4fdocker/vaops-frontend:latest
+    container_name: vaops-frontend
+    restart: unless-stopped
+    networks:
+      - vaops-network
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: vaops-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - vaops-network
+    depends_on:
+      - frontend
+      - backend
 
 volumes:
   vaops_pg_data:
