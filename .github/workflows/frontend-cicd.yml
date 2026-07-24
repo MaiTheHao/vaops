@@ -71,6 +71,8 @@ jobs:
         with:
           context: frontend
           push: true
+          build-args: |
+            NG_APP_API_URL=${{ secrets.NG_APP_API_URL }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/vaops-frontend:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/vaops-frontend:latest
