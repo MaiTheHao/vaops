@@ -33,7 +33,7 @@ This directory contains the GitHub Actions CI/CD pipeline definitions for the **
   * **`deploy`** *(master branch push only)*: 
     1. Authenticates with Tailscale.
     2. Syncs the `infra/` folder directly to `~/workspace/infra/` on the VPS using `rsync` with recursion and deletion flags.
-    3. Generates `.env.prod` dynamically on the remote VPS containing database parameters.
+    3. Generates `.env.prod` dynamically on the remote VPS containing database parameters and CORS settings.
     4. Executes `docker compose up -d` for all infrastructure components, reloads the Nginx container (`nginx -s reload`), and prunes dangling Docker images.
 
 ---
@@ -56,3 +56,4 @@ To ensure these pipelines execute successfully, configure the following secrets 
 | `DB_NAME` | Production database name. | `infra-ci.yml` |
 | `POSTGRES_USER` | Production database superuser/username. | `infra-ci.yml` |
 | `POSTGRES_PASSWORD` | Production database user password. | `infra-ci.yml` |
+| `BE_CORS_ALLOWED_ORIGINS` | Allowed origins configuration for backend CORS (e.g., `https://vaops.id.vn`). | `infra-ci.yml` |
