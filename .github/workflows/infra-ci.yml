@@ -27,14 +27,17 @@ jobs:
           oauth-secret: ${{ secrets.TAILSCALE_SECRET }}
           tags: tag:github
 
-      - name: Copy infra folder to VPS
-        uses: appleboy/scp-action@v0.1.7
+      - name: Sync infra folder to VPS
+        uses: appleboy/rsync-action@v0.0.10
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: 'infra/'
-          target: '~/workspace/'
+          target: '~/workspace/infra/'
+          args: >-
+            --recursive
+            --delete
 
       - name: Deploy via SSH over Tailscale
         uses: appleboy/ssh-action@v1.0.3
@@ -49,6 +52,7 @@ jobs:
             DB_NAME=${{ secrets.DB_NAME }}
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             EOF
             docker compose -f compose.prod.yml --env-file .env.prod pull
             docker compose -f compose.prod.yml --env-file .env.prod up -d --remove-orphans
