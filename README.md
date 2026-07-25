@@ -4,7 +4,7 @@
 
 **VAOPS** (Van Nang Operations) is an internal operations & data management system custom-built for **Van Nang Mechanical Co., Ltd.** (Binh Duong, Vietnam).
 
-While the existing SPA Marketing system ([Van Nang Mechanical - Landing Page](https://github.com/MaiTheHao/cty-tnhh-ckvn-landing-page.git)) handles marketing campaigns and customer acquisition, **VAOPS** serves as a centralized platform for managing all production data, orders, clients, and providing integrated APIs/data feeds for the enterprise's marketing and administrative channels.
+While the existing SPA Marketing system ([Van Nang Mechanical - Landing Page](https://github.com/MaiTheHao/vaops-marketing-spa)) handles marketing campaigns and customer acquisition, **VAOPS** serves as a centralized platform for managing all production data, orders, clients, and providing integrated APIs/data feeds for the enterprise's marketing and administrative channels.
 
 ---
 
