@@ -13,12 +13,6 @@ While the existing SPA Marketing system ([Van Nang Mechanical - Landing Page](ht
 The system follows a **Microservices-ready Monolith** design pattern, fully containerized via Docker and automatically deployed through a CI/CD pipeline infrastructure.
 
 ```mermaid
----
-config:
-  theme: default
-  flowchart:
-    curve: basis
----
 flowchart TD
     accTitle: VAOPS System Architecture
     accDescr: High level system architecture showing Nginx reverse proxy routing traffic to Angular frontend and Spring Boot backend connected to PostgreSQL database.
@@ -32,28 +26,20 @@ flowchart TD
     end
 
     subgraph AppNetwork["Docker Network (vaops-network)"]
-        FE["Frontend Container<br/>(Angular 19 SPA)"]
+        FE["Frontend Container<br/>(Angular 21 SPA)"]
         BE["Backend Container<br/>(Spring Boot REST API)"]
-        DB[("Database Container<br/>PostgreSQL 16")]
+        DB[("Database Container<br/>PostgreSQL 17")]
     end
 
     Client -->|"HTTPS / HTTP Requests"| Nginx
     Nginx -->|"Static Files & SPA Routes"| FE
     Nginx -->|"/api/* Proxy Pass"| BE
     BE -->|"Spring Data JPA / JDBC"| DB
-
-    classDef gatewayClass fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
-    classDef appClass fill:#f3e5f5,stroke:#7b1fa2,color:#4a148c
-    classDef dbClass fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20
-
-    class Nginx gatewayClass
-    class FE,BE appClass
-    class DB dbClass
 ```
 
 - **Reverse Proxy / SSL**: Nginx acts as the single entry point, reverse-proxying incoming requests to the Frontend SPA and Backend REST APIs.
-- **Frontend Layer**: Single Page Application (SPA) built with Angular 19+, communicating asynchronously with the Backend via RESTful APIs.
-- **Backend Layer**: Core business logic, session management, security, and database operations powered by Spring Boot 3 & Java 21.
+- **Frontend Layer**: Single Page Application (SPA) built with Angular 21+, communicating asynchronously with the Backend via RESTful APIs.
+- **Backend Layer**: Core business logic, session management, security, and database operations powered by Spring Boot 4 & Java 21.
 - **Database Layer**: PostgreSQL database ensuring data integrity for all operational records.
 - **Infrastructure & CI/CD**: Container management via Docker Compose, secure private networking via Tailscale VPN, and automated Build-Test-Deploy workflows via GitHub Actions.
 
@@ -64,10 +50,6 @@ flowchart TD
 Source code on the `master` branch is automatically tested, packaged, and deployed to the VPS host using GitHub Actions and a secure Tailscale VPN tunnel:
 
 ```mermaid
----
-config:
-  theme: default
----
 sequenceDiagram
     accTitle: CI CD Deployment Sequence
     accDescr: Sequence diagram illustrating GitHub Actions building images, pushing to Docker Hub, and deploying via SSH over Tailscale to VPS.
@@ -97,13 +79,13 @@ sequenceDiagram
 
 ### Backend
 - **Language & Runtime**: Java 21 (Temurin JDK)
-- **Framework**: Spring Boot 3.4+
+- **Framework**: Spring Boot 4.1+
 - **Build Tool**: Apache Maven (Wrapper `./mvnw`)
 - **Database Access**: Spring Data JPA / Hibernate
-- **Database**: PostgreSQL 16
+- **Database**: PostgreSQL 17
 
 ### Frontend
-- **Framework**: Angular 19+
+- **Framework**: Angular 21+
 - **Package Manager**: `pnpm` (v11)
 - **Runtime**: Node.js 24
 - **Styling & UI**: SCSS / Modern Modular CSS

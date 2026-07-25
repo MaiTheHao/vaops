@@ -28,16 +28,14 @@ jobs:
           tags: tag:github
 
       - name: Sync infra folder to VPS
-        uses: appleboy/rsync-action@v0.0.10
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_IP }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: 'infra/'
-          target: '~/workspace/infra/'
-          args: >-
-            --recursive
-            --delete
+          source: "infra/*"
+          target: "~/workspace/infra"
+          strip_components: 1
 
       - name: Deploy via SSH over Tailscale
         uses: appleboy/ssh-action@v1.0.3
