@@ -9,8 +9,6 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
       - TZ=UTC
-    ports:
-      - '${DB_PORT}:5432'
     networks:
       - vaops-network
     volumes:
@@ -24,8 +22,6 @@ services:
       -c 'maintenance_work_mem=256MB'
       -c 'effective_cache_size=4GB'
       -c 'max_connections=100'
-      -c 'fsync=off' 
-      -c 'full_page_writes=off'
 
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${DB_NAME}']
@@ -54,11 +50,9 @@ services:
     restart: 'no'
 
   backend:
-    image: c4fdocker/vaops-backend:latest
+    image: ${DOCKER_USERNAME}/vaops-backend:latest
     container_name: vaops-backend
     restart: unless-stopped
-    ports:
-      - '8080:8080'
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DB_NAME}
@@ -73,7 +67,7 @@ services:
         condition: service_completed_successfully
 
   frontend:
-    image: c4fdocker/vaops-frontend:latest
+    image: ${DOCKER_USERNAME}/vaops-frontend:latest
     container_name: vaops-frontend
     restart: unless-stopped
     networks:
