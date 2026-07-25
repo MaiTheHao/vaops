@@ -65,3 +65,6 @@ buildNumber.properties
 **/docker/db_data/
 **/docker/postgres_data/
 **/docker/mysql_data/
+
+# Documentation / Agent Docs
+docs/superpowers/
