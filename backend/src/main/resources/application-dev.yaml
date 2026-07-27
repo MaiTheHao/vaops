@@ -29,8 +29,7 @@ vaops:
     is-prod: false
   cors:
     allowed-origins:
-      - "http://localhost:4200"
-      - "http://localhost:8080"
+      - "*"
   auth:
     jwt:
       access-expiration-ms: 20000

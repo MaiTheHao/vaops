@@ -6,9 +6,9 @@ This directory contains the GitHub Actions CI/CD pipeline definitions for the **
 
 ## Workflows Overview
 
-### 1. Backend CI/CD (`backend-ci.yml`)
+### 1. Backend CI/CD (`backend-cicd.yml`)
 * **Trigger**: 
-  * `push` or `pull_request` affecting `.github/workflows/backend-ci.yml` or `backend/**` on the `master` branch.
+  * `push` or `pull_request` affecting `.github/workflows/backend-cicd.yml` or `backend/**` on the `master` branch.
 * **Pipeline Stages**:
   * **`test-and-build`**: Sets up Java 21 (Temurin SDK with Maven caching), executes unit & integration tests (`./mvnw test`), builds the production JAR package (`./mvnw clean package -DskipTests`), and uploads the output artifact.
   * **`docker-build-push`** *(master branch push only)*: Downloads the generated JAR artifact, builds a Docker image using Docker Buildx, tags it with `${github.sha}` and `latest`, and pushes it to Docker Hub.
@@ -26,9 +26,9 @@ This directory contains the GitHub Actions CI/CD pipeline definitions for the **
 
 ---
 
-### 3. Infrastructure Deployment (`infra-ci.yml`)
+### 3. Infrastructure Deployment (`infra-cicd.yml`)
 * **Trigger**:
-  * `push` or `pull_request` affecting `.github/workflows/infra-ci.yml` or `infra/**` on the `master` branch.
+  * `push` or `pull_request` affecting `.github/workflows/infra-cicd.yml` or `infra/**` on the `master` branch.
 * **Pipeline Stages**:
   * **`deploy`** *(master branch push only)*: 
     1. Authenticates with Tailscale.
@@ -44,16 +44,16 @@ To ensure these pipelines execute successfully, configure the following secrets 
 
 | Secret Name | Description | Used In Workflows |
 | :--- | :--- | :--- |
-| `DOCKER_USERNAME` | Docker Hub account username used for registry authentication and image tagging. | `backend-ci.yml`, `frontend-cicd.yml` |
-| `DOCKER_PASSWORD` | Docker Hub personal access token or password. | `backend-ci.yml`, `frontend-cicd.yml` |
-| `TAILSCALE_CLIENT_ID` | OAuth Client ID generated from Tailscale admin console for secure private network connectivity. | `backend-ci.yml`, `frontend-cicd.yml`, `infra-ci.yml` |
-| `TAILSCALE_SECRET` | OAuth Client Secret from Tailscale. | `backend-ci.yml`, `frontend-cicd.yml`, `infra-ci.yml` |
-| `VPS_IP` | Private IP address (or Tailscale IP) of the production VPS host. | `backend-ci.yml`, `frontend-cicd.yml`, `infra-ci.yml` |
-| `VPS_USERNAME` | SSH login username on the VPS (e.g., `ubuntu` or `root`). | `backend-ci.yml`, `frontend-cicd.yml`, `infra-ci.yml` |
-| `SSH_PRIVATE_KEY` | SSH Private Key matching the target host's `authorized_keys`. | `backend-ci.yml`, `frontend-cicd.yml`, `infra-ci.yml` |
+| `DOCKER_USERNAME` | Docker Hub account username used for registry authentication and image tagging. | `backend-cicd.yml`, `frontend-cicd.yml` |
+| `DOCKER_PASSWORD` | Docker Hub personal access token or password. | `backend-cicd.yml`, `frontend-cicd.yml` |
+| `TAILSCALE_CLIENT_ID` | OAuth Client ID generated from Tailscale admin console for secure private network connectivity. | `backend-cicd.yml`, `frontend-cicd.yml`, `infra-cicd.yml` |
+| `TAILSCALE_SECRET` | OAuth Client Secret from Tailscale. | `backend-cicd.yml`, `frontend-cicd.yml`, `infra-cicd.yml` |
+| `VPS_IP` | Private IP address (or Tailscale IP) of the production VPS host. | `backend-cicd.yml`, `frontend-cicd.yml`, `infra-cicd.yml` |
+| `VPS_USERNAME` | SSH login username on the VPS (e.g., `ubuntu` or `root`). | `backend-cicd.yml`, `frontend-cicd.yml`, `infra-cicd.yml` |
+| `SSH_PRIVATE_KEY` | SSH Private Key matching the target host's `authorized_keys`. | `backend-cicd.yml`, `frontend-cicd.yml`, `infra-cicd.yml` |
 | `NG_APP_API_URL` | Public endpoint URL of the backend API passed as build-arg to Angular application. | `frontend-cicd.yml` |
-| `DB_PORT` | PostgreSQL database port for production (e.g., `5432`). | `infra-ci.yml` |
-| `DB_NAME` | Production database name. | `infra-ci.yml` |
-| `POSTGRES_USER` | Production database superuser/username. | `infra-ci.yml` |
-| `POSTGRES_PASSWORD` | Production database user password. | `infra-ci.yml` |
-| `BE_CORS_ALLOWED_ORIGINS` | Allowed origins configuration for backend CORS (e.g., `https://vaops.id.vn`). | `infra-ci.yml` |
+| `DB_PORT` | PostgreSQL database port for production (e.g., `5432`). | `infra-cicd.yml` |
+| `DB_NAME` | Production database name. | `infra-cicd.yml` |
+| `POSTGRES_USER` | Production database superuser/username. | `infra-cicd.yml` |
+| `POSTGRES_PASSWORD` | Production database user password. | `infra-cicd.yml` |
+| `BE_CORS_ALLOWED_ORIGINS` | Allowed origins configuration for backend CORS (e.g., `https://vaops.id.vn`). | `infra-cicd.yml` |

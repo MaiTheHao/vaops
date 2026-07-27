@@ -117,9 +117,9 @@ vaops/
 
 ## Automated Deployment Pipelines
 
-1. **Backend CI/CD** (`.github/workflows/backend-ci.yml`): Automatically runs tests, builds the JAR package, creates Docker images, pushes to Docker Hub, and triggers SSH deployment to the VPS.
+1. **Backend CI/CD** (`.github/workflows/backend-cicd.yml`): Automatically runs tests, builds the JAR package, creates Docker images, pushes to Docker Hub, and triggers SSH deployment to the VPS.
 2. **Frontend CI/CD** (`.github/workflows/frontend-cicd.yml`): Automatically builds the Angular distribution bundle, packages the Docker image, and deploys it to the VPS.
-3. **Infra CI/CD** (`.github/workflows/infra-ci.yml`): Synchronizes Nginx configuration, Docker Compose files, and environment variables to the remote server over Tailscale VPN.
+3. **Infra CI/CD** (`.github/workflows/infra-cicd.yml`): Synchronizes Nginx configuration, Docker Compose files, and environment variables to the remote server over Tailscale VPN.
 
 *For details on required deployment environment secrets, please refer to the [Workflows README](file:///.github/workflows/README.md).*
 
