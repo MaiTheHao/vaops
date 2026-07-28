@@ -15,10 +15,10 @@ When analyzing or building the project context for this workspace, leverage the 
 
 - **Developer / Author**: Mai Thế Hào dev (only developer) - [GitHub Profile](https://github.com/MaiTheHao)
 - **Project Purpose**: Study, research, and aim towards practical applications.
-- **Main Documentation Directory**: [/docs](file:///home/maithehao/Workspace/projects/vaops/docs)
-- **CI/CD Workflows**: Located in [workflows](file:///home/maithehao/Workspace/projects/vaops/.github/workflows)
+- **Main Documentation Directory**: [/docs](../../../docs)
+- **CI/CD Workflows**: Located in [workflows](../../../.github/workflows)
 - **Technology Stack & Architecture**:
-  - **Backend**: Spring Boot 4.x modular monolith. Build configuration: [pom.xml](file:///home/maithehao/Workspace/projects/vaops/backend/pom.xml).
+  - **Backend**: Spring Boot 4.x modular monolith. Build configuration: [pom.xml](../../../backend/pom.xml).
   - **Frontend**: Angular 21.
 
 This skill does **not** answer user questions.
