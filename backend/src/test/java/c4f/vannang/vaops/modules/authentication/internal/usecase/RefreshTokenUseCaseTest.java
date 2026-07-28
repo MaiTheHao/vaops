@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RefreshTokenCommandResult;
-import c4f.vannang.vaops.core.config.AuthProperties;
+import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;

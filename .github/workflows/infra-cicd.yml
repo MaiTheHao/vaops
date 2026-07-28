@@ -52,6 +52,8 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
             BE_CORS_ALLOWED_ORIGINS=${{ secrets.BE_CORS_ALLOWED_ORIGINS }}
+            VAOPS_AUTH_JWT_ACCESS_SECRET=${{ secrets.VAOPS_AUTH_JWT_ACCESS_SECRET }}
+            VAOPS_AUTH_JWT_REFRESH_SECRET=${{ secrets.VAOPS_AUTH_JWT_REFRESH_SECRET }}
             EOF
             docker compose -f compose.prod.yml --env-file .env.prod pull
             docker compose -f compose.prod.yml --env-file .env.prod up -d --remove-orphans

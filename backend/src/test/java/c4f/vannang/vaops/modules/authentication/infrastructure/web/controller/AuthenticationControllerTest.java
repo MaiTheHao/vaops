@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.core.env.AppProperties;
+import c4f.vannang.vaops.core.env.AuthProperties;
+import c4f.vannang.vaops.core.env.AuthProperties.Jwt;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginWebRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebResponseDto;
-import c4f.vannang.vaops.core.config.AuthProperties;
-import c4f.vannang.vaops.core.config.AuthProperties.Jwt;
 import c4f.vannang.vaops.modules.authentication.internal.dto.*;
 import c4f.vannang.vaops.modules.authentication.internal.usecase.*;
 import jakarta.servlet.http.Cookie;

@@ -9,7 +9,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
 import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
 import c4f.vannang.vaops.shared.crypto.Sha256DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
-import c4f.vannang.vaops.core.config.AuthProperties;
+import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;

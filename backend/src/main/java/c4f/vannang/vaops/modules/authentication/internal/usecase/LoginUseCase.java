@@ -2,7 +2,7 @@ package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
-import c4f.vannang.vaops.core.config.AuthProperties;
+import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;

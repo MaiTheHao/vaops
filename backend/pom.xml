@@ -12,15 +12,29 @@
 	<groupId>c4f.vannang</groupId>
 	<artifactId>vaops</artifactId>
 	<version>0.0.0</version>
-	<name />
-	<description />
-	<url />
+	<name>VAOPS</name>
+	<description>
+		VAOPS (Van Nang Operations) is an internal operations &amp; data management
+		system custom-built for Van Nang Mechanical Co., Ltd. (Binh Duong,
+		Vietnam).
+	</description>
+	<url>https://github.com/MaiTheHao/vaops</url>
 	<licenses>
-		<license />
+		<license>
+			<name>Proprietary</name>
+		</license>
 	</licenses>
-	<developers>
-		<developer />
-	</developers>
+  <developers>
+    <developer>
+      <id>C4F</id>
+      <name>Mai Thế Hào</name>
+      <url>https://github.com/MaiTheHao</url>
+      <roles>
+        <role>Full Stack Developer</role>
+        <role>Maintainer</role>
+      </roles>
+    </developer>
+  </developers>
 	<scm>
 		<connection />
 		<developerConnection />
@@ -52,6 +66,11 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -126,6 +145,10 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<annotationProcessorPaths>
+						<path>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-configuration-processor</artifactId>
+						</path>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
