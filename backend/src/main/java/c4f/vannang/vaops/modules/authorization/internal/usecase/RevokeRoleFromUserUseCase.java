@@ -32,8 +32,9 @@ public class RevokeRoleFromUserUseCase {
         .findById(userRoleId)
         .orElseThrow(() -> new ResourceNotFoundException("Role assignment not found for user: " + command.userId()));
 
+    Instant now = Instant.now();
     if (userRole.getRevokedAt() == null) {
-      userRole.setRevokedAt(Instant.now());
+      userRole.setRevokedAt(now);
       userRole.setRevokedBy(command.revokedBy());
       userRoleWriteRepository.save(userRole);
     }

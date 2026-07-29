@@ -3,8 +3,10 @@ package c4f.vannang.vaops.modules.authorization.internal.usecase;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,10 @@ public class AssignRoleToUserUseCase {
   private final UserRoleWriteRepository userRoleWriteRepository;
 
   public void execute(AssignRoleToUserCommand command) {
-    if (command == null || command.userId() == null || command.roleIds() == null || command.roleIds().isEmpty()) {
+    if (command == null
+        || command.userId() == null
+        || command.roleIds() == null
+        || command.roleIds().isEmpty()) {
       throw new ValidationException("UserId and roleIds must not be empty");
     }
 
@@ -41,22 +46,27 @@ public class AssignRoleToUserUseCase {
       throw new ResourceNotFoundException("One or more roles were not found or are inactive");
     }
 
+    List<UserRole> existingList =
+        userRoleQueryRepository.findAllByUserIdAndRoleIdIn(command.userId(), roleIdList);
+    Map<UUID, UserRole> existingMap = existingList.stream()
+        .collect(Collectors.toMap(ur -> ur.getId().getRoleId(), Function.identity()));
+
+    Instant now = Instant.now();
     List<UserRole> toSave = new ArrayList<>();
     for (UUID roleId : command.roleIds()) {
-      UserRoleId userRoleId = new UserRoleId(command.userId(), roleId);
-      Optional<UserRole> existingOpt = userRoleQueryRepository.findById(userRoleId);
+      UserRole existing = existingMap.get(roleId);
 
-      if (existingOpt.isPresent()) {
-        UserRole ur = existingOpt.get();
-        ur.setRevokedAt(null);
-        ur.setRevokedBy(null);
-        ur.setAssignedAt(Instant.now());
-        ur.setAssignedBy(command.assignedBy());
-        toSave.add(ur);
+      if (existing != null) {
+        existing.setRevokedAt(null);
+        existing.setRevokedBy(null);
+        existing.setAssignedAt(now);
+        existing.setAssignedBy(command.assignedBy());
+        toSave.add(existing);
       } else {
+        UserRoleId userRoleId = new UserRoleId(command.userId(), roleId);
         UserRole ur = UserRole.builder()
             .id(userRoleId)
-            .assignedAt(Instant.now())
+            .assignedAt(now)
             .assignedBy(command.assignedBy())
             .build();
         toSave.add(ur);

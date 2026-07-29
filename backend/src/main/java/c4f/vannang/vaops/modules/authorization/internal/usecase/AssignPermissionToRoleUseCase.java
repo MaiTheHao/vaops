@@ -3,7 +3,6 @@ package c4f.vannang.vaops.modules.authorization.internal.usecase;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -29,13 +28,17 @@ public class AssignPermissionToRoleUseCase {
   private final RoleWriteRepository roleWriteRepository;
 
   public void execute(AssignPermissionToRoleCommand command) {
-    if (command == null || command.roleId() == null || command.permissionIds() == null || command.permissionIds().isEmpty()) {
+    if (command == null
+        || command.roleId() == null
+        || command.permissionIds() == null
+        || command.permissionIds().isEmpty()) {
       throw new ValidationException("RoleId and permissionIds must not be empty");
     }
 
     Role role = roleQueryRepository
         .findActiveById(command.roleId())
-        .orElseThrow(() -> new ResourceNotFoundException("Role not found or is inactive: " + command.roleId()));
+        .orElseThrow(() ->
+            new ResourceNotFoundException("Role not found or is inactive: " + command.roleId()));
 
     List<UUID> permissionIdList = new ArrayList<>(command.permissionIds());
     List<Permission> permissions = permissionQueryRepository.findAllActiveByIds(permissionIdList);

@@ -34,7 +34,7 @@ public class CreateRoleUseCase {
       throw new ValidationException("Role code must not be empty");
     }
 
-    String code = command.code().trim();
+    String code = command.code().trim().toUpperCase();
     if (roleQueryRepository.findByCode(code).isPresent()) {
       throw new ResourceAlreadyExistsException("Role with code '" + code + "' already exists");
     }

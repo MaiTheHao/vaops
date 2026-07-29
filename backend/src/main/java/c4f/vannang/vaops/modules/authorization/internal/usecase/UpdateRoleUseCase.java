@@ -41,7 +41,7 @@ public class UpdateRoleUseCase {
         .findActiveById(command.id())
         .orElseThrow(() -> new ResourceNotFoundException("Role not found or is inactive: " + command.id()));
 
-    String newCode = command.code().trim();
+    String newCode = command.code().trim().toUpperCase();
     if (!role.getCode().equalsIgnoreCase(newCode)) {
       Optional<Role> existingWithCode = roleQueryRepository.findByCode(newCode);
       if (existingWithCode.isPresent() && !existingWithCode.get().getId().equals(role.getId())) {

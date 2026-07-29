@@ -33,8 +33,8 @@ public class UpdatePermissionUseCase {
         .findActiveById(command.id())
         .orElseThrow(() -> new ResourceNotFoundException("Permission not found or is inactive: " + command.id()));
 
-    String newResource = command.resource().trim();
-    String newAction = command.action().trim();
+    String newResource = command.resource().trim().toUpperCase();
+    String newAction = command.action().trim().toUpperCase();
 
     if (!permission.getResource().equalsIgnoreCase(newResource) || !permission.getAction().equalsIgnoreCase(newAction)) {
       Optional<Permission> existing = permissionQueryRepository.findByResourceAndAction(newResource, newAction);

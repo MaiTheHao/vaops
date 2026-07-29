@@ -2,7 +2,6 @@ package c4f.vannang.vaops.modules.authorization.internal.usecase;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
+import c4f.vannang.vaops.modules.authorization.internal.dto.GetUserRolesQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
@@ -23,12 +23,12 @@ public class GetUserRolesUseCase {
 
   private final RoleQueryRepository roleQueryRepository;
 
-  public List<RoleResponse> execute(UUID userId) {
-    if (userId == null) {
-      throw new ValidationException("UserId must not be null");
+  public List<RoleResponse> execute(GetUserRolesQuery query) {
+    if (query == null || query.userId() == null) {
+      throw new ValidationException("GetUserRolesQuery and userId must not be null");
     }
 
-    List<Role> roles = roleQueryRepository.findActiveRolesByUserId(userId);
+    List<Role> roles = roleQueryRepository.findActiveRolesByUserId(query.userId());
     return roles.stream()
         .map(this::mapToRoleResponse)
         .collect(Collectors.toList());

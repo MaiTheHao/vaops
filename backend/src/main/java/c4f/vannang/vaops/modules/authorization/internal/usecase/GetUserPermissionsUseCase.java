@@ -1,13 +1,13 @@
 package c4f.vannang.vaops.modules.authorization.internal.usecase;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
+import c4f.vannang.vaops.modules.authorization.internal.dto.GetUserPermissionsQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.shared.exception.ValidationException;
@@ -20,12 +20,12 @@ public class GetUserPermissionsUseCase {
 
   private final PermissionQueryRepository permissionQueryRepository;
 
-  public List<PermissionResponse> execute(UUID userId) {
-    if (userId == null) {
-      throw new ValidationException("UserId must not be null");
+  public List<PermissionResponse> execute(GetUserPermissionsQuery query) {
+    if (query == null || query.userId() == null) {
+      throw new ValidationException("GetUserPermissionsQuery and userId must not be null");
     }
 
-    List<Permission> permissions = permissionQueryRepository.findActivePermissionsByUserId(userId);
+    List<Permission> permissions = permissionQueryRepository.findActivePermissionsByUserId(query.userId());
     return permissions.stream()
         .map(this::mapToPermissionResponse)
         .collect(Collectors.toList());

@@ -26,8 +26,8 @@ public class CreatePermissionUseCase {
       throw new ValidationException("Permission resource and action must not be empty");
     }
 
-    String resource = command.resource().trim();
-    String action = command.action().trim();
+    String resource = command.resource().trim().toUpperCase();
+    String action = command.action().trim().toUpperCase();
 
     if (permissionQueryRepository.findByResourceAndAction(resource, action).isPresent()) {
       throw new ResourceAlreadyExistsException("Permission with resource '" + resource + "' and action '" + action + "' already exists");

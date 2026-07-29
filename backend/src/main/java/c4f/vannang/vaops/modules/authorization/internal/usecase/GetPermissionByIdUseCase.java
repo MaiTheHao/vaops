@@ -1,11 +1,10 @@
 package c4f.vannang.vaops.modules.authorization.internal.usecase;
 
-import java.util.UUID;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
+import c4f.vannang.vaops.modules.authorization.internal.dto.GetPermissionByIdQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
@@ -19,14 +18,14 @@ public class GetPermissionByIdUseCase {
 
   private final PermissionQueryRepository permissionQueryRepository;
 
-  public PermissionResponse execute(UUID permissionId) {
-    if (permissionId == null) {
-      throw new ValidationException("PermissionId must not be null");
+  public PermissionResponse execute(GetPermissionByIdQuery query) {
+    if (query == null || query.permissionId() == null) {
+      throw new ValidationException("GetPermissionByIdQuery and permissionId must not be null");
     }
 
     Permission permission = permissionQueryRepository
-        .findActiveById(permissionId)
-        .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + permissionId));
+        .findActiveById(query.permissionId())
+        .orElseThrow(() -> new ResourceNotFoundException("Permission not found with id: " + query.permissionId()));
 
     return mapToPermissionResponse(permission);
   }

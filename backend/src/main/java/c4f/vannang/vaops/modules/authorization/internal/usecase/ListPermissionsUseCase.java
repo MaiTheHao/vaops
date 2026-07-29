@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
+import c4f.vannang.vaops.modules.authorization.internal.dto.ListPermissionsQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class ListPermissionsUseCase {
 
   private final PermissionQueryRepository permissionQueryRepository;
 
-  public List<PermissionResponse> execute() {
+  public List<PermissionResponse> execute(ListPermissionsQuery query) {
     List<Permission> permissions = permissionQueryRepository.findAllActive();
     return permissions.stream()
         .map(this::mapToPermissionResponse)

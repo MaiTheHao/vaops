@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
+import c4f.vannang.vaops.modules.authorization.internal.dto.ListRolesQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
@@ -21,7 +22,7 @@ public class ListRolesUseCase {
 
   private final RoleQueryRepository roleQueryRepository;
 
-  public List<RoleResponse> execute() {
+  public List<RoleResponse> execute(ListRolesQuery query) {
     List<Role> roles = roleQueryRepository.findAllActive();
     return roles.stream()
         .map(this::mapToRoleResponse)

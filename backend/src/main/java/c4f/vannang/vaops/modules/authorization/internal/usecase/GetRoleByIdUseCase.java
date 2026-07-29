@@ -1,7 +1,6 @@
 package c4f.vannang.vaops.modules.authorization.internal.usecase;
 
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
+import c4f.vannang.vaops.modules.authorization.internal.dto.GetRoleByIdQuery;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
@@ -23,14 +23,14 @@ public class GetRoleByIdUseCase {
 
   private final RoleQueryRepository roleQueryRepository;
 
-  public RoleResponse execute(UUID roleId) {
-    if (roleId == null) {
-      throw new ValidationException("RoleId must not be null");
+  public RoleResponse execute(GetRoleByIdQuery query) {
+    if (query == null || query.roleId() == null) {
+      throw new ValidationException("GetRoleByIdQuery and roleId must not be null");
     }
 
     Role role = roleQueryRepository
-        .findActiveById(roleId)
-        .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + roleId));
+        .findActiveById(query.roleId())
+        .orElseThrow(() -> new ResourceNotFoundException("Role not found with id: " + query.roleId()));
 
     return mapToRoleResponse(role);
   }
