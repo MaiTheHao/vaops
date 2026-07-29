@@ -8,12 +8,13 @@
 
 ## 📄 Executive Summary
 
-Dự án VAOPS cần tái cấu trúc (refactor) toàn bộ module **Authorization** để khắc phục các vấn đề nghiêm trọng về cơ sở dữ liệu, quan hệ JPA, và mô hình Domain:
-1. **Giải quyết xung đột dữ liệu `UserRole`**: Loại bỏ mô hình lai giữa Active State và Audit Log bằng cách chuyển `user_roles` thành Clean Join Table (Revoke = Hard Delete).
-2. **Triệt tiêu quan hệ hai chiều `Role ⟷ Permission`**: Chuyển thành Unidirectional (`Role` -> `Set<Permission>`), xóa `Set<Role> roles` khỏi `Permission` để tránh Circular Dependency và nổ lỗi Cascade.
-3. **Sửa lỗi Unique Constraint do Soft-Delete**: Thay thế Unique Constraint cứng trên `roles.code` và `permissions(resource, action)` bằng Partial Unique Indexes (`WHERE deleted_at IS NULL`).
+Dự án VAOPS tái cấu trúc (refactor) toàn bộ module **Authorization** để khắc phục các vấn đề nghiêm trọng về cơ sở dữ liệu, quan hệ JPA, và mô hình Domain theo các nguyên tắc RBAC chuẩn:
+
+1. **Chuyển toàn bộ Module Authorization sang HARD DELETE**: Trong hệ thống phân quyền (RBAC), việc Soft Delete gây rác dữ liệu và rủi ro bảo mật. Toàn bộ `roles`, `permissions`, và `user_roles` sử dụng **Hard Delete** (`ON DELETE CASCADE`).
+2. **Giải quyết triệt để vấn đề Unique Constraint**: Nhờ dùng Hard Delete, khi xóa một Role hay Permission, bản ghi hoàn toàn bị xóa khỏi DB. Tránh hoàn toàn rủi ro vi phạm Unique Key khi tạo lại Role `code` hoặc Permission `(resource, action)`.
+3. **Triệt tiêu quan hệ hai chiều `Role ⟷ Permission`**: Chuyển thành Unidirectional (`Role` -> `Set<Permission>`), xóa `Set<Role> roles` khỏi `Permission` để tránh Circular Dependency và nổ lỗi Cascade.
 4. **Nâng cấp từ Anemic Domain Model lên Rich Domain Model**: Đóng gói hoàn toàn state mutation vào domain methods, xóa bỏ class-level `@Setter`, xây dựng các Value Objects với `@Converter(autoApply = true)`.
-5. **Chuẩn hóa Use Case Granularity (Từ 17 Use Cases -> 10 Use Cases)**: Gộp các Use Case mutation manh mún thành 3 Command Services (`ManageRoleUseCase`, `ManagePermissionUseCase`, `ManageUserAuthorizationUseCase`) và giữ nguyên 7 Query Use Cases riêng biệt chuẩn CQRS.
+5. **Chuẩn hóa Use Case Granularity (10 Use Cases)**: Gộp các Use Case mutation manh mún thành 3 Command Services (`ManageRoleUseCase`, `ManagePermissionUseCase`, `ManageUserAuthorizationUseCase`) và giữ nguyên 7 Query Use Cases riêng biệt chuẩn CQRS.
 
 ---
 
@@ -24,25 +25,30 @@ Dự án VAOPS cần tái cấu trúc (refactor) toàn bộ module **Authorizati
 ```sql
 -- ----------------------------------------------------------------------------
 -- Migration: V2__fix_authorization_schema.sql
--- Description: Refactor user_roles join table & add partial unique indexes
+-- Description: Refactor authorization tables to Hard Delete & Clean Join Tables
 -- ----------------------------------------------------------------------------
 
 -- 1. Refactor user_roles table: Remove soft-delete tracking columns
 ALTER TABLE user_roles DROP COLUMN IF EXISTS revoked_at;
 ALTER TABLE user_roles DROP COLUMN IF EXISTS revoked_by;
 
--- 2. Refactor roles table: Drop legacy UK and create Partial Unique Index
-ALTER TABLE roles DROP CONSTRAINT IF EXISTS roles_code_key;
-DROP INDEX IF EXISTS uk_roles_code_active;
-CREATE UNIQUE INDEX uk_roles_code_active ON roles (code) WHERE deleted_at IS NULL;
+-- 2. Refactor roles table: Remove soft-delete columns
+ALTER TABLE roles DROP COLUMN IF EXISTS deleted_at;
+ALTER TABLE roles DROP COLUMN IF EXISTS deleted_by;
 
--- 3. Refactor permissions table: Drop legacy UK index and create Partial Unique Index
+-- 3. Refactor permissions table: Remove soft-delete columns
+ALTER TABLE permissions DROP COLUMN IF EXISTS deleted_at;
+ALTER TABLE permissions DROP COLUMN IF EXISTS deleted_by;
+
+-- 4. Ensure standard unique constraints
+ALTER TABLE roles DROP CONSTRAINT IF EXISTS roles_code_key;
+ALTER TABLE roles ADD CONSTRAINT uk_roles_code UNIQUE (code);
+
 DROP INDEX IF EXISTS uk_permissions_action;
-DROP INDEX IF EXISTS uk_permissions_action_active;
-CREATE UNIQUE INDEX uk_permissions_action_active ON permissions (resource, action) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX uk_permissions_action ON permissions (resource, action);
 ```
 
-### 1.2 ER Diagram Mới (Clean Join Table & Unique Partial Indexes)
+### 1.2 ER Diagram Mới (Hard Delete Architecture)
 
 ```mermaid
 erDiagram
@@ -54,33 +60,29 @@ erDiagram
         boolean is_active
         timestamp created_at
         timestamp updated_at
-        timestamp deleted_at
-        uuid deleted_by
         uuid created_by
         uuid updated_by
     }
 
     roles {
         uuid id PK
-        varchar code "VO: RoleCode (Partial UK)"
+        varchar code "VO: RoleCode (UK)"
         varchar description "Nullable"
         boolean is_active
         timestamp created_at
         timestamp updated_at
-        timestamp deleted_at
-        uuid deleted_by
         uuid created_by
         uuid updated_by
     }
 
     role_permissions {
-        uuid role_id FK
-        uuid permission_id FK
+        uuid role_id FK "ON DELETE CASCADE"
+        uuid permission_id FK "ON DELETE CASCADE"
     }
 
     user_roles {
-        uuid user_id PK, FK
-        uuid role_id PK, FK
+        uuid user_id PK, FK "ON DELETE CASCADE"
+        uuid role_id PK, FK "ON DELETE CASCADE"
         timestamp assigned_at
         uuid assigned_by
     }
@@ -97,12 +99,11 @@ erDiagram
 ### 2.1 Quy tắc Đóng gói (Encapsulation Rules)
 * **Xóa bỏ `@Setter` ở cấp độ Class** trên tất cả Entity (`Role`, `Permission`, `UserRole`).
 * Chỉ cho phép `@Getter` và `@NoArgsConstructor(access = AccessLevel.PROTECTED)` để JPA khởi tạo.
-* Expose mutation duy nhất qua **Domain Methods** có tên thể hiện rõ mục đích nghiệp vụ (Ubiquitous Language).
+* Expose mutation duy nhất qua **Domain Methods** có tên thể hiện rõ mục đích nghiệp vụ.
 * `@Setter` chỉ được phép ở cấp độ field cho `id` nếu JPA yêu cầu.
+* Mọi hành vi xóa (delete) là **Hard Delete** thông qua Repository `delete(...)` hoặc `deleteById(...)`.
 
 ### 2.2 Value Objects (Records) & Auto-Apply JPA Converters
-
-Mỗi Value Object sẽ kiểm tra tính hợp lệ ngay tại constructor (invariant checking) và đi kèm một `AttributeConverter` tương ứng:
 
 #### 1. `RoleCode`
 ```java
@@ -171,7 +172,7 @@ public record PermissionDescription(String value) {
 
 ### 2.3 Aggregate Root & Domain Entities Design
 
-#### `Permission` Entity (Rich Entity)
+#### `Permission` Entity (Rich Entity - Hard Delete)
 ```java
 @Entity
 @Table(name = "permissions")
@@ -202,12 +203,6 @@ public class Permission {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
-
-  @Column(name = "deleted_at", nullable = true)
-  private Instant deletedAt;
-
-  @Column(name = "deleted_by", nullable = true)
-  private UUID deletedBy;
 
   @Column(name = "created_by", nullable = true)
   private UUID createdBy;
@@ -240,12 +235,6 @@ public class Permission {
     this.action = action;
     this.description = description;
     this.updatedBy = updatedBy;
-  }
-
-  public void softDelete(UUID deletedByUserId) {
-    this.deletedAt = Instant.now();
-    this.deletedBy = deletedByUserId;
-    this.active = false;
   }
 
   public void activate() {
@@ -294,12 +283,6 @@ public class Role {
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
-
-  @Column(name = "deleted_at", nullable = true)
-  private Instant deletedAt;
-
-  @Column(name = "deleted_by", nullable = true)
-  private UUID deletedBy;
 
   @Column(name = "created_by", nullable = true)
   private UUID createdBy;
@@ -351,17 +334,11 @@ public class Role {
   }
 
   public boolean hasPermission(PermissionResource resource, PermissionAction action) {
-    if (!this.active || this.deletedAt != null) return false;
+    if (!this.active) return false;
     return this.permissions.stream()
         .anyMatch(p -> p.isActive() 
                     && p.getResource().equals(resource) 
                     && p.getAction().equals(action));
-  }
-
-  public void softDelete(UUID deletedByUserId) {
-    this.deletedAt = Instant.now();
-    this.deletedBy = deletedByUserId;
-    this.active = false;
   }
 }
 ```
@@ -397,16 +374,14 @@ public class UserRole {
 
 ## 🎯 3. Application Layer & Use Case Granularity (10 Use Cases)
 
-Thay vì 17 class Use Case thụ động, hệ thống chuẩn hóa còn **10 Use Cases**:
-
 ### 3.1 Core Command Use Cases (3 Aggregated Services)
 
 ```mermaid
 flowchart TD
     subgraph CommandServices["Command Services (Mutation)"]
-        MR["ManageRoleUseCase<br/>• createRole<br/>• updateRole<br/>• softDeleteRole<br/>• assignPermissionsToRole<br/>• revokePermissionsFromRole"]
-        MP["ManagePermissionUseCase<br/>• createPermission<br/>• updatePermission<br/>• softDeletePermission"]
-        MUA["ManageUserAuthorizationUseCase<br/>• assignRolesToUser<br/>• revokeRolesFromUser"]
+        MR["ManageRoleUseCase<br/>• createRole<br/>• updateRole<br/>• deleteRole (Hard Delete)<br/>• assignPermissionsToRole<br/>• revokePermissionsFromRole"]
+        MP["ManagePermissionUseCase<br/>• createPermission<br/>• updatePermission<br/>• deletePermission (Hard Delete)"]
+        MUA["ManageUserAuthorizationUseCase<br/>• assignRolesToUser<br/>• revokeRolesFromUser (Hard Delete)"]
     end
 
     subgraph QueryUseCases["Query Use Cases (Single Responsibility)"]
@@ -423,18 +398,18 @@ flowchart TD
 1. **`ManageRoleUseCase`**:
    * `createRole(CreateRoleCommand command): RoleResponse`
    * `updateRole(UpdateRoleCommand command): RoleResponse`
-   * `softDeleteRole(SoftDeleteRoleCommand command): void`
+   * `deleteRole(DeleteRoleCommand command): void` (Hard Delete)
    * `assignPermissionsToRole(AssignPermissionToRoleCommand command): void`
    * `revokePermissionsFromRole(RevokePermissionFromRoleCommand command): void`
 
 2. **`ManagePermissionUseCase`**:
    * `createPermission(CreatePermissionCommand command): PermissionResponse`
    * `updatePermission(UpdatePermissionCommand command): PermissionResponse`
-   * `softDeletePermission(SoftDeletePermissionCommand command): void`
+   * `deletePermission(DeletePermissionCommand command): void` (Hard Delete)
 
 3. **`ManageUserAuthorizationUseCase`**:
    * `assignRolesToUser(AssignRoleToUserCommand command): void`
-   * `revokeRolesFromUser(RevokeRoleFromUserCommand command): void`
+   * `revokeRolesFromUser(RevokeRoleFromUserCommand command): void` (Hard Delete)
 
 ### 3.2 Query Use Cases (7 Distinct CQRS Services)
 4. `GetRoleByIdUseCase`
@@ -451,8 +426,8 @@ flowchart TD
 
 ```mermaid
 classDiagram
-    accTitle: Authorization Refactored Domain Model V2
-    accDescr: Class diagram showing Rich Permission, Role, UserRole entities with Value Objects and Unidirectional Many-to-Many
+    accTitle: Authorization Refactored Domain Model V2 (Hard Delete)
+    accDescr: Class diagram showing Rich Permission, Role, UserRole entities with Hard Delete & Unidirectional Many-to-Many
 
     class Permission {
         -UUID id
@@ -462,13 +437,10 @@ classDiagram
         -boolean active
         -Instant createdAt
         -Instant updatedAt
-        -Instant deletedAt
-        -UUID deletedBy
         -UUID createdBy
         -UUID updatedBy
         +create() Permission$
         +updateInfo() void
-        +softDelete() void
         +activate() void
         +deactivate() void
     }
@@ -481,8 +453,6 @@ classDiagram
         -Set~Permission~ permissions
         -Instant createdAt
         -Instant updatedAt
-        -Instant deletedAt
-        -UUID deletedBy
         -UUID createdBy
         -UUID updatedBy
         +create() Role$
@@ -490,7 +460,6 @@ classDiagram
         +assignPermission() void
         +revokePermission() void
         +hasPermission() boolean
-        +softDelete() void
     }
 
     class UserRole {
@@ -515,7 +484,7 @@ classDiagram
 
 * **Shared Exceptions**:
   * `ValidationException`: Bắn ra khi Value Object khởi tạo không hợp lệ hoặc DTO null/empty.
-  * `ResourceNotFoundException`: Bắn ra khi tìm Role/Permission bằng ID không tồn tại hoặc đã bị delete.
+  * `ResourceNotFoundException`: Bắn ra khi tìm Role/Permission bằng ID không tồn tại.
   * `ResourceAlreadyExistsException`: Bắn ra khi trùng `RoleCode` hoặc `(PermissionResource, PermissionAction)` khi tạo mới.
 * **Module Exception**:
   * `UnauthorizedException` (trong `authorization/api/exception`): Trả về lỗi khi `CheckPermissionUseCase` kiểm tra không đủ quyền truy cập.
@@ -525,13 +494,13 @@ classDiagram
 ## 🧪 6. Spec Self-Review Checklist
 
 - [x] **Placeholder Scan**: Không có "TODO", "TBD" hay thông số mập mờ.
-- [x] **Internal Consistency**: Schema Flyway SQL hoàn toàn tương thích với JPA Entity Mappings và Partial Unique Index logic.
+- [x] **Internal Consistency**: Đã loại bỏ hoàn toàn Soft Delete khỏi RBAC schema, JPA Entities, và Use Cases.
 - [x] **Scope Check**: Tải trọng refactoring chuẩn xác 10 Use Cases, chia tách rõ giữa Command & Query.
-- [x] **Ambiguity Check**: Quy định rõ 100% về Value Objects, AttributeConverters, Encapsulation, và Hard Delete đối với `user_roles`.
+- [x] **Ambiguity Check**: Quy định rõ 100% về Value Objects, AttributeConverters, Encapsulation, và Hard Delete (`ON DELETE CASCADE`).
 
 ---
 
 ## 🚀 7. Next Steps
 
-1. Dev xem xét và phê duyệt file Spec thiết kế này tại `docs/superpowers/specs/2026-07-29-authorization-v2-refactoring-design.md`.
+1. Dev xem xét và phê duyệt file Spec thiết kế cập nhật này tại `docs/superpowers/specs/2026-07-29-authorization-v2-refactoring-design.md`.
 2. Chuyển sang bước tạo **Implementation Plan** thông qua `writing-plans` skill.
