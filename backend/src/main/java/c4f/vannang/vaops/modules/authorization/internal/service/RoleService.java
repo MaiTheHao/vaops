@@ -7,20 +7,24 @@ import c4f.vannang.vaops.modules.authorization.internal.dto.AssignPermissionToRo
 import c4f.vannang.vaops.modules.authorization.internal.dto.CreateRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RevokePermissionFromRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
+import c4f.vannang.vaops.modules.authorization.internal.dto.RoleSearchCriteria;
 import c4f.vannang.vaops.modules.authorization.internal.dto.UpdateRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.mapper.RoleResponseMapper;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
+import c4f.vannang.vaops.modules.authorization.internal.repository.spec.RoleSpecification;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleWriteRepository;
+import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -77,17 +81,12 @@ public class RoleService {
   }
 
   @Transactional(readOnly = true)
-  public List<RoleResponse> listRoles() {
-    return roleQueryRepository.findAllActive().stream()
-        .map(roleResponseMapper::toResponse)
-        .collect(Collectors.toList());
-  }
-
-  @Transactional(readOnly = true)
-  public List<RoleResponse> getUserRoles(UUID userId) {
-    if (userId == null) throw new ValidationException("UserId must not be null");
-    List<Role> roles = roleQueryRepository.findActiveRolesByUserId(userId);
-    return roles.stream().map(roleResponseMapper::toResponse).collect(Collectors.toList());
+  public PageResponse<RoleResponse> searchRoles(RoleSearchCriteria criteria) {
+    Page<Role> rolePage = roleQueryRepository.findAll(
+        RoleSpecification.search(criteria),
+        criteria.toPageable()
+    );
+    return PageResponse.from(rolePage, roleResponseMapper::toResponse);
   }
 
   public void assignPermissionsToRole(AssignPermissionToRoleCommand command) {

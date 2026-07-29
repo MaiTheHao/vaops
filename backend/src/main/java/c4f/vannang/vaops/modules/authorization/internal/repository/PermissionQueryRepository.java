@@ -5,12 +5,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
+import c4f.vannang.vaops.shared.repository.BaseQueryRepository;
 
-public interface PermissionQueryRepository extends Repository<Permission, UUID> {
+public interface PermissionQueryRepository extends BaseQueryRepository<Permission, UUID> {
 
   Optional<Permission> findById(UUID id);
 
@@ -29,15 +29,6 @@ public interface PermissionQueryRepository extends Repository<Permission, UUID> 
 
   @Query("SELECT p FROM Permission p WHERE p.id IN :ids AND p.isActive = true AND p.deletedAt IS NULL")
   List<Permission> findAllActiveByIds(@Param("ids") List<UUID> ids);
-
-  @Query("SELECT p FROM Permission p WHERE p.isActive = true AND p.deletedAt IS NULL ORDER BY p.resource ASC, p.action ASC")
-  List<Permission> findAllActive();
-
-  @Query("SELECT DISTINCT p FROM Permission p JOIN p.roles r WHERE r.id = :roleId AND r.isActive = true AND r.deletedAt IS NULL AND p.isActive = true AND p.deletedAt IS NULL")
-  List<Permission> findActivePermissionsByRoleId(@Param("roleId") UUID roleId);
-
-  @Query("SELECT DISTINCT p FROM Permission p JOIN p.roles r JOIN UserRole ur ON ur.id.roleId = r.id WHERE ur.id.userId = :userId AND ur.revokedAt IS NULL AND r.isActive = true AND r.deletedAt IS NULL AND p.isActive = true AND p.deletedAt IS NULL")
-  List<Permission> findActivePermissionsByUserId(@Param("userId") UUID userId);
 
   @Query("SELECT CASE WHEN EXISTS (" +
          "SELECT 1 FROM Permission p JOIN p.roles r JOIN UserRole ur ON ur.id.roleId = r.id " +

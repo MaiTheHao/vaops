@@ -38,7 +38,13 @@ import c4f.vannang.vaops.modules.identity.internal.usecase.LoginSuccessfulUseCas
 import c4f.vannang.vaops.modules.identity.internal.usecase.RegisterUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.ToggleStatusUseCase;
+import c4f.vannang.vaops.modules.identity.internal.domain.User;
+import c4f.vannang.vaops.modules.identity.internal.usecase.SearchUsersUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
+import c4f.vannang.vaops.shared.dto.PageResponse;
+import c4f.vannang.vaops.modules.identity.internal.dto.UserSearchCriteria;
+
+import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -55,6 +61,7 @@ class IdentityModuleApiImpl implements IdentityModuleApi {
   private final FindUserByIdUseCase findUserByIdUseCase;
   private final FindUserByAccountNameUseCase findUserByAccountNameUseCase;
   private final CheckAvailableUserUseCase checkAvailableUserUseCase;
+  private final SearchUsersUseCase searchUsersUseCase;
   private final UserDtoMapper userDtoMapper;
   private final IdentityMapper identityMapper;
 
@@ -131,5 +138,11 @@ class IdentityModuleApiImpl implements IdentityModuleApi {
     FindByAccountNameCommand internalQuery = identityMapper.toInternal(query);
     return findUserByAccountNameUseCase.execute(internalQuery)
         .map(userDtoMapper::toDto);
+  }
+
+  @Override
+  public PageResponse<UserDto> searchUsers(UserSearchCriteria criteria) {
+    Page<User> userPage = searchUsersUseCase.execute(criteria);
+    return PageResponse.from(userPage, userDtoMapper::toDto);
   }
 }

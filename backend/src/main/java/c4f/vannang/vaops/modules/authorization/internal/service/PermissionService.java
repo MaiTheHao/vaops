@@ -10,13 +10,16 @@ import c4f.vannang.vaops.modules.authorization.internal.dto.UpdatePermissionComm
 import c4f.vannang.vaops.modules.authorization.internal.mapper.PermissionResponseMapper;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionWriteRepository;
+import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionSearchCriteria;
+import c4f.vannang.vaops.modules.authorization.internal.repository.spec.PermissionSpecification;
+import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
-import java.util.List;
+
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,18 +87,11 @@ public class PermissionService {
   }
 
   @Transactional(readOnly = true)
-  public List<PermissionResponse> listPermissions() {
-    return permissionQueryRepository.findAllActive().stream()
-        .map(permissionResponseMapper::toResponse)
-        .collect(Collectors.toList());
-  }
-
-  @Transactional(readOnly = true)
-  public List<PermissionResponse> getUserPermissions(UUID userId) {
-    if (userId == null) throw new ValidationException("UserId must not be null");
-    List<Permission> permissions = permissionQueryRepository.findActivePermissionsByUserId(userId);
-    return permissions.stream()
-        .map(permissionResponseMapper::toResponse)
-        .collect(Collectors.toList());
+  public PageResponse<PermissionResponse> searchPermissions(PermissionSearchCriteria criteria) {
+    Page<Permission> permissionPage = permissionQueryRepository.findAll(
+        PermissionSpecification.search(criteria),
+        criteria.toPageable()
+    );
+    return PageResponse.from(permissionPage, permissionResponseMapper::toResponse);
   }
 }

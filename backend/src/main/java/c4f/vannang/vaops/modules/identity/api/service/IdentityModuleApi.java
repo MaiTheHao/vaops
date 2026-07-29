@@ -15,6 +15,8 @@ import c4f.vannang.vaops.modules.identity.api.dto.ToggleUserStatusRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.internal.dto.UserSearchCriteria;
+import c4f.vannang.vaops.shared.dto.PageResponse;
 
 public interface IdentityModuleApi {
     Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query);
@@ -29,4 +31,5 @@ public interface IdentityModuleApi {
     void changePassword(ChangePasswordRequest command);
     Optional<UserDto> getUserById(FindByIdQuery query);
     Optional<UserDto> findByAccountName(FindByAccountNameQuery query);
+    PageResponse<UserDto> searchUsers(UserSearchCriteria criteria);
 }

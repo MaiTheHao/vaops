@@ -99,7 +99,7 @@ public class Role {
   public void assignPermissions(Collection<Permission> newPermissions) {
     if (newPermissions != null) {
       newPermissions.stream()
-          .filter(Permission::isActive)
+          .filter(p -> p.isActive())
           .forEach(this.permissions::add);
     }
   }
