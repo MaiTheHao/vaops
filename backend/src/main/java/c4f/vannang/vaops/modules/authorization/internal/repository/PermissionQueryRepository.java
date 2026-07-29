@@ -20,6 +20,8 @@ public interface PermissionQueryRepository extends Repository<Permission, UUID> 
   @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action")
   Optional<Permission> findByResourceAndAction(@Param("resource") String resource, @Param("action") String action);
 
+  boolean existsByResourceAndAction(String resource, String action);
+
   @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.isActive = true AND p.deletedAt IS NULL")
   Optional<Permission> findActiveByResourceAndAction(@Param("resource") String resource, @Param("action") String action);
 

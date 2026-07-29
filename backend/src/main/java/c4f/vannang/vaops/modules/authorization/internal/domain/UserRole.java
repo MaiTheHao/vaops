@@ -5,40 +5,33 @@ import java.util.UUID;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.id.UserRoleId;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 
-@Table(name = "user_roles")
 @Entity
+@Table(name = "user_roles")
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserRole {
 
   @EmbeddedId
-  @EqualsAndHashCode.Include
   private UserRoleId id;
 
   @Column(name = "assigned_at", nullable = false)
-  @Builder.Default
-  private Instant assignedAt = Instant.now();
+  private Instant assignedAt;
 
   @Column(name = "assigned_by")
   private UUID assignedBy;
 
-  @Column(name = "revoked_at")
-  private Instant revokedAt;
-
-  @Column(name = "revoked_by")
-  private UUID revokedBy;
+  public static UserRole assign(UUID userId, UUID roleId, UUID assignedBy) {
+    UserRole ur = new UserRole();
+    ur.id = new UserRoleId(userId, roleId);
+    ur.assignedAt = Instant.now();
+    ur.assignedBy = assignedBy;
+    return ur;
+  }
 }

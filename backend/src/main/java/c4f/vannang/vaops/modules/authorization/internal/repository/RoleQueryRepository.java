@@ -19,6 +19,8 @@ public interface RoleQueryRepository extends Repository<Role, UUID> {
 
   Optional<Role> findByCode(String code);
 
+  boolean existsByCode(String code);
+
   @Query("SELECT r FROM Role r WHERE r.code = :code AND r.isActive = true AND r.deletedAt IS NULL")
   Optional<Role> findActiveByCode(@Param("code") String code);
 

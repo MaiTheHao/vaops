@@ -1,68 +1,52 @@
 package c4f.vannang.vaops.modules.authorization.internal.domain;
 
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import org.hibernate.annotations.UuidGenerator;
 
-@Table(name = "permissions")
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionDescription;
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
+
 @Entity
+@Table(name = "permissions")
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Permission {
 
   @Id
   @UuidGenerator
-  @EqualsAndHashCode.Include
   private UUID id;
 
   @Column(name = "resource", nullable = false, length = 256)
-  private String resource;
+  private PermissionResource resource;
 
   @Column(name = "action", nullable = false, length = 256)
-  private String action;
+  private PermissionAction action;
 
   @Column(name = "description", nullable = true, length = 1024)
-  private String description;
+  private PermissionDescription description;
 
   @Column(name = "is_active", nullable = false)
-  @Builder.Default
-  private Boolean isActive = true;
+  private boolean active = true;
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
-  @Builder.Default
-  private Instant createdAt = Instant.now();
+  private Instant createdAt;
 
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
-  @Builder.Default
-  private Instant updatedAt = Instant.now();
-
-  @Column(name = "deleted_at", nullable = true)
-  private Instant deletedAt;
-
-  @Column(name = "deleted_by", nullable = true)
-  private UUID deletedBy;
+  private Instant updatedAt;
 
   @Column(name = "created_by", nullable = true)
   private UUID createdBy;
@@ -70,6 +54,40 @@ public class Permission {
   @Column(name = "updated_by", nullable = true)
   private UUID updatedBy;
 
-  @ManyToMany(mappedBy = "permissions")
-  private Set<Role> roles;
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public static Permission create(
+      PermissionResource resource,
+      PermissionAction action,
+      PermissionDescription description,
+      UUID createdBy) {
+    Permission p = new Permission();
+    p.resource = resource;
+    p.action = action;
+    p.description = description;
+    p.createdBy = createdBy;
+    p.active = true;
+    return p;
+  }
+
+  public void updateInfo(
+      PermissionResource resource,
+      PermissionAction action,
+      PermissionDescription description,
+      UUID updatedBy) {
+    this.resource = resource;
+    this.action = action;
+    this.description = description;
+    this.updatedBy = updatedBy;
+  }
+
+  public void activate() {
+    this.active = true;
+  }
+
+  public void deactivate() {
+    this.active = false;
+  }
 }
