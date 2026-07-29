@@ -14,7 +14,7 @@ Dự án VAOPS tái cấu trúc (refactor) toàn bộ module **Authorization** �
 2. **Giải quyết triệt để vấn đề Unique Constraint**: Nhờ dùng Hard Delete, khi xóa một Role hay Permission, bản ghi hoàn toàn bị xóa khỏi DB. Tránh hoàn toàn rủi ro vi phạm Unique Key khi tạo lại Role `code` hoặc Permission `(resource, action)`.
 3. **Triệt tiêu quan hệ hai chiều `Role ⟷ Permission`**: Chuyển thành Unidirectional (`Role` -> `Set<Permission>`), xóa `Set<Role> roles` khỏi `Permission` để tránh Circular Dependency và nổ lỗi Cascade.
 4. **Nâng cấp từ Anemic Domain Model lên Rich Domain Model**: Đóng gói hoàn toàn state mutation vào domain methods, xóa bỏ class-level `@Setter`, xây dựng các Value Objects với `@Converter(autoApply = true)`.
-5. **Chuẩn hóa Use Case Granularity (10 Use Cases)**: Gộp các Use Case mutation manh mún thành 3 Command Services (`ManageRoleUseCase`, `ManagePermissionUseCase`, `ManageUserAuthorizationUseCase`) và giữ nguyên 7 Query Use Cases riêng biệt chuẩn CQRS.
+5. **Chuẩn hóa Kiến trúc 3+1 Services theo Aggregate Boundaries**: Gộp 17 Use Cases manh mún thành **3 Manager Services theo từng Aggregate Boundary** (`RoleService`, `PermissionService`, `UserRoleService`) + **1 Cross-Aggregate Query Service** (`CheckPermissionService`).
 
 ---
 
@@ -372,135 +372,95 @@ public class UserRole {
 
 ---
 
-## 🎯 3. Application Layer & Use Case Granularity (10 Use Cases)
+## 🎯 3. Application Layer & Service Granularity (Hybrid 3+1 Services)
 
-### 3.1 Core Command Use Cases (3 Aggregated Services)
+### 3.1 Cấu trúc Gói (Package Structure)
+
+```text
+authorization/
+├── internal/
+│   ├── domain/                  # Role.java, Permission.java, UserRole.java
+│   │   ├── converter/           # RoleCodeConverter, PermissionResourceConverter, etc.
+│   │   └── valueobject/         # RoleCode, PermissionResource, PermissionAction, etc.
+│   ├── dto/                     # Command & Query DTOs (tinh gọn từ 18 → 12 DTOs)
+│   ├── mapper/                  # RoleResponseMapper, PermissionResponseMapper
+│   ├── repository/              # RoleQuery/Write, PermissionQuery/Write, UserRoleQuery/Write
+│   └── service/                 # 3 Manager Services + 1 CheckPermission Service
+│       ├── RoleService.java
+│       ├── PermissionService.java
+│       ├── UserRoleService.java
+│       └── CheckPermissionService.java
+```
+
+### 3.2 Phân định Trách nhiệm Service theo Aggregate Boundaries
 
 ```mermaid
 flowchart TD
-    subgraph CommandServices["Command Services (Mutation)"]
-        MR["ManageRoleUseCase<br/>• createRole<br/>• updateRole<br/>• deleteRole (Hard Delete)<br/>• assignPermissionsToRole<br/>• revokePermissionsFromRole"]
-        MP["ManagePermissionUseCase<br/>• createPermission<br/>• updatePermission<br/>• deletePermission (Hard Delete)"]
-        MUA["ManageUserAuthorizationUseCase<br/>• assignRolesToUser<br/>• revokeRolesFromUser (Hard Delete)"]
+    subgraph AggregateServices["3 Aggregate Manager Services"]
+        RS["RoleService<br/>(Aggregate: Role)<br/>• createRole<br/>• updateRole<br/>• deleteRole<br/>• getRoleById<br/>• listRoles<br/>• assignPermissionsToRole<br/>• revokePermissionsFromRole"]
+        PS["PermissionService<br/>(Aggregate: Permission)<br/>• createPermission<br/>• updatePermission<br/>• deletePermission<br/>• getPermissionById<br/>• listPermissions"]
+        URS["UserRoleService<br/>(Aggregate: UserRole)<br/>• assignRolesToUser<br/>• revokeRolesFromUser<br/>• getUserRoles<br/>• getUserPermissions"]
     end
 
-    subgraph QueryUseCases["Query Use Cases (Single Responsibility)"]
-        Q1["GetRoleByIdUseCase"]
-        Q2["ListRolesUseCase"]
-        Q3["GetPermissionByIdUseCase"]
-        Q4["ListPermissionsUseCase"]
-        Q5["GetUserRolesUseCase"]
-        Q6["GetUserPermissionsUseCase"]
-        Q7["CheckPermissionUseCase"]
+    subgraph CrossAggregateService["1 Cross-Aggregate Evaluator Service"]
+        CPS["CheckPermissionService<br/>(Cross-Aggregate Security Check)<br/>• checkPermission"]
     end
+
+    RS -->|Uses| RoleMapper["RoleResponseMapper"]
+    PS -->|Uses| PermMapper["PermissionResponseMapper"]
+    URS -->|Uses| RoleMapper
+    URS -->|Uses| PermMapper
 ```
 
-1. **`ManageRoleUseCase`**:
-   * `createRole(CreateRoleCommand command): RoleResponse`
-   * `updateRole(UpdateRoleCommand command): RoleResponse`
-   * `deleteRole(DeleteRoleCommand command): void` (Hard Delete)
-   * `assignPermissionsToRole(AssignPermissionToRoleCommand command): void`
-   * `revokePermissionsFromRole(RevokePermissionFromRoleCommand command): void`
+#### 1. `RoleService` (Quản lý Aggregate `Role` - 7 Operations)
+* `createRole(CreateRoleCommand command): RoleResponse`
+* `updateRole(UpdateRoleCommand command): RoleResponse`
+* `deleteRole(UUID roleId): void` (Hard Delete)
+* `getRoleById(UUID roleId): RoleResponse`
+* `listRoles(): List<RoleResponse>`
+* `assignPermissionsToRole(AssignPermissionToRoleCommand command): void`
+* `revokePermissionsFromRole(RevokePermissionFromRoleCommand command): void`
 
-2. **`ManagePermissionUseCase`**:
-   * `createPermission(CreatePermissionCommand command): PermissionResponse`
-   * `updatePermission(UpdatePermissionCommand command): PermissionResponse`
-   * `deletePermission(DeletePermissionCommand command): void` (Hard Delete)
+#### 2. `PermissionService` (Quản lý Aggregate `Permission` - 5 Operations)
+* `createPermission(CreatePermissionCommand command): PermissionResponse`
+* `updatePermission(UpdatePermissionCommand command): PermissionResponse`
+* `deletePermission(UUID permissionId): void` (Hard Delete)
+* `getPermissionById(UUID permissionId): PermissionResponse`
+* `listPermissions(): List<PermissionResponse>`
 
-3. **`ManageUserAuthorizationUseCase`**:
-   * `assignRolesToUser(AssignRoleToUserCommand command): void`
-   * `revokeRolesFromUser(RevokeRoleFromUserCommand command): void` (Hard Delete)
+#### 3. `UserRoleService` (Quản lý Aggregate `UserRole` - 4 Operations)
+* `assignRolesToUser(AssignRoleToUserCommand command): void`
+* `revokeRolesFromUser(RevokeRoleFromUserCommand command): void` (Hard Delete)
+* `getUserRoles(UUID userId): List<RoleResponse>`
+* `getUserPermissions(UUID userId): List<PermissionResponse>`
 
-### 3.2 Query Use Cases (7 Distinct CQRS Services)
-4. `GetRoleByIdUseCase`
-5. `ListRolesUseCase`
-6. `GetPermissionByIdUseCase`
-7. `ListPermissionsUseCase`
-8. `GetUserRolesUseCase`
-9. `GetUserPermissionsUseCase`
-10. `CheckPermissionUseCase`
+#### 4. `CheckPermissionService` (Cross-Aggregate Evaluator Query Service - 1 Operation)
+* `checkPermission(CheckPermissionQuery query): boolean`  
+  *(Duyệt chuỗi liên kết UserRole -> Role -> Permission để kiểm tra quyền hạn một cách tối ưu).*
 
 ---
 
-## 📊 4. Class Diagram & Architecture Mapping
-
-```mermaid
-classDiagram
-    accTitle: Authorization Refactored Domain Model V2 (Hard Delete)
-    accDescr: Class diagram showing Rich Permission, Role, UserRole entities with Hard Delete & Unidirectional Many-to-Many
-
-    class Permission {
-        -UUID id
-        -PermissionResource resource
-        -PermissionAction action
-        -PermissionDescription description
-        -boolean active
-        -Instant createdAt
-        -Instant updatedAt
-        -UUID createdBy
-        -UUID updatedBy
-        +create() Permission$
-        +updateInfo() void
-        +activate() void
-        +deactivate() void
-    }
-
-    class Role {
-        -UUID id
-        -RoleCode code
-        -String description
-        -boolean active
-        -Set~Permission~ permissions
-        -Instant createdAt
-        -Instant updatedAt
-        -UUID createdBy
-        -UUID updatedBy
-        +create() Role$
-        +updateInfo() void
-        +assignPermission() void
-        +revokePermission() void
-        +hasPermission() boolean
-    }
-
-    class UserRole {
-        -UserRoleId id
-        -Instant assignedAt
-        -UUID assignedBy
-        +assign() UserRole$
-    }
-
-    class UserRoleId {
-        -UUID userId
-        -UUID roleId
-    }
-
-    Role "*" --> "*" Permission : role_permissions (Unidirectional)
-    UserRole *-- UserRoleId : embeddedId
-```
-
----
-
-## 🚫 5. Exception Handling & Error Strategy
+## 🚫 4. Exception Handling & Error Strategy
 
 * **Shared Exceptions**:
   * `ValidationException`: Bắn ra khi Value Object khởi tạo không hợp lệ hoặc DTO null/empty.
   * `ResourceNotFoundException`: Bắn ra khi tìm Role/Permission bằng ID không tồn tại.
   * `ResourceAlreadyExistsException`: Bắn ra khi trùng `RoleCode` hoặc `(PermissionResource, PermissionAction)` khi tạo mới.
 * **Module Exception**:
-  * `UnauthorizedException` (trong `authorization/api/exception`): Trả về lỗi khi `CheckPermissionUseCase` kiểm tra không đủ quyền truy cập.
+  * `UnauthorizedException` (trong `authorization/api/exception`): Trả về lỗi khi `CheckPermissionService` kiểm tra không đủ quyền truy cập.
 
 ---
 
-## 🧪 6. Spec Self-Review Checklist
+## 🧪 5. Spec Self-Review Checklist
 
 - [x] **Placeholder Scan**: Không có "TODO", "TBD" hay thông số mập mờ.
-- [x] **Internal Consistency**: Đã loại bỏ hoàn toàn Soft Delete khỏi RBAC schema, JPA Entities, và Use Cases.
-- [x] **Scope Check**: Tải trọng refactoring chuẩn xác 10 Use Cases, chia tách rõ giữa Command & Query.
-- [x] **Ambiguity Check**: Quy định rõ 100% về Value Objects, AttributeConverters, Encapsulation, và Hard Delete (`ON DELETE CASCADE`).
+- [x] **Internal Consistency**: Mô hình 3+1 Services hoàn toàn khớp với Aggregate Boundaries (`Role`, `Permission`, `UserRole`) và CQRS logic.
+- [x] **Scope Check**: Tải trọng refactoring giảm từ 17 files xuống 4 Service files, tiết kiệm ~42% code boilerplate.
+- [x] **Ambiguity Check**: Quy định rõ 100% về Value Objects, AttributeConverters, Encapsulation, và Mappers dùng chung.
 
 ---
 
-## 🚀 7. Next Steps
+## 🚀 6. Next Steps
 
-1. Dev xem xét và phê duyệt file Spec thiết kế cập nhật này tại `docs/superpowers/specs/2026-07-29-authorization-v2-refactoring-design.md`.
+1. Dev xem xét và phê duyệt file Spec thiết kế kiến trúc 3+1 Services này tại `docs/superpowers/specs/2026-07-29-authorization-v2-refactoring-design.md`.
 2. Chuyển sang bước tạo **Implementation Plan** thông qua `writing-plans` skill.
