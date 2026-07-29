@@ -51,6 +51,12 @@ public class Role {
   )
   private Set<Permission> permissions = new HashSet<>();
 
+  @Column(name = "deleted_at", nullable = true)
+  private Instant deletedAt;
+
+  @Column(name = "deleted_by", nullable = true)
+  private UUID deletedBy;
+
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -123,6 +129,12 @@ public class Role {
   }
 
   public void deactivate() {
+    this.active = false;
+  }
+
+  public void softDelete(UUID deletedByUserId) {
+    this.deletedAt = Instant.now();
+    this.deletedBy = deletedByUserId;
     this.active = false;
   }
 }

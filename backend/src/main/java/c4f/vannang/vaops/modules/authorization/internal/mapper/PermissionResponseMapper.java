@@ -18,8 +18,8 @@ public class PermissionResponseMapper {
         .isActive(permission.isActive())
         .createdAt(permission.getCreatedAt())
         .updatedAt(permission.getUpdatedAt())
-        .deletedAt(null)
-        .deletedBy(null)
+        .deletedAt(permission.getDeletedAt())
+        .deletedBy(permission.getDeletedBy())
         .createdBy(permission.getCreatedBy())
         .updatedBy(permission.getUpdatedBy())
         .build();

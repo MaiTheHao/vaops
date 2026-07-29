@@ -34,8 +34,8 @@ public class RoleResponseMapper {
         .permissions(permissionResponses)
         .createdAt(role.getCreatedAt())
         .updatedAt(role.getUpdatedAt())
-        .deletedAt(null)
-        .deletedBy(null)
+        .deletedAt(role.getDeletedAt())
+        .deletedBy(role.getDeletedBy())
         .createdBy(role.getCreatedBy())
         .updatedBy(role.getUpdatedBy())
         .build();
