@@ -3,12 +3,11 @@ package c4f.vannang.vaops.modules.authorization.internal.repository.spec;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.RolePermission;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionSearchCriteria;
+import c4f.vannang.vaops.shared.util.JpaSpecUtil;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -59,7 +58,7 @@ public class PermissionSpecification {
       query.distinct(true);
 
       Join<Permission, RolePermission> rolePermissions =
-          getOrCreateJoin(root, "rolePermissions", JoinType.INNER);
+          JpaSpecUtil.getOrCreateJoin(root, "rolePermissions", JoinType.INNER);
 
       return cb.equal(rolePermissions.get("id").get("roleId"), roleId);
     };
@@ -73,7 +72,7 @@ public class PermissionSpecification {
       query.distinct(true);
 
       Join<Permission, RolePermission> rpJoin =
-          getOrCreateJoin(root, "rolePermissions", JoinType.INNER);
+          JpaSpecUtil.getOrCreateJoin(root, "rolePermissions", JoinType.INNER);
 
       return rpJoin.get("id").get("roleId").in(roleIds);
     };
@@ -91,18 +90,5 @@ public class PermissionSpecification {
         .and(hasRoleIdIn(criteria.roleIds()))
         .and(createdAfter(criteria.createdFrom()))
         .and(createdBefore(criteria.createdTo()));
-  }
-
-  // Will move into utils
-  @SuppressWarnings("unchecked")
-  private static <Z, X> Join<Z, X> getOrCreateJoin(
-      Root<Z> root, String attribute, JoinType joinType) {
-    Set<Join<Z, ?>> rootJoins = root.getJoins();
-
-    for (var join : rootJoins) {
-      if (join.getAttribute().getName().equals(attribute)) return (Join<Z, X>) join;
-    }
-
-    return root.join(attribute, joinType);
   }
 }

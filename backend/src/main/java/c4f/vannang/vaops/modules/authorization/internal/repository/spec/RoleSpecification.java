@@ -3,11 +3,10 @@ package c4f.vannang.vaops.modules.authorization.internal.repository.spec;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
 import c4f.vannang.vaops.modules.authorization.internal.domain.UserRole;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleSearchCriteria;
+import c4f.vannang.vaops.shared.util.JpaSpecUtil;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -51,7 +50,7 @@ public class RoleSpecification {
 
       query.distinct(true);
 
-      Join<Role, UserRole> userRoles = getOrCreateJoin(root, "userRoles", JoinType.INNER);
+      Join<Role, UserRole> userRoles = JpaSpecUtil.getOrCreateJoin(root, "userRoles", JoinType.INNER);
 
       return cb.equal(userRoles.get("id").get("userId"), userId);
     };
@@ -68,18 +67,5 @@ public class RoleSpecification {
         .and(hasUserId(criteria.userId()))
         .and(createdAfter(criteria.createdFrom()))
         .and(createdBefore(criteria.createdTo()));
-  }
-
-  // Will move into utils
-  @SuppressWarnings("unchecked")
-  private static <Z, X> Join<Z, X> getOrCreateJoin(
-      Root<Z> root, String attribute, JoinType joinType) {
-    Set<Join<Z, ?>> rootJoins = root.getJoins();
-
-    for (var join : rootJoins) {
-      if (join.getAttribute().getName().equals(attribute)) return (Join<Z, X>) join;
-    }
-
-    return root.join(attribute, joinType);
   }
 }
