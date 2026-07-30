@@ -34,4 +34,8 @@ public record PageResponse<T>(
         page.hasNext(),
         page.hasPrevious());
   }
+
+  public static <T> PageResponse<T> empty() {
+    return new PageResponse<>(List.of(), 0, 0, 0L, 0, false, false);
+  }
 }

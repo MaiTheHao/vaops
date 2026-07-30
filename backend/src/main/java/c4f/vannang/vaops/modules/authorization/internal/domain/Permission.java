@@ -1,11 +1,15 @@
 package c4f.vannang.vaops.modules.authorization.internal.domain;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -60,6 +64,9 @@ public class Permission {
   @Column(name = "updated_by", nullable = true)
   private UUID updatedBy;
 
+  @OneToMany(mappedBy = "permission", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+  private Set<RolePermission> rolePermissions = new HashSet<>();
+
   public void setId(UUID id) {
     this.id = id;
   }
@@ -78,7 +85,7 @@ public class Permission {
     return p;
   }
 
-  public void updateInfo(
+  public void update(
       PermissionResource resource,
       PermissionAction action,
       PermissionDescription description,

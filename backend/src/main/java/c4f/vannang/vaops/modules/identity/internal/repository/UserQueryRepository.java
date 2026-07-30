@@ -14,21 +14,21 @@ public interface UserQueryRepository extends BaseQueryRepository<User, UUID> {
 
   Optional<User> findById(UUID id);
 
-  @Query("SELECT u FROM User u WHERE u.id = :id AND u.isActive = true AND u.deletedAt IS NULL")
+  @Query("SELECT u FROM User u WHERE u.id = :id AND u.active = true AND u.deletedAt IS NULL")
   Optional<User> findActiveById(@Param("id") UUID id);
 
   List<User> findAllByIdIn(List<UUID> ids);
 
-  @Query("SELECT u FROM User u WHERE u.id IN :ids AND u.isActive = true AND u.deletedAt IS NULL")
-  List<User> findAllActiveByIds(@Param("ids") List<UUID> ids);
+  @Query("SELECT u FROM User u WHERE u.id IN :ids AND u.active = true AND u.deletedAt IS NULL")
+  List<User> findAllActiveByIdIn(@Param("ids") List<UUID> ids);
 
   @Query("SELECT u FROM User u WHERE u.accountName = :accountName")
   Optional<User> findByAccountName(@Param("accountName") AccountName accountName);
 
-  @Query("SELECT u FROM User u WHERE u.accountName = :accountName AND u.isActive = true AND u.deletedAt IS NULL")
+  @Query("SELECT u FROM User u WHERE u.accountName = :accountName AND u.active = true AND u.deletedAt IS NULL")
   Optional<User> findActiveByAccountName(@Param("accountName") AccountName accountName);
 
-  @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.accountName = :accountName AND u.isActive = true AND u.deletedAt IS NULL")
+  @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.accountName = :accountName AND u.active = true AND u.deletedAt IS NULL")
   boolean existsActiveByAccountName(@Param("accountName") AccountName accountName);
 
   @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.accountName = :accountName")

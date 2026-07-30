@@ -1,28 +1,24 @@
 package c4f.vannang.vaops.modules.authorization.internal.domain;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-
-import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
-import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
-import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
 
 @Entity
 @Table(name = "roles")
@@ -42,14 +38,6 @@ public class Role {
 
   @Column(name = "is_active", nullable = false)
   private boolean active = true;
-
-  @ManyToMany
-  @JoinTable(
-      name = "role_permissions",
-      joinColumns = @JoinColumn(name = "role_id"),
-      inverseJoinColumns = @JoinColumn(name = "permission_id")
-  )
-  private Set<Permission> permissions = new HashSet<>();
 
   @Column(name = "deleted_at", nullable = true)
   private Instant deletedAt;
@@ -71,6 +59,12 @@ public class Role {
   @Column(name = "updated_by", nullable = true)
   private UUID updatedBy;
 
+  @OneToMany(mappedBy = "role", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+  private Set<RolePermission> rolePermissions = new HashSet<>();
+
+  @OneToMany(mappedBy = "role", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+  private Set<UserRole> userRoles = new HashSet<>();
+
   public void setId(UUID id) {
     this.id = id;
   }
@@ -84,44 +78,10 @@ public class Role {
     return r;
   }
 
-  public void updateInfo(RoleCode code, String description, UUID updatedBy) {
+  public void update(RoleCode code, String description, UUID updatedBy) {
     this.code = code;
     this.description = description;
     this.updatedBy = updatedBy;
-  }
-
-  public void assignPermission(Permission permission) {
-    if (permission != null && permission.isActive()) {
-      this.permissions.add(permission);
-    }
-  }
-
-  public void assignPermissions(Collection<Permission> newPermissions) {
-    if (newPermissions != null) {
-      newPermissions.stream()
-          .filter(p -> p.isActive())
-          .forEach(this.permissions::add);
-    }
-  }
-
-  public void revokePermission(Permission permission) {
-    if (permission != null) {
-      this.permissions.remove(permission);
-    }
-  }
-
-  public void revokePermissions(Collection<Permission> permissionsToRevoke) {
-    if (permissionsToRevoke != null) {
-      this.permissions.removeAll(permissionsToRevoke);
-    }
-  }
-
-  public boolean hasPermission(PermissionResource resource, PermissionAction action) {
-    if (!this.active) return false;
-    return this.permissions.stream()
-        .anyMatch(p -> p.isActive() 
-                    && p.getResource().equals(resource) 
-                    && p.getAction().equals(action));
   }
 
   public void activate() {
@@ -136,5 +96,49 @@ public class Role {
     this.deletedAt = Instant.now();
     this.deletedBy = deletedByUserId;
     this.active = false;
+  }
+
+  public RolePermission assignPermission(Permission permission) {
+    RolePermission rp = RolePermission.create(this, permission);
+    this.rolePermissions.add(rp);
+    return rp;
+  }
+
+  public List<RolePermission> assignPermissions(List<Permission> permissions) {
+    return permissions.stream()
+        .map(this::assignPermission)
+        .toList();
+  }
+
+  public List<RolePermission> assignPermissions(List<Permission> permissions, UUID updatedBy) {
+    this.updatedBy = updatedBy;
+    return assignPermissions(permissions);
+  }
+
+  public RolePermission unassignPermission(Permission permission) {
+    RolePermission rp = this.rolePermissions.stream()
+        .filter(r -> r.getPermission().getId().equals(permission.getId()))
+        .findFirst()
+        .orElse(null);
+
+    if (rp != null) this.rolePermissions.remove(rp);
+    
+    return rp;
+  }
+
+  public List<RolePermission> unassignPermissions(List<Permission> permissions) {
+    List<RolePermission> removed = new ArrayList<>();
+
+    for (Permission p : permissions) {
+      RolePermission rp = unassignPermission(p);
+      if (rp != null) removed.add(rp);
+    }
+    
+    return removed;
+  }
+
+  public List<RolePermission> unassignPermissions(List<Permission> permissions, UUID updatedBy) {
+    this.updatedBy = updatedBy;
+    return unassignPermissions(permissions);
   }
 }

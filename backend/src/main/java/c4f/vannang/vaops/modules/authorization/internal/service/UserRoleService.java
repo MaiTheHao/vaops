@@ -33,12 +33,13 @@ public class UserRoleService {
     }
 
     List<UUID> roleIdList = new ArrayList<>(command.roleIds());
-    List<Role> activeRoles = roleQueryRepository.findAllActiveByIds(roleIdList);
-    if (activeRoles.size() != command.roleIds().size()) throw new ResourceNotFoundException("One or more roles were not found");
-    
+    List<Role> activeRoles = roleQueryRepository.findAllActiveByIdIn(roleIdList);
+    if (activeRoles.size() != command.roleIds().size()) {
+      throw new ResourceNotFoundException("One or more roles were not found");
+    }
 
-    List<UserRole> toSave = roleIdList.stream()
-        .map(roleId -> UserRole.assign(command.userId(), roleId, command.assignedBy()))
+    List<UserRole> toSave = activeRoles.stream()
+        .map(role -> UserRole.create(command.userId(), role, command.assignedBy()))
         .collect(Collectors.toList());
 
     userRoleWriteRepository.saveAll(toSave);

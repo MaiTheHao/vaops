@@ -22,7 +22,7 @@ CREATE TABLE users (
 -- ----------------------------------------------------------------------------
 CREATE TABLE roles (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code        VARCHAR(256) UNIQUE NOT NULL,
+    code        VARCHAR(256) NOT NULL,
     description VARCHAR(1024),
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     deleted_at  TIMESTAMPTZ,
@@ -30,8 +30,11 @@ CREATE TABLE roles (
     created_by  UUID REFERENCES users(id) ON DELETE SET NULL,
     updated_by  UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uk_roles_code UNIQUE (code)
 );
+
+CREATE INDEX idx_roles_id_active_deleted ON roles(id, is_active, deleted_at);
 
 -- ----------------------------------------------------------------------------
 -- Table: permissions
@@ -52,6 +55,8 @@ CREATE TABLE permissions (
 
 CREATE UNIQUE INDEX uk_permissions_action ON permissions(resource, action);
 
+CREATE INDEX idx_permissions_id_active_deleted ON permissions(id, is_active, deleted_at);
+
 -- ----------------------------------------------------------------------------
 -- Table: role_permissions
 -- ----------------------------------------------------------------------------
@@ -71,12 +76,9 @@ CREATE TABLE user_roles (
     role_id     UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
     assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     assigned_by UUID REFERENCES users(id) ON DELETE SET NULL,
-    revoked_at  TIMESTAMPTZ,
-    revoked_by  UUID REFERENCES users(id) ON DELETE SET NULL,
     PRIMARY KEY (user_id, role_id)
 );
 
-CREATE INDEX idx_user_roles_user ON user_roles(user_id);
 CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 
 -- ----------------------------------------------------------------------------
@@ -91,5 +93,5 @@ CREATE TABLE refresh_tokens (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_user_expired ON refresh_tokens(user_id, expired_at);
 CREATE INDEX idx_refresh_tokens_expired ON refresh_tokens(expired_at);

@@ -20,10 +20,10 @@ public class RoleResponseMapper {
   public RoleResponse toResponse(Role role) {
     if (role == null) return null;
     
-    Set<PermissionResponse> permissionResponses = role.getPermissions() == null
+    Set<PermissionResponse> permissionResponses = role.getRolePermissions() == null
         ? Collections.emptySet()
-        : role.getPermissions().stream()
-            .map(permissionResponseMapper::toResponse)
+        : role.getRolePermissions().stream()
+            .map(rp -> permissionResponseMapper.toResponse(rp.getPermission()))
             .collect(Collectors.toSet());
 
     return RoleResponse.builder()

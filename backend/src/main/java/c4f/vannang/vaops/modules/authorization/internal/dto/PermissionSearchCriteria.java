@@ -1,6 +1,7 @@
 package c4f.vannang.vaops.modules.authorization.internal.dto;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,8 +12,7 @@ public record PermissionSearchCriteria(
     String resource,
     String action,
     Boolean isActive,
-    UUID userId,
-    UUID roleId,
+    Collection<UUID> roleIds,
     Instant createdFrom,
     Instant createdTo,
     int page,

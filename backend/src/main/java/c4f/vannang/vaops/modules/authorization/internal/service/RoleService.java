@@ -12,19 +12,19 @@ import c4f.vannang.vaops.modules.authorization.internal.dto.UpdateRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.mapper.RoleResponseMapper;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
-import c4f.vannang.vaops.modules.authorization.internal.repository.spec.RoleSpecification;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleWriteRepository;
+import c4f.vannang.vaops.modules.authorization.internal.repository.spec.RoleSpecification;
 import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -46,6 +46,16 @@ public class RoleService {
     }
 
     Role role = Role.create(code, command.description(), command.createdBy());
+
+    if (command.permissionIds() != null && !command.permissionIds().isEmpty()) {
+      List<Permission> permissions =
+          permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
+      if (permissions.size() != command.permissionIds().size()) {
+        throw new ResourceNotFoundException("One or more permissions were not found");
+      }
+      role.assignPermissions(permissions);
+    }
+
     Role saved = roleWriteRepository.save(role);
     return roleResponseMapper.toResponse(saved);
   }
@@ -57,13 +67,22 @@ public class RoleService {
         .findById(command.id())
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-    RoleCode code = new RoleCode(command.code());
-    role.updateInfo(code, command.description(), command.updatedBy());
+    role.update(new RoleCode(command.code()), command.description(), command.updatedBy());
     Role saved = roleWriteRepository.save(role);
     return roleResponseMapper.toResponse(saved);
   }
 
-  public void deleteRole(UUID id) {
+  public void softDeleteRole(UUID id, UUID deletedBy) {
+    if (id == null) throw new ValidationException("ID must not be null");
+    Role role = roleQueryRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+    role.softDelete(deletedBy);
+    roleWriteRepository.save(role);
+  }
+
+  public void hardDeleteRole(UUID id) {
     if (id == null) throw new ValidationException("ID must not be null");
     if (!roleQueryRepository.findById(id).isPresent()) {
       throw new ResourceNotFoundException("Role not found");
@@ -81,11 +100,17 @@ public class RoleService {
   }
 
   @Transactional(readOnly = true)
+  public List<RoleResponse> getRolesByUserId(UUID userId) {
+    if (userId == null) throw new ValidationException("UserId must not be null");
+    List<Role> roles = roleQueryRepository.findAllActiveByUserId(userId);
+    return roles.stream().map(roleResponseMapper::toResponse).toList();
+  }
+
+  @Transactional(readOnly = true)
   public PageResponse<RoleResponse> searchRoles(RoleSearchCriteria criteria) {
-    Page<Role> rolePage = roleQueryRepository.findAll(
-        RoleSpecification.search(criteria),
-        criteria.toPageable()
-    );
+    Page<Role> rolePage =
+        roleQueryRepository.findAll(RoleSpecification.search(criteria),
+            criteria != null ? criteria.toPageable() : Pageable.unpaged());
     return PageResponse.from(rolePage, roleResponseMapper::toResponse);
   }
 
@@ -102,7 +127,7 @@ public class RoleService {
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
     List<Permission> permissions =
-        permissionQueryRepository.findAllActiveByIds(new ArrayList<>(command.permissionIds()));
+        permissionQueryRepository.findAllByIdIn(new ArrayList<>(command.permissionIds()));
     if (permissions.size() != command.permissionIds().size()) {
       throw new ResourceNotFoundException("One or more permissions were not found");
     }
@@ -111,7 +136,7 @@ public class RoleService {
     roleWriteRepository.save(role);
   }
 
-  public void revokePermissionsFromRole(RevokePermissionFromRoleCommand command) {
+  public void unassignPermissionsFromRole(RevokePermissionFromRoleCommand command) {
     if (command == null
         || command.roleId() == null
         || command.permissionIds() == null
@@ -124,8 +149,12 @@ public class RoleService {
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
     List<Permission> permissions =
-        permissionQueryRepository.findAllActiveByIds(new ArrayList<>(command.permissionIds()));
-    role.revokePermissions(permissions);
+        permissionQueryRepository.findAllByIdIn(new ArrayList<>(command.permissionIds()));
+    if (permissions.size() != command.permissionIds().size()) {
+      throw new ResourceNotFoundException("One or more permissions were not found");
+    }
+
+    role.unassignPermissions(permissions);
     roleWriteRepository.save(role);
   }
 }
