@@ -56,8 +56,8 @@ public class PermissionSpecification {
       if (roleId == null) return cb.conjunction();
       Subquery<UUID> subquery = query.subquery(UUID.class);
       Root<Role> roleRoot = subquery.from(Role.class);
-      Join<Role, Permission> rolePermissions = roleRoot.join("permissions");
-      subquery.select(rolePermissions.get("id"))
+      Join<Role, Permission> joinedPermission = roleRoot.join("permissions");
+      subquery.select(joinedPermission.get("id"))
               .where(
                   cb.equal(roleRoot.get("id"), roleId),
                   cb.isTrue(roleRoot.get("isActive")),
@@ -72,9 +72,9 @@ public class PermissionSpecification {
       if (userId == null) return cb.conjunction();
       Subquery<UUID> subquery = query.subquery(UUID.class);
       Root<Role> roleRoot = subquery.from(Role.class);
-      Join<Role, Permission> rolePermissions = roleRoot.join("permissions");
+      Join<Role, Permission> joinedPermission = roleRoot.join("permissions");
       Root<UserRole> userRoleRoot = subquery.from(UserRole.class);
-      subquery.select(rolePermissions.get("id"))
+      subquery.select(joinedPermission.get("id"))
               .where(
                   cb.equal(roleRoot.get("id"), userRoleRoot.get("id").get("roleId")),
                   cb.equal(userRoleRoot.get("id").get("userId"), userId),
