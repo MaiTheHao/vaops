@@ -10,24 +10,36 @@ import org.springframework.data.repository.query.Param;
 
 public interface PermissionQueryRepository extends BaseQueryRepository<Permission, UUID> {
 
-  Optional<Permission> findById(UUID id);
+  @Query("SELECT p FROM Permission p WHERE p.id = :id AND p.deletedAt IS NULL")
+  Optional<Permission> findById(@Param("id") UUID id);
+
+  @Query("SELECT p FROM Permission p WHERE p.id = :id")
+  Optional<Permission> findByIdWithDeleted(@Param("id") UUID id);
+
+  @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.id = :id")
+  boolean existsByIdWithDeleted(@Param("id") UUID id);
 
   @Query("SELECT p FROM Permission p WHERE p.id = :id AND p.active = true AND p.deletedAt IS NULL")
   Optional<Permission> findActiveById(@Param("id") UUID id);
 
-  @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action")
+  @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.deletedAt IS NULL")
   Optional<Permission> findByResourceAndAction(
       @Param("resource") String resource, @Param("action") String action);
 
-  List<Permission> findAllByResourceIn(List<String> resources);
+  @Query("SELECT p FROM Permission p WHERE p.resource IN :resources AND p.deletedAt IS NULL")
+  List<Permission> findAllByResourceIn(@Param("resources") List<String> resources);
 
-  List<Permission> findAllByActionIn(List<String> actions);
+  @Query("SELECT p FROM Permission p WHERE p.action IN :actions AND p.deletedAt IS NULL")
+  List<Permission> findAllByActionIn(@Param("actions") List<String> actions);
 
-  boolean existsByResource(String resource);
+  @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.resource = :resource AND p.deletedAt IS NULL")
+  boolean existsByResource(@Param("resource") String resource);
 
-  boolean existsByAction(String action);
+  @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.action = :action AND p.deletedAt IS NULL")
+  boolean existsByAction(@Param("action") String action);
 
-  boolean existsByResourceAndAction(String resource, String action);
+  @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.deletedAt IS NULL")
+  boolean existsByResourceAndAction(@Param("resource") String resource, @Param("action") String action);
 
   @Query(
       "SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.active"
@@ -35,7 +47,8 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
   Optional<Permission> findActiveByResourceAndAction(
       @Param("resource") String resource, @Param("action") String action);
 
-  List<Permission> findAllByIdIn(List<UUID> ids);
+  @Query("SELECT p FROM Permission p WHERE p.id IN :ids AND p.deletedAt IS NULL")
+  List<Permission> findAllByIdIn(@Param("ids") List<UUID> ids);
 
   @Query(
       "SELECT p FROM Permission p WHERE p.id IN :ids AND p.active = true AND p.deletedAt IS NULL")
@@ -63,19 +76,4 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
       @Param("userId") UUID userId,
       @Param("resource") String resource,
       @Param("action") String action);
-
-  // @Query("SELECT DISTINCT p.resource AS resource, p.action AS action " + "FROM UserRole ur "
-  //     + "JOIN RolePermission rp ON ur.id.roleId = rp.id.roleId "
-  //     + "JOIN Permission p ON rp.id.permissionId = p.id "
-  //     + "WHERE ur.id.userId = :userId")
-  // List<PermissionResourceActionDto> findResourceActionByUserId(@Param("userId") UUID userId);
-
-  // @Query("SELECT DISTINCT p.resource AS resource, p.action AS action " + "FROM UserRole ur "
-  //     + "JOIN RolePermission rp ON ur.id.roleId = rp.id.roleId "
-  //     + "JOIN Role r ON ur.id.roleId = r.id "
-  //     + "JOIN Permission p ON rp.id.permissionId = p.id "
-  //     + "WHERE ur.id.userId = :userId "
-  //     + "AND r.active = true AND r.deletedAt IS NULL "
-  //     + "AND p.active = true AND p.deletedAt IS NULL")
-  // List<PermissionResourceActionDto> findActiveResourceActionByUserId(@Param("userId") UUID userId);
 }

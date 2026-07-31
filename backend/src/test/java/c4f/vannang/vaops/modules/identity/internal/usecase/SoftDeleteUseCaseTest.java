@@ -53,7 +53,6 @@ class SoftDeleteUseCaseTest {
 
     assertNotNull(user.getDeletedAt());
     assertEquals(deletedBy, user.getDeletedBy());
-    assertFalse(user.isActive());
     verify(userWriteRepository).save(user);
   }
 

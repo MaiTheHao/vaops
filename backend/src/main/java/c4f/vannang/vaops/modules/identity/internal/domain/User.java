@@ -15,14 +15,32 @@ import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountNam
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
-import c4f.vannang.vaops.modules.shared.base.domain.BaseSoftDeletableEntity;
+import c4f.vannang.vaops.shared.base.domain.BaseSoftDeletableEntity;
 import c4f.vannang.vaops.shared.exception.ValidationException;
+
+import c4f.vannang.vaops.shared.base.domain.Activatable;
 
 @Entity
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseSoftDeletableEntity {
+public class User extends BaseSoftDeletableEntity implements Activatable {
+
+  @Column(name = "is_active", nullable = false)
+  private boolean active = true;
+
+  @Override
+  public boolean isActive() {
+    return active;
+  }
+
+  public void activate() {
+    this.active = true;
+  }
+
+  public void deactivate() {
+    this.active = false;
+  }
 
   @Column(name = "account_name", nullable = false, unique = true, length = 256)
   private AccountName accountName;

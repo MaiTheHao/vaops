@@ -1,7 +1,7 @@
 package c4f.vannang.vaops.modules.authorization.internal.domain;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
-import c4f.vannang.vaops.modules.shared.base.domain.BaseVersionedEntity;
+import c4f.vannang.vaops.shared.base.domain.BaseVersionedEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,11 +15,29 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import c4f.vannang.vaops.shared.base.domain.Activatable;
+
 @Entity
 @Table(name = "roles")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Role extends BaseVersionedEntity {
+public class Role extends BaseVersionedEntity implements Activatable {
+
+  @Column(name = "is_active", nullable = false)
+  private boolean active = true;
+
+  @Override
+  public boolean isActive() {
+    return active;
+  }
+
+  public void activate() {
+    this.active = true;
+  }
+
+  public void deactivate() {
+    this.active = false;
+  }
 
   @Column(name = "code", nullable = false, length = 256)
   private RoleCode code;

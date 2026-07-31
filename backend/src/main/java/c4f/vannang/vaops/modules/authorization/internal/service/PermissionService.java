@@ -80,7 +80,7 @@ public class PermissionService {
 
   public void hardDeletePermission(UUID id) {
     if (id == null) throw new ValidationException("ID must not be null");
-    if (!permissionQueryRepository.findById(id).isPresent()) {
+    if (!permissionQueryRepository.existsByIdWithDeleted(id)) {
       throw new ResourceNotFoundException("Permission not found");
     }
     permissionWriteRepository.deleteById(id);

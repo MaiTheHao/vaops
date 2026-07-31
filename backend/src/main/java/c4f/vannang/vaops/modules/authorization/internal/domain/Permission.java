@@ -15,13 +15,31 @@ import lombok.NoArgsConstructor;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionDescription;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
-import c4f.vannang.vaops.modules.shared.base.domain.BaseSoftDeletableEntity;
+import c4f.vannang.vaops.shared.base.domain.BaseSoftDeletableEntity;
+
+import c4f.vannang.vaops.shared.base.domain.Activatable;
 
 @Entity
 @Table(name = "permissions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Permission extends BaseSoftDeletableEntity {
+public class Permission extends BaseSoftDeletableEntity implements Activatable {
+
+  @Column(name = "is_active", nullable = false)
+  private boolean active = true;
+
+  @Override
+  public boolean isActive() {
+    return active;
+  }
+
+  public void activate() {
+    this.active = true;
+  }
+
+  public void deactivate() {
+    this.active = false;
+  }
 
   @Column(name = "resource", nullable = false, length = 256)
   private PermissionResource resource;

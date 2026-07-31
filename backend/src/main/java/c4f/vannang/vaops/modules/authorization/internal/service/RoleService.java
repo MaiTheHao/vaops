@@ -84,7 +84,7 @@ public class RoleService {
 
   public void hardDeleteRole(UUID id) {
     if (id == null) throw new ValidationException("ID must not be null");
-    if (!roleQueryRepository.findById(id).isPresent()) {
+    if (!roleQueryRepository.existsByIdWithDeleted(id)) {
       throw new ResourceNotFoundException("Role not found");
     }
     roleWriteRepository.deleteById(id);
@@ -127,7 +127,7 @@ public class RoleService {
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
     List<Permission> permissions =
-        permissionQueryRepository.findAllByIdIn(new ArrayList<>(command.permissionIds()));
+        permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
     if (permissions.size() != command.permissionIds().size()) {
       throw new ResourceNotFoundException("One or more permissions were not found");
     }
@@ -149,7 +149,7 @@ public class RoleService {
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
     List<Permission> permissions =
-        permissionQueryRepository.findAllByIdIn(new ArrayList<>(command.permissionIds()));
+        permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
     if (permissions.size() != command.permissionIds().size()) {
       throw new ResourceNotFoundException("One or more permissions were not found");
     }

@@ -101,14 +101,13 @@ class UserTest {
   }
 
   @Test
-  void softDelete_shouldSetDeletedAtDeletedByAndSetActiveFalse() {
+  void softDelete_shouldSetDeletedAtAndDeletedBy() {
     User user = reconstituteUser();
     UUID deletedBy = UUID.randomUUID();
     user.softDelete(deletedBy);
 
     assertNotNull(user.getDeletedAt());
     assertEquals(deletedBy, user.getDeletedBy());
-    assertFalse(user.isActive());
   }
 
   @Test

@@ -10,21 +10,32 @@ import org.springframework.data.repository.query.Param;
 
 public interface RoleQueryRepository extends BaseQueryRepository<Role, UUID> {
 
-  Optional<Role> findById(UUID id);
+  @Query("SELECT r FROM Role r WHERE r.id = :id AND r.deletedAt IS NULL")
+  Optional<Role> findById(@Param("id") UUID id);
+
+  @Query("SELECT r FROM Role r WHERE r.id = :id")
+  Optional<Role> findByIdWithDeleted(@Param("id") UUID id);
+
+  @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Role r WHERE r.id = :id")
+  boolean existsByIdWithDeleted(@Param("id") UUID id);
 
   @Query("SELECT r FROM Role r WHERE r.id = :id AND r.active = true AND r.deletedAt IS NULL")
   Optional<Role> findActiveById(@Param("id") UUID id);
 
-  Optional<Role> findByCode(String code);
+  @Query("SELECT r FROM Role r WHERE r.code = :code AND r.deletedAt IS NULL")
+  Optional<Role> findByCode(@Param("code") String code);
 
-  List<Role> findAllByCodeIn(List<String> codes);
+  @Query("SELECT r FROM Role r WHERE r.code IN :codes AND r.deletedAt IS NULL")
+  List<Role> findAllByCodeIn(@Param("codes") List<String> codes);
 
-  boolean existsByCode(String code);
+  @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Role r WHERE r.code = :code AND r.deletedAt IS NULL")
+  boolean existsByCode(@Param("code") String code);
 
   @Query("SELECT r FROM Role r WHERE r.code = :code AND r.active = true AND r.deletedAt IS NULL")
   Optional<Role> findActiveByCode(@Param("code") String code);
 
-  List<Role> findAllByIdIn(List<UUID> ids);
+  @Query("SELECT r FROM Role r WHERE r.id IN :ids AND r.deletedAt IS NULL")
+  List<Role> findAllByIdIn(@Param("ids") List<UUID> ids);
 
   @Query("SELECT r FROM Role r WHERE r.id IN :ids AND r.active = true AND r.deletedAt IS NULL")
   List<Role> findAllActiveByIdIn(@Param("ids") List<UUID> ids);
