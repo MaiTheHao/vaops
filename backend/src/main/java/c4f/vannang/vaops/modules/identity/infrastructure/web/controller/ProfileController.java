@@ -1,14 +1,14 @@
 package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 
+import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
+import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileService;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
-import c4f.vannang.vaops.modules.identity.internal.domain.User;
-import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
-import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 import jakarta.validation.Valid;
@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final UserProfileService userProfileService;
+    private final IdentityProfileService identityProfileService;
     private final UserService userService;
 
     @GetMapping
     public ResponseEntity<ProfileWebResponse> getMyProfile(
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        User user = userProfileService.getProfile(new FindByIdCommand(principal.userId()));
+        UserDto user = identityProfileService.getProfile(new FindByIdQuery(principal.userId()));
         return ResponseEntity.ok(toResponse(user));
     }
 
@@ -36,8 +36,8 @@ public class ProfileController {
     public ResponseEntity<ProfileWebResponse> putUpdateProfile(
             @Valid @RequestBody PutUpdateProfileWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        User user = userProfileService.updateProfile(
-            new UpdateProfileCommand(principal.userId(), request.displayName(), request.avatarUrl()));
+        UserDto user = identityProfileService.updateProfile(
+            new UpdateProfileRequest(principal.userId(), request.displayName(), request.avatarUrl()));
         return ResponseEntity.ok(toResponse(user));
     }
 
@@ -45,8 +45,8 @@ public class ProfileController {
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        userProfileService.changePassword(
-            new ChangePasswordCommand(principal.userId(), request.oldPassword(), request.newPassword()));
+        identityProfileService.changePassword(
+            new ChangePasswordRequest(principal.userId(), request.oldPassword(), request.newPassword()));
         return ResponseEntity.ok().build();
     }
 
@@ -57,15 +57,15 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
     }
 
-    private ProfileWebResponse toResponse(User user) {
+    private ProfileWebResponse toResponse(UserDto user) {
         return new ProfileWebResponse(
-            user.getId(),
-            user.getAccountName() != null ? user.getAccountName().value() : null,
-            user.getDisplayName() != null ? user.getDisplayName().value() : null,
-            user.getAvatarUrl() != null ? user.getAvatarUrl().value() : null,
-            user.getLastLoginAt(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
+            user.id(),
+            user.accountName(),
+            user.displayName(),
+            user.avatarUrl(),
+            user.lastLoginAt(),
+            user.createdAt(),
+            user.updatedAt()
         );
     }
 }

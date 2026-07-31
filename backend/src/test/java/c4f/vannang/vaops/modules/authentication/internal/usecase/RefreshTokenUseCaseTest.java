@@ -12,7 +12,7 @@ import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshToken
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategyFactory;
 import c4f.vannang.vaops.shared.feature.crypto.Sha256DeterministicHashStrategy;
@@ -50,7 +50,7 @@ class RefreshTokenUseCaseTest {
   private RefreshTokenSpec refreshTokenSpec;
 
   @Mock
-  private IdentityModuleApi identityModuleApi;
+  private IdentityUserService identityUserService;
 
   @Mock
   private AuthProperties authProperties;
@@ -74,7 +74,7 @@ class RefreshTokenUseCaseTest {
         List.of(new Sha256DeterministicHashStrategy())
     );
     useCase = new RefreshTokenUseCase(
-        identityModuleApi, accessTokenSpec, refreshTokenSpec, authProperties,
+        identityUserService, accessTokenSpec, refreshTokenSpec, authProperties,
         queryRepository, writeRepository, deterministicHashStrategyFactory);
   }
 
@@ -88,7 +88,7 @@ class RefreshTokenUseCaseTest {
     when(jwtProperties.getRefreshExpirationMs()).thenReturn(604_800_000L);
     when(refreshTokenSpec.validate(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
-    when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(activeUser));
+    when(identityUserService.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(activeUser));
     when(accessTokenSpec.generate(any(AccessTokenClaims.class))).thenReturn("new-access-token");
     when(refreshTokenSpec.generate(any(RefreshTokenClaims.class))).thenReturn("new-refresh-token");
 
@@ -153,7 +153,7 @@ class RefreshTokenUseCaseTest {
 
     when(refreshTokenSpec.validate(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
-    when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.empty());
+    when(identityUserService.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.empty());
 
     assertThrows(UnauthenticatedException.class,
         () -> useCase.execute(new RefreshTokenCommand(rawToken)));
@@ -167,7 +167,7 @@ class RefreshTokenUseCaseTest {
 
     when(refreshTokenSpec.validate(rawToken)).thenReturn(claims);
     when(queryRepository.findByTokenHash(anyString())).thenReturn(Optional.of(oldToken));
-    when(identityModuleApi.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(inactiveUser));
+    when(identityUserService.getUserById(new FindByIdQuery(userId))).thenReturn(Optional.of(inactiveUser));
 
     assertThrows(UnauthenticatedException.class,
         () -> useCase.execute(new RefreshTokenCommand(rawToken)));

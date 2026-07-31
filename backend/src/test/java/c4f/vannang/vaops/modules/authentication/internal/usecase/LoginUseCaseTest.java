@@ -14,7 +14,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategyFactory;
@@ -43,7 +43,7 @@ class LoginUseCaseTest {
   private PasswordEncoder passwordEncoder;
 
   @Mock
-  private IdentityModuleApi identityModuleApi;
+  private IdentityUserService identityUserService;
 
   @Mock
   private AccessTokenSpec accessTokenSpec;
@@ -76,7 +76,7 @@ class LoginUseCaseTest {
 
     loginUseCase = new LoginUseCase(
         passwordEncoder,
-        identityModuleApi,
+        identityUserService,
         accessTokenSpec,
         refreshTokenSpec,
         authProperties,
@@ -89,7 +89,7 @@ class LoginUseCaseTest {
     LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto userAuth = new UserAuthDto(userId, passwordHash, null, true);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.of(userAuth));
 
     when(passwordEncoder.matches(password, passwordHash)).thenReturn(true);
@@ -105,21 +105,21 @@ class LoginUseCaseTest {
     assertEquals("mock-refresh-token", result.refreshToken());
 
     verify(refreshTokenWriteRepository, times(1)).save(any(RefreshToken.class));
-    verify(identityModuleApi, times(1)).recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
+    verify(identityUserService, times(1)).recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
   }
 
   @Test
   void execute_shouldThrowUnauthenticatedException_whenUserNotFound() {
     LoginCommand command = new LoginCommand(accountName, password);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.empty());
 
     assertThrows(UnauthenticatedException.class, () -> loginUseCase.execute(command));
 
     verify(refreshTokenWriteRepository, never()).save(any());
-    verify(identityModuleApi, never()).recordSuccessfulLogin(any());
-    verify(identityModuleApi, never()).recordFailedLogin(any());
+    verify(identityUserService, never()).recordSuccessfulLogin(any());
+    verify(identityUserService, never()).recordFailedLogin(any());
   }
 
   @Test
@@ -128,13 +128,13 @@ class LoginUseCaseTest {
     Instant lockedUntil = Instant.now().plus(1, ChronoUnit.HOURS);
     UserAuthDto lockedUser = new UserAuthDto(userId, passwordHash, lockedUntil, true);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.of(lockedUser));
 
     assertThrows(AccountLockedException.class, () -> loginUseCase.execute(command));
 
     verify(refreshTokenWriteRepository, never()).save(any());
-    verify(identityModuleApi, never()).recordSuccessfulLogin(any());
+    verify(identityUserService, never()).recordSuccessfulLogin(any());
   }
 
   @Test
@@ -142,13 +142,13 @@ class LoginUseCaseTest {
     LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto inactiveUser = new UserAuthDto(userId, passwordHash, null, false);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.of(inactiveUser));
 
     assertThrows(UnauthenticatedException.class, () -> loginUseCase.execute(command));
 
     verify(refreshTokenWriteRepository, never()).save(any());
-    verify(identityModuleApi, never()).recordSuccessfulLogin(any());
+    verify(identityUserService, never()).recordSuccessfulLogin(any());
   }
 
   @Test
@@ -156,22 +156,22 @@ class LoginUseCaseTest {
     LoginCommand command = new LoginCommand(accountName, password);
     UserAuthDto userAuth = new UserAuthDto(userId, passwordHash, null, true);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenReturn(Optional.of(userAuth));
     when(passwordEncoder.matches(password, passwordHash)).thenReturn(false);
 
     assertThrows(UnauthenticatedException.class, () -> loginUseCase.execute(command));
 
-    verify(identityModuleApi, times(1)).recordFailedLogin(new RecordFailedLoginRequest(accountName));
+    verify(identityUserService, times(1)).recordFailedLogin(new RecordFailedLoginRequest(accountName));
     verify(refreshTokenWriteRepository, never()).save(any());
-    verify(identityModuleApi, never()).recordSuccessfulLogin(any());
+    verify(identityUserService, never()).recordSuccessfulLogin(any());
   }
 
   @Test
   void execute_shouldWrapInInternalServerException_whenUnexpectedError() {
     LoginCommand command = new LoginCommand(accountName, password);
 
-    when(identityModuleApi.getUserForAuth(new FindForAuthQuery(accountName)))
+    when(identityUserService.getUserForAuth(new FindForAuthQuery(accountName)))
         .thenThrow(new RuntimeException("Database connection failed"));
 
     InternalServerException exception = assertThrows(InternalServerException.class,

@@ -15,7 +15,7 @@ import c4f.vannang.vaops.modules.authentication.internal.usecase.RefreshTokenUse
 import c4f.vannang.vaops.modules.authentication.internal.usecase.RegisterUseCase;
 import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginRequestDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginResponseDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterRequestDto;
@@ -31,7 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthServiceTest {
 
     @Mock
-    private IdentityModuleApi identityModuleApi;
+    private IdentityUserService identityUserService;
 
     @InjectMocks
     private RegisterUseCase RegisterUseCase;
@@ -42,7 +42,7 @@ class AuthServiceTest {
         UUID id = UUID.randomUUID();
         UserDto mockUserDto = new UserDto(id, "john.doe", "John Doe", "avatar", true, null, null, null);
 
-        when(identityModuleApi.register(any(RegisterRequest.class))).thenReturn(mockUserDto);
+        when(identityUserService.register(any(RegisterRequest.class))).thenReturn(mockUserDto);
 
         RegisterCommandResult response = RegisterUseCase.execute(request);
 
@@ -56,7 +56,7 @@ class AuthServiceTest {
     @Test
     void register_ShouldPropagateValidationException_WhenInvalidInput() {
         RegisterCommand request = new RegisterCommand("", "password123", "John Doe", "avatar");
-        when(identityModuleApi.register(any(RegisterRequest.class))).thenThrow(new ValidationException("Validation error"));
+        when(identityUserService.register(any(RegisterRequest.class))).thenThrow(new ValidationException("Validation error"));
 
         assertThrows(ValidationException.class, () -> RegisterUseCase.execute(request));
     }

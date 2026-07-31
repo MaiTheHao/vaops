@@ -4,19 +4,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
+import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileService;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
-import c4f.vannang.vaops.modules.identity.internal.domain.User;
-import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
-import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
-import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
-import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
-import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
-import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
-import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
@@ -35,7 +31,7 @@ import org.springframework.http.ResponseEntity;
 class ProfileControllerTest {
 
   @Mock
-  private UserProfileService userProfileService;
+  private IdentityProfileService identityProfileService;
 
   @Mock
   private UserService userService;
@@ -45,25 +41,27 @@ class ProfileControllerTest {
 
   private UUID userId;
   private AuthenticatedPrincipal principal;
-  private User user;
+  private UserDto user;
 
   @BeforeEach
   void setUp() {
     userId = UUID.randomUUID();
     principal = new AuthenticatedPrincipal(userId, "test.user");
 
-    user = User.register(
-        new AccountName("test.user"),
-        new PasswordHash("hashed-password"),
-        new DisplayName("Test User"),
-        new AvatarUrl("https://example.com/avatar.png")
-    );
-    user.setId(userId);
+    user = new UserDto(
+        userId,
+        "test.user",
+        "Test User",
+        "https://example.com/avatar.png",
+        true,
+        null,
+        null,
+        null);
   }
 
   @Test
   void getMyProfile_ShouldReturnProfile_WhenUserExists() {
-    when(userProfileService.getProfile(any(FindByIdCommand.class))).thenReturn(user);
+    when(identityProfileService.getProfile(any(FindByIdQuery.class))).thenReturn(user);
 
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
@@ -74,15 +72,14 @@ class ProfileControllerTest {
     assertEquals("Test User", response.getBody().displayName());
     assertEquals("https://example.com/avatar.png", response.getBody().avatarUrl());
 
-    verify(userProfileService).getProfile(new FindByIdCommand(userId));
+    verify(identityProfileService).getProfile(new FindByIdQuery(userId));
   }
 
   @Test
   void getMyProfile_ShouldHandleNullValueObjects_InResponse() {
-    User userWithNulls = User.register(null, new PasswordHash("hashed"), null, null);
-    userWithNulls.setId(userId);
+    UserDto userWithNulls = new UserDto(userId, null, null, null, true, null, null, null);
 
-    when(userProfileService.getProfile(any(FindByIdCommand.class))).thenReturn(userWithNulls);
+    when(identityProfileService.getProfile(any(FindByIdQuery.class))).thenReturn(userWithNulls);
 
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
@@ -96,7 +93,7 @@ class ProfileControllerTest {
 
   @Test
   void getMyProfile_ShouldThrowException_WhenUserNotFound() {
-    when(userProfileService.getProfile(any(FindByIdCommand.class)))
+    when(identityProfileService.getProfile(any(FindByIdQuery.class)))
         .thenThrow(new ResourceNotFoundException("User not found"));
 
     assertThrows(
@@ -108,9 +105,12 @@ class ProfileControllerTest {
   @Test
   void putUpdateProfile_ShouldExecuteUpdateAndReturnUpdatedProfile() {
     PutUpdateProfileWebRequest request = new PutUpdateProfileWebRequest("New Display Name", "https://example.com/new-avatar.png");
-    user.updateProfile(new DisplayName("New Display Name"), new AvatarUrl("https://example.com/new-avatar.png"));
 
-    when(userProfileService.updateProfile(any(UpdateProfileCommand.class))).thenReturn(user);
+    UserDto updated = new UserDto(
+        userId, "test.user", "New Display Name", "https://example.com/new-avatar.png",
+        true, null, null, null);
+
+    when(identityProfileService.updateProfile(any(UpdateProfileRequest.class))).thenReturn(updated);
 
     ResponseEntity<ProfileWebResponse> response = profileController.putUpdateProfile(request, principal);
 
@@ -119,7 +119,7 @@ class ProfileControllerTest {
     assertEquals("New Display Name", response.getBody().displayName());
     assertEquals("https://example.com/new-avatar.png", response.getBody().avatarUrl());
 
-    verify(userProfileService).updateProfile(new UpdateProfileCommand(userId, "New Display Name", "https://example.com/new-avatar.png"));
+    verify(identityProfileService).updateProfile(new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png"));
   }
 
   @Test
@@ -131,7 +131,7 @@ class ProfileControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNull(response.getBody());
 
-    verify(userProfileService).changePassword(new ChangePasswordCommand(userId, "OldPass123!", "NewPass123!"));
+    verify(identityProfileService).changePassword(new ChangePasswordRequest(userId, "OldPass123!", "NewPass123!"));
   }
 
   @Test

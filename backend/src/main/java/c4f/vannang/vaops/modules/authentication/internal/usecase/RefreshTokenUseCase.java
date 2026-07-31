@@ -15,7 +15,7 @@ import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshToken
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 
 import java.time.Instant;
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RefreshTokenUseCase {
 
-  private final IdentityModuleApi identityModuleApi;
+  private final IdentityUserService identityUserService;
   private final AccessTokenSpec accessTokenSpec;
   private final RefreshTokenSpec refreshTokenSpec;
   private final AuthProperties authProperties;
@@ -59,7 +59,7 @@ public class RefreshTokenUseCase {
           "Refresh token has been revoked previously. Potential breach detected.");
     }
 
-    UserDto user = identityModuleApi
+    UserDto user = identityUserService
         .getUserById(new FindByIdQuery(claims.userId()))
         .orElseThrow(() -> new UnauthenticatedException("User not found"));
 

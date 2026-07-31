@@ -16,7 +16,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
 public class LoginUseCase {
 
   private final PasswordEncoder passwordEncoder;
-  private final IdentityModuleApi identityModuleApi;
+  private final IdentityUserService identityUserService;
   private final AccessTokenSpec accessTokenSpec;
   private final RefreshTokenSpec refreshTokenSpec;
   private final AuthProperties authProperties;
@@ -40,7 +40,7 @@ public class LoginUseCase {
 
   public LoginCommandResult execute(LoginCommand command) {
     try {
-      UserAuthDto userAuth = identityModuleApi
+      UserAuthDto userAuth = identityUserService
           .getUserForAuth(new FindForAuthQuery(command.accountName()))
           .orElseThrow(() -> new UnauthenticatedException("Invalid credentials"));
 
@@ -53,7 +53,7 @@ public class LoginUseCase {
       }
 
       if (!passwordEncoder.matches(command.password(), userAuth.passwordHash())) {
-        identityModuleApi.recordFailedLogin(new RecordFailedLoginRequest(command.accountName()));
+        identityUserService.recordFailedLogin(new RecordFailedLoginRequest(command.accountName()));
         throw new UnauthenticatedException("Invalid credentials");
       }
 
@@ -74,7 +74,7 @@ public class LoginUseCase {
       RefreshToken entity = RefreshToken.create(userId, tokenHash, expiredAt);
       refreshTokenWriteRepository.save(entity);
 
-      identityModuleApi.recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
+      identityUserService.recordSuccessfulLogin(new RecordSuccessfulLoginRequest(userId));
 
       return new LoginCommandResult(accessToken, refreshToken);
 

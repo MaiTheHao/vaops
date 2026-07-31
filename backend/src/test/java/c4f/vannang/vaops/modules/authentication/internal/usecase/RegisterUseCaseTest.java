@@ -8,7 +8,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
 import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RegisterUseCaseTest {
 
   @Mock
-  private IdentityModuleApi identityModuleApi;
+  private IdentityUserService identityUserService;
 
   private RegisterUseCase useCase;
 
@@ -31,7 +31,7 @@ class RegisterUseCaseTest {
 
   @BeforeEach
   void setUp() {
-    useCase = new RegisterUseCase(identityModuleApi);
+    useCase = new RegisterUseCase(identityUserService);
   }
 
   @Test
@@ -44,7 +44,7 @@ class RegisterUseCaseTest {
         userId, "newuser", "New User", "http://avatar.url", true, null, null, null
     );
 
-    when(identityModuleApi.register(any(RegisterRequest.class))).thenReturn(mockUserDto);
+    when(identityUserService.register(any(RegisterRequest.class))).thenReturn(mockUserDto);
 
     RegisterCommandResult result = useCase.execute(command);
 
@@ -54,14 +54,14 @@ class RegisterUseCaseTest {
     assertEquals("New User", result.displayName());
     assertEquals("http://avatar.url", result.avatarUrl());
 
-    verify(identityModuleApi, times(1)).register(any(RegisterRequest.class));
+    verify(identityUserService, times(1)).register(any(RegisterRequest.class));
   }
 
   @Test
   void execute_shouldThrowValidationException_whenIdentityApiThrowsIt() {
     RegisterCommand command = new RegisterCommand("user", "pass", "Name", null);
 
-    when(identityModuleApi.register(any(RegisterRequest.class)))
+    when(identityUserService.register(any(RegisterRequest.class)))
         .thenThrow(new ValidationException("Invalid input"));
 
     assertThrows(ValidationException.class, () -> useCase.execute(command));
@@ -71,7 +71,7 @@ class RegisterUseCaseTest {
   void execute_shouldThrowResourceAlreadyExistsException_whenAccountExists() {
     RegisterCommand command = new RegisterCommand("existinguser", "pass", "Name", null);
 
-    when(identityModuleApi.register(any(RegisterRequest.class)))
+    when(identityUserService.register(any(RegisterRequest.class)))
         .thenThrow(new ResourceAlreadyExistsException("User already exists"));
 
     assertThrows(ResourceAlreadyExistsException.class, () -> useCase.execute(command));
@@ -81,7 +81,7 @@ class RegisterUseCaseTest {
   void execute_shouldWrapInInternalServerException_whenUnexpectedError() {
     RegisterCommand command = new RegisterCommand("user", "pass", "Name", null);
 
-    when(identityModuleApi.register(any(RegisterRequest.class)))
+    when(identityUserService.register(any(RegisterRequest.class)))
         .thenThrow(new RuntimeException("Database down"));
 
     InternalServerException exception = assertThrows(InternalServerException.class,
