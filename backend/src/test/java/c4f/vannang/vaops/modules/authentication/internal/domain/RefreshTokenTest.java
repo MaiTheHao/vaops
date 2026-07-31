@@ -27,7 +27,7 @@ class RefreshTokenTest {
     assertEquals(tokenHash, token.getTokenHash());
     assertEquals(futureExpiry, token.getExpiredAt());
     assertNull(token.getRevokedAt());
-    assertNull(token.getCreatedAt());
+    assertNotNull(token.getCreatedAt());
   }
 
   @Test

@@ -29,11 +29,15 @@ public class RefreshToken extends BaseEntity {
   @Column(name = "revoked_at", nullable = true)
   private Instant revokedAt;
 
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private Instant createdAt;
+
   public static RefreshToken create(UUID userId, String tokenHash, Instant expiredAt) {
     RefreshToken token = new RefreshToken();
     token.userId = userId;
     token.tokenHash = tokenHash;
     token.expiredAt = expiredAt;
+    token.createdAt = Instant.now();
     return token;
   }
 
