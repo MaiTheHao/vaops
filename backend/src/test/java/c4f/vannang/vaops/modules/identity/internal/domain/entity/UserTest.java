@@ -72,7 +72,9 @@ class UserTest {
   @Test
   void isLocked_shouldReturnTrueWhenLockedUntilInFuture() {
     User user = reconstituteUser();
-    user.recordFailedLogin(1, Duration.ofMinutes(15));
+    for (int i = 0; i < 5; i++) {
+      user.recordFailedLogin();
+    }
     assertTrue(user.isLocked());
   }
 

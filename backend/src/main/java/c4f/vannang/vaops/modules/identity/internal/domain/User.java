@@ -86,13 +86,9 @@ public class User extends BaseSoftDeletableEntity implements Activatable {
   public static final Duration LOCK_DURATION = Duration.ofMinutes(15);
 
   public void recordFailedLogin() {
-    recordFailedLogin(MAX_FAILED_ATTEMPTS, LOCK_DURATION);
-  }
-
-  public void recordFailedLogin(int maxAttempts, Duration lockDuration) {
     this.failedLoginCount++;
-    if (this.failedLoginCount >= maxAttempts) {
-      this.lockedUntil = Instant.now().plus(lockDuration);
+    if (this.failedLoginCount >= MAX_FAILED_ATTEMPTS) {
+      this.lockedUntil = Instant.now().plus(LOCK_DURATION);
     }
   }
 
