@@ -51,7 +51,7 @@ class UserTest {
     User user = reconstituteUser();
     assertEquals(0, user.getFailedLoginCount());
 
-    user.recordFailedLogin(5, Duration.ofMinutes(15));
+    user.recordFailedLogin();
     assertEquals(1, user.getFailedLoginCount());
   }
 
@@ -60,11 +60,11 @@ class UserTest {
     User user = reconstituteUser();
 
     for (int i = 0; i < 4; i++) {
-      user.recordFailedLogin(5, Duration.ofMinutes(15));
+      user.recordFailedLogin();
     }
     assertNull(user.getLockedUntil());
 
-    user.recordFailedLogin(5, Duration.ofMinutes(15));
+    user.recordFailedLogin();
     assertEquals(5, user.getFailedLoginCount());
     assertNotNull(user.getLockedUntil());
   }

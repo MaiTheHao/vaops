@@ -27,9 +27,6 @@ import java.util.Optional;
 @Transactional
 public class UserService {
 
-  public static final int MAX_FAILED_ATTEMPTS = 5;
-  private static final Duration LOCK_DURATION = Duration.ofMinutes(15);
-
   private final UserQueryRepository userQueryRepository;
   private final UserWriteRepository userWriteRepository;
   private final PasswordEncoder passwordEncoder;
@@ -126,7 +123,7 @@ public class UserService {
     User user = userQueryRepository.findByAccountName(new AccountName(command.accountName()))
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    user.recordFailedLogin(MAX_FAILED_ATTEMPTS, LOCK_DURATION);
+    user.recordFailedLogin();
     userWriteRepository.save(user);
   }
 }
