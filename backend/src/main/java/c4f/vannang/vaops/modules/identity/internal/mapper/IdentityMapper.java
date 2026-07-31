@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.identity.internal;
+package c4f.vannang.vaops.modules.identity.internal.mapper;
 
 import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;

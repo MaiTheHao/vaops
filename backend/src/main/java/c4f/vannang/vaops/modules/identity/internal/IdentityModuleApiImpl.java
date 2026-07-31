@@ -34,6 +34,7 @@ import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.modules.identity.internal.dto.UserSearchCriteria;
+import c4f.vannang.vaops.modules.identity.internal.mapper.IdentityMapper;
 
 import org.springframework.data.domain.Page;
 import lombok.RequiredArgsConstructor;
