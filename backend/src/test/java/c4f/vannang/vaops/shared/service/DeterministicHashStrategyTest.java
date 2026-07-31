@@ -2,11 +2,11 @@ package c4f.vannang.vaops.shared.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategy;
-import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
-import c4f.vannang.vaops.shared.crypto.Sha256DeterministicHashStrategy;
-import c4f.vannang.vaops.shared.crypto.Sha512DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
+import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategy;
+import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.feature.crypto.Sha256DeterministicHashStrategy;
+import c4f.vannang.vaops.shared.feature.crypto.Sha512DeterministicHashStrategy;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;

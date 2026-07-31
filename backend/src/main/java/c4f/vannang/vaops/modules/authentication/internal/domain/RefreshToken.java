@@ -3,7 +3,7 @@ package c4f.vannang.vaops.modules.authentication.internal.domain;
 import java.time.Instant;
 import java.util.UUID;
 
-import c4f.vannang.vaops.shared.base.domain.BaseEntity;
+import c4f.vannang.vaops.shared.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

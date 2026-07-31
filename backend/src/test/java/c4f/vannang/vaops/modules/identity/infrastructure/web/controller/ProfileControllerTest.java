@@ -21,7 +21,8 @@ import c4f.vannang.vaops.modules.identity.internal.usecase.GetProfileUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
 import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
-import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
+import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
+
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

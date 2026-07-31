@@ -1,12 +1,13 @@
 package c4f.vannang.vaops;
 
-import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 
 @RestController
 public class VaopsApplicationController {

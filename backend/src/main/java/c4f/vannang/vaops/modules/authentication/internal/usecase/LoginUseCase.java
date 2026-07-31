@@ -2,6 +2,11 @@ package c4f.vannang.vaops.modules.authentication.internal.usecase;
 
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
+import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.feature.token.AccessTokenSpec;
+import c4f.vannang.vaops.shared.feature.token.RefreshTokenSpec;
+import c4f.vannang.vaops.shared.feature.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.feature.token.claims.RefreshTokenClaims;
 import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
@@ -12,13 +17,9 @@ import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordSuccessfulLoginRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
-import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
-import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
-import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
-import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
-import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
+
 import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

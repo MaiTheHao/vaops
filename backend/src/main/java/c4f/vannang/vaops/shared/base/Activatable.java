@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.base.domain;
+package c4f.vannang.vaops.shared.base;
 
 public interface Activatable {
 

@@ -6,8 +6,6 @@ import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
-import c4f.vannang.vaops.shared.crypto.DeterministicHashStrategyFactory;
-import c4f.vannang.vaops.shared.crypto.Sha256DeterministicHashStrategy;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.internal.domain.RefreshToken;
@@ -19,10 +17,13 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
-import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
-import c4f.vannang.vaops.shared.token.claims.RefreshTokenClaims;
-import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
-import c4f.vannang.vaops.shared.token.specification.RefreshTokenSpec;
+import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategyFactory;
+import c4f.vannang.vaops.shared.feature.crypto.Sha256DeterministicHashStrategy;
+import c4f.vannang.vaops.shared.feature.token.AccessTokenSpec;
+import c4f.vannang.vaops.shared.feature.token.RefreshTokenSpec;
+import c4f.vannang.vaops.shared.feature.token.claims.AccessTokenClaims;
+import c4f.vannang.vaops.shared.feature.token.claims.RefreshTokenClaims;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

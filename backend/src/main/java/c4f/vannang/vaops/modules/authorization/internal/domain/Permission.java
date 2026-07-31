@@ -15,9 +15,8 @@ import lombok.NoArgsConstructor;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionDescription;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
-import c4f.vannang.vaops.shared.base.domain.BaseSoftDeletableEntity;
-
-import c4f.vannang.vaops.shared.base.domain.Activatable;
+import c4f.vannang.vaops.shared.base.Activatable;
+import c4f.vannang.vaops.shared.base.BaseSoftDeletableEntity;
 
 @Entity
 @Table(name = "permissions")

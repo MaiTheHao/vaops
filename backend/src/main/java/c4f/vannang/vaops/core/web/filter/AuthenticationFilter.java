@@ -2,10 +2,10 @@ package c4f.vannang.vaops.core.web.filter;
 
 import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityModuleApi;
-import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
-import c4f.vannang.vaops.shared.security.UserAuthenticationToken;
-import c4f.vannang.vaops.shared.token.claims.AccessTokenClaims;
-import c4f.vannang.vaops.shared.token.specification.AccessTokenSpec;
+import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
+import c4f.vannang.vaops.shared.feature.security.UserAuthenticationToken;
+import c4f.vannang.vaops.shared.feature.token.AccessTokenSpec;
+import c4f.vannang.vaops.shared.feature.token.claims.AccessTokenClaims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -44,7 +44,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     if (token != null) {
       try {
-        AccessTokenClaims claims = accessTokenSpec.validateAccessToken(token);
+        AccessTokenClaims claims = accessTokenSpec.validate(token);
 
         identityModuleApi.checkAvailableUser(new CheckAvailableUserQuery(claims.userId()));
 

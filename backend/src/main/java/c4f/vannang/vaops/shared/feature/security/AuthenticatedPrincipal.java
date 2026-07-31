@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.security;
+package c4f.vannang.vaops.shared.feature.security;
 
 import java.util.UUID;
 

@@ -1,7 +1,8 @@
 package c4f.vannang.vaops.modules.authorization.internal.domain;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
-import c4f.vannang.vaops.shared.base.domain.BaseVersionedEntity;
+import c4f.vannang.vaops.shared.base.Activatable;
+import c4f.vannang.vaops.shared.base.BaseVersionedEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +15,6 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import c4f.vannang.vaops.shared.base.domain.Activatable;
 
 @Entity
 @Table(name = "roles")

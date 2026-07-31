@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.base.domain;
+package c4f.vannang.vaops.shared.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;

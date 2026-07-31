@@ -1,12 +1,13 @@
 package c4f.vannang.vaops.core.config;
 
-import c4f.vannang.vaops.shared.security.AuthenticatedPrincipal;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 
 @Component("auditorProvider")
 public class SecurityAuditorAware implements AuditorAware<UUID> {

@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.shared.token.claims;
+package c4f.vannang.vaops.shared.feature.token.claims;
 
 import java.util.UUID;
 

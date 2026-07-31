@@ -15,10 +15,9 @@ import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountNam
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AvatarUrl;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.DisplayName;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
-import c4f.vannang.vaops.shared.base.domain.BaseSoftDeletableEntity;
+import c4f.vannang.vaops.shared.base.Activatable;
+import c4f.vannang.vaops.shared.base.BaseSoftDeletableEntity;
 import c4f.vannang.vaops.shared.exception.ValidationException;
-
-import c4f.vannang.vaops.shared.base.domain.Activatable;
 
 @Entity
 @Table(name = "users")
