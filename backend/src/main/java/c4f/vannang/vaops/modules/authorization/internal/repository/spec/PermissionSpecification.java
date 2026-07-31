@@ -18,20 +18,20 @@ public class PermissionSpecification {
       if (keyword == null || keyword.isBlank()) return null;
       String pattern = "%" + keyword.trim().toLowerCase() + "%";
       return cb.or(
-          cb.like(cb.lower(root.get("resource")), pattern),
-          cb.like(cb.lower(root.get("action")), pattern),
+          cb.like(cb.lower(root.get("resource").as(String.class)), pattern),
+          cb.like(cb.lower(root.get("action").as(String.class)), pattern),
           cb.like(cb.lower(root.get("description")), pattern));
     };
   }
 
   public static Specification<Permission> hasResource(String resource) {
     return (root, query, cb) ->
-        (resource == null || resource.isBlank()) ? null : cb.equal(root.get("resource"), resource);
+        (resource == null || resource.isBlank()) ? null : cb.equal(root.get("resource").as(String.class), resource);
   }
 
   public static Specification<Permission> hasAction(String action) {
     return (root, query, cb) ->
-        (action == null || action.isBlank()) ? null : cb.equal(root.get("action"), action);
+        (action == null || action.isBlank()) ? null : cb.equal(root.get("action").as(String.class), action);
   }
 
   public static Specification<Permission> isActive(Boolean isActive) {

@@ -17,14 +17,14 @@ public class RoleSpecification {
       if (keyword == null || keyword.isBlank()) return null;
       String pattern = "%" + keyword.trim().toLowerCase() + "%";
       return cb.or(
-          cb.like(cb.lower(root.get("code")), pattern),
+          cb.like(cb.lower(root.get("code").as(String.class)), pattern),
           cb.like(cb.lower(root.get("description")), pattern));
     };
   }
 
   public static Specification<Role> hasCode(String code) {
     return (root, query, cb) ->
-        (code == null || code.isBlank()) ? null : cb.equal(root.get("code"), code);
+        (code == null || code.isBlank()) ? null : cb.equal(root.get("code").as(String.class), code);
   }
 
   public static Specification<Role> isActive(Boolean isActive) {

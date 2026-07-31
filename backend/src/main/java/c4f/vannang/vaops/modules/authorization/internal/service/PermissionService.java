@@ -41,7 +41,7 @@ public class PermissionService {
     PermissionAction action = new PermissionAction(command.action());
     PermissionDescription description = new PermissionDescription(command.description());
 
-    if (permissionQueryRepository.existsByResourceAndAction(resource.value(), action.value())) {
+    if (permissionQueryRepository.existsByResourceAndAction(resource, action)) {
       throw new ResourceAlreadyExistsException(
           "Permission with resource and action already exists");
     }
@@ -108,7 +108,9 @@ public class PermissionService {
     if (userId == null || resource == null || action == null) {
       throw new ValidationException("UserId, resource and action must not be null");
     }
-    return permissionQueryRepository.existsActiveByUserIdAndResourceAndAction(userId, resource, action);
+    PermissionResource permResource = new PermissionResource(resource);
+    PermissionAction permAction = new PermissionAction(action);
+    return permissionQueryRepository.existsActiveByUserIdAndResourceAndAction(userId, permResource, permAction);
   }
 
   @Transactional(readOnly = true)

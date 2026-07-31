@@ -2,7 +2,7 @@ package c4f.vannang.vaops.modules.authorization.internal.service;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
 import c4f.vannang.vaops.modules.authorization.internal.domain.UserRole;
-import c4f.vannang.vaops.modules.authorization.internal.dto.AssignRoleToUserCommand;
+import c4f.vannang.vaops.modules.authorization.internal.dto.AssignRolesToUserCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RevokeRoleFromUserCommand;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.UserRoleWriteRepository;
@@ -24,7 +24,7 @@ public class UserRoleService {
   private final RoleQueryRepository roleQueryRepository;
   private final UserRoleWriteRepository userRoleWriteRepository;
 
-  public void assignRolesToUser(AssignRoleToUserCommand command) {
+  public void assignRolesToUser(AssignRolesToUserCommand command) {
     if (command == null
         || command.userId() == null
         || command.roleIds() == null

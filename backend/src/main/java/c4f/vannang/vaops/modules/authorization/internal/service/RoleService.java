@@ -3,7 +3,7 @@ package c4f.vannang.vaops.modules.authorization.internal.service;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
-import c4f.vannang.vaops.modules.authorization.internal.dto.AssignPermissionToRoleCommand;
+import c4f.vannang.vaops.modules.authorization.internal.dto.AssignPermissionsToRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.CreateRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RevokePermissionFromRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
@@ -41,7 +41,7 @@ public class RoleService {
     if (command == null) throw new ValidationException("Command must not be null");
     RoleCode code = new RoleCode(command.code());
 
-    if (roleQueryRepository.existsByCode(code.value())) {
+    if (roleQueryRepository.existsByCode(code)) {
       throw new ResourceAlreadyExistsException("Role code already exists");
     }
 
@@ -114,7 +114,7 @@ public class RoleService {
     return PageResponse.from(rolePage, roleResponseMapper::toResponse);
   }
 
-  public void assignPermissionsToRole(AssignPermissionToRoleCommand command) {
+  public void assignPermissionsToRole(AssignPermissionsToRoleCommand command) {
     if (command == null
         || command.roleId() == null
         || command.permissionIds() == null

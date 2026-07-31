@@ -1,6 +1,8 @@
 package c4f.vannang.vaops.modules.authorization.internal.repository;
 
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
+import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
 import c4f.vannang.vaops.shared.repository.BaseQueryRepository;
 import java.util.List;
 import java.util.Optional;
@@ -24,28 +26,29 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
 
   @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.deletedAt IS NULL")
   Optional<Permission> findByResourceAndAction(
-      @Param("resource") String resource, @Param("action") String action);
+      @Param("resource") PermissionResource resource, @Param("action") PermissionAction action);
 
   @Query("SELECT p FROM Permission p WHERE p.resource IN :resources AND p.deletedAt IS NULL")
-  List<Permission> findAllByResourceIn(@Param("resources") List<String> resources);
+  List<Permission> findAllByResourceIn(@Param("resources") List<PermissionResource> resources);
 
   @Query("SELECT p FROM Permission p WHERE p.action IN :actions AND p.deletedAt IS NULL")
-  List<Permission> findAllByActionIn(@Param("actions") List<String> actions);
+  List<Permission> findAllByActionIn(@Param("actions") List<PermissionAction> actions);
 
   @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.resource = :resource AND p.deletedAt IS NULL")
-  boolean existsByResource(@Param("resource") String resource);
+  boolean existsByResource(@Param("resource") PermissionResource resource);
 
   @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.action = :action AND p.deletedAt IS NULL")
-  boolean existsByAction(@Param("action") String action);
+  boolean existsByAction(@Param("action") PermissionAction action);
 
   @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.deletedAt IS NULL")
-  boolean existsByResourceAndAction(@Param("resource") String resource, @Param("action") String action);
+  boolean existsByResourceAndAction(
+      @Param("resource") PermissionResource resource, @Param("action") PermissionAction action);
 
   @Query(
       "SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.active"
           + " = true AND p.deletedAt IS NULL")
   Optional<Permission> findActiveByResourceAndAction(
-      @Param("resource") String resource, @Param("action") String action);
+      @Param("resource") PermissionResource resource, @Param("action") PermissionAction action);
 
   @Query("SELECT p FROM Permission p WHERE p.id IN :ids AND p.deletedAt IS NULL")
   List<Permission> findAllByIdIn(@Param("ids") List<UUID> ids);
@@ -74,6 +77,7 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
       + "AND p.active = true AND p.deletedAt IS NULL")
   boolean existsActiveByUserIdAndResourceAndAction(
       @Param("userId") UUID userId,
-      @Param("resource") String resource,
-      @Param("action") String action);
+      @Param("resource") PermissionResource resource,
+      @Param("action") PermissionAction action);
 }
+
