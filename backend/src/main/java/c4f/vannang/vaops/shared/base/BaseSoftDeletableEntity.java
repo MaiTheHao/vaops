@@ -19,6 +19,10 @@ public abstract class BaseSoftDeletableEntity extends BaseAuditableEntity {
   @Column(name = "deleted_by")
   private UUID deletedBy;
 
+  public boolean isDeleted() {
+    return this.deletedAt != null;
+  }
+
   public void softDelete(UUID deletedByUserId) {
     this.deletedAt = Instant.now();
     this.deletedBy = deletedByUserId;

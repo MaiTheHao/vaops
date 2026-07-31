@@ -100,7 +100,7 @@ class UserServiceTest {
     userService.softDelete(new SoftDeleteUserCommand(userId, userId));
 
     verify(userWriteRepository).save(user);
-    assertThat(user.getDeletedAt()).isNotNull();
+    assertThat(user.isDeleted()).isTrue();
   }
 
   @Test

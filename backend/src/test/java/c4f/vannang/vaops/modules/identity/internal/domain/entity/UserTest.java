@@ -108,6 +108,7 @@ class UserTest {
     UUID deletedBy = UUID.randomUUID();
     user.softDelete(deletedBy);
 
+    assertTrue(user.isDeleted());
     assertNotNull(user.getDeletedAt());
     assertEquals(deletedBy, user.getDeletedBy());
   }
