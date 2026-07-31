@@ -5,6 +5,5 @@ import java.util.UUID;
 
 public record AssignPermissionToRoleCommand(
     UUID roleId,
-    Set<UUID> permissionIds,
-    UUID updatedBy
+    Set<UUID> permissionIds
 ) {}

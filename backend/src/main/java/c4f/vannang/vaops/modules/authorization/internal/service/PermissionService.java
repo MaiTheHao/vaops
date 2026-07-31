@@ -46,7 +46,7 @@ public class PermissionService {
           "Permission with resource and action already exists");
     }
 
-    Permission permission = Permission.create(resource, action, description, command.createdBy());
+    Permission permission = Permission.create(resource, action, description);
     Permission saved = permissionWriteRepository.save(permission);
     return permissionResponseMapper.toResponse(saved);
   }
@@ -63,7 +63,7 @@ public class PermissionService {
     PermissionAction action = new PermissionAction(command.action());
     PermissionDescription description = new PermissionDescription(command.description());
 
-    permission.update(resource, action, description, command.updatedBy());
+    permission.update(resource, action, description);
     Permission saved = permissionWriteRepository.save(permission);
     return permissionResponseMapper.toResponse(saved);
   }

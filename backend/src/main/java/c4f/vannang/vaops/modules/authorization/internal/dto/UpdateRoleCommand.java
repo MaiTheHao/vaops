@@ -5,6 +5,5 @@ import java.util.UUID;
 public record UpdateRoleCommand(
     UUID id,
     String code,
-    String description,
-    UUID updatedBy
+    String description
 ) {}

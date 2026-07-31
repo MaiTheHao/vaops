@@ -6,6 +6,5 @@ public record UpdatePermissionCommand(
     UUID id,
     String resource,
     String action,
-    String description,
-    UUID updatedBy
+    String description
 ) {}

@@ -3,26 +3,20 @@ package c4f.vannang.vaops.modules.authentication.internal.domain;
 import java.time.Instant;
 import java.util.UUID;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UuidGenerator;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import c4f.vannang.vaops.modules.shared.base.domain.BaseEntity;
 
 @Entity
 @Table(name = "refresh_tokens")
 @Getter
-@NoArgsConstructor
-public class RefreshToken {
-
-  @Id
-  @UuidGenerator
-  @Column(name = "id")
-  private UUID id;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class RefreshToken extends BaseEntity {
 
   @Column(name = "user_id", nullable = false)
   private UUID userId;
@@ -35,10 +29,6 @@ public class RefreshToken {
 
   @Column(name = "revoked_at", nullable = true)
   private Instant revokedAt;
-
-  @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt;
 
   public static RefreshToken create(UUID userId, String tokenHash, Instant expiredAt) {
     RefreshToken token = new RefreshToken();
@@ -64,9 +54,5 @@ public class RefreshToken {
 
   public boolean isValid() {
     return !isExpired() && !isRevoked();
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
   }
 }

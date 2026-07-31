@@ -6,6 +6,5 @@ import java.util.UUID;
 public record CreateRoleCommand(
     String code,
     String description,
-    Set<UUID> permissionIds,
-    UUID createdBy
+    Set<UUID> permissionIds
 ) {}

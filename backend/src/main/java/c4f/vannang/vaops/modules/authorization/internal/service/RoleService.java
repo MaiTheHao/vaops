@@ -45,7 +45,7 @@ public class RoleService {
       throw new ResourceAlreadyExistsException("Role code already exists");
     }
 
-    Role role = Role.create(code, command.description(), command.createdBy());
+    Role role = Role.create(code, command.description());
 
     if (command.permissionIds() != null && !command.permissionIds().isEmpty()) {
       List<Permission> permissions =
@@ -67,7 +67,7 @@ public class RoleService {
         .findById(command.id())
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-    role.update(new RoleCode(command.code()), command.description(), command.updatedBy());
+    role.update(new RoleCode(command.code()), command.description());
     Role saved = roleWriteRepository.save(role);
     return roleResponseMapper.toResponse(saved);
   }
