@@ -3,25 +3,20 @@ package c4f.vannang.vaops.modules.authorization.internal.repository.spec;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.RolePermission;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionSearchCriteria;
+import c4f.vannang.vaops.shared.specification.BaseActivatableSpecification;
+import c4f.vannang.vaops.shared.specification.BaseSoftDeletableSpecification;
 import c4f.vannang.vaops.shared.util.JpaSpecUtil;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
-public class PermissionSpecification {
+public class PermissionSpecification extends BaseSoftDeletableSpecification<Permission> {
 
   public static Specification<Permission> hasKeyword(String keyword) {
-    return (root, query, cb) -> {
-      if (keyword == null || keyword.isBlank()) return null;
-      String pattern = "%" + keyword.trim().toLowerCase() + "%";
-      return cb.or(
-          cb.like(cb.lower(root.get("resource").as(String.class)), pattern),
-          cb.like(cb.lower(root.get("action").as(String.class)), pattern),
-          cb.like(cb.lower(root.get("description")), pattern));
-    };
+    return keywordSearch(List.of("resource", "action", "description"), keyword);
   }
 
   public static Specification<Permission> hasResource(String resource) {
@@ -35,20 +30,7 @@ public class PermissionSpecification {
   }
 
   public static Specification<Permission> isActive(Boolean isActive) {
-    return (root, query, cb) -> isActive == null ? null : cb.equal(root.get("active"), isActive);
-  }
-
-  public static Specification<Permission> isNotDeleted() {
-    return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
-  }
-
-  public static Specification<Permission> createdAfter(Instant from) {
-    return (root, query, cb) ->
-        from == null ? null : cb.greaterThanOrEqualTo(root.get("createdAt"), from);
-  }
-
-  public static Specification<Permission> createdBefore(Instant to) {
-    return (root, query, cb) -> to == null ? null : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+    return BaseActivatableSpecification.active(isActive);
   }
 
   public static Specification<Permission> hasRoleId(UUID roleId) {
@@ -80,9 +62,9 @@ public class PermissionSpecification {
 
   public static Specification<Permission> search(PermissionSearchCriteria criteria) {
     if (criteria == null) {
-      return Specification.where(isNotDeleted());
+      return Specification.<Permission>where(notDeleted());
     }
-    return Specification.where(isNotDeleted())
+    return Specification.<Permission>where(notDeleted())
         .and(hasKeyword(criteria.keyword()))
         .and(hasResource(criteria.resource()))
         .and(hasAction(criteria.action()))

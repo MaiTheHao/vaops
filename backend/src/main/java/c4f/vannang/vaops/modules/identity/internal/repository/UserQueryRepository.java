@@ -2,29 +2,13 @@ package c4f.vannang.vaops.modules.identity.internal.repository;
 
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
-import c4f.vannang.vaops.shared.repository.BaseQueryRepository;
-import java.util.List;
+import c4f.vannang.vaops.shared.repository.BaseSoftDeletableQueryRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface UserQueryRepository extends BaseQueryRepository<User, UUID> {
-
-  @Query("SELECT u FROM User u WHERE u.id = :id AND u.deletedAt IS NULL")
-  Optional<User> findById(@Param("id") UUID id);
-
-  @Query("SELECT u FROM User u WHERE u.id = :id")
-  Optional<User> findByIdWithDeleted(@Param("id") UUID id);
-
-  @Query("SELECT u FROM User u WHERE u.id = :id AND u.active = true AND u.deletedAt IS NULL")
-  Optional<User> findActiveById(@Param("id") UUID id);
-
-  @Query("SELECT u FROM User u WHERE u.id IN :ids AND u.deletedAt IS NULL")
-  List<User> findAllByIdIn(@Param("ids") List<UUID> ids);
-
-  @Query("SELECT u FROM User u WHERE u.id IN :ids AND u.active = true AND u.deletedAt IS NULL")
-  List<User> findAllActiveByIdIn(@Param("ids") List<UUID> ids);
+public interface UserQueryRepository extends BaseSoftDeletableQueryRepository<User, UUID> {
 
   @Query("SELECT u FROM User u WHERE u.accountName = :accountName AND u.deletedAt IS NULL")
   Optional<User> findByAccountName(@Param("accountName") AccountName accountName);

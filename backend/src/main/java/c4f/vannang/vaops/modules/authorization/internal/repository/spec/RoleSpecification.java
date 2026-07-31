@@ -3,23 +3,19 @@ package c4f.vannang.vaops.modules.authorization.internal.repository.spec;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Role;
 import c4f.vannang.vaops.modules.authorization.internal.domain.UserRole;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleSearchCriteria;
+import c4f.vannang.vaops.shared.specification.BaseActivatableSpecification;
+import c4f.vannang.vaops.shared.specification.BaseSoftDeletableSpecification;
 import c4f.vannang.vaops.shared.util.JpaSpecUtil;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.domain.Specification;
 
-public class RoleSpecification {
+public class RoleSpecification extends BaseSoftDeletableSpecification<Role> {
 
   public static Specification<Role> hasKeyword(String keyword) {
-    return (root, query, cb) -> {
-      if (keyword == null || keyword.isBlank()) return null;
-      String pattern = "%" + keyword.trim().toLowerCase() + "%";
-      return cb.or(
-          cb.like(cb.lower(root.get("code").as(String.class)), pattern),
-          cb.like(cb.lower(root.get("description")), pattern));
-    };
+    return keywordSearch(List.of("code", "description"), keyword);
   }
 
   public static Specification<Role> hasCode(String code) {
@@ -28,20 +24,7 @@ public class RoleSpecification {
   }
 
   public static Specification<Role> isActive(Boolean isActive) {
-    return (root, query, cb) -> isActive == null ? null : cb.equal(root.get("active"), isActive);
-  }
-
-  public static Specification<Role> isNotDeleted() {
-    return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
-  }
-
-  public static Specification<Role> createdAfter(Instant from) {
-    return (root, query, cb) ->
-        from == null ? null : cb.greaterThanOrEqualTo(root.get("createdAt"), from);
-  }
-
-  public static Specification<Role> createdBefore(Instant to) {
-    return (root, query, cb) -> to == null ? null : cb.lessThanOrEqualTo(root.get("createdAt"), to);
+    return BaseActivatableSpecification.active(isActive);
   }
 
   public static Specification<Role> hasUserId(UUID userId) {
@@ -58,9 +41,9 @@ public class RoleSpecification {
 
   public static Specification<Role> search(RoleSearchCriteria criteria) {
     if (criteria == null) {
-      return Specification.where(isNotDeleted());
+      return Specification.<Role>where(notDeleted());
     }
-    return Specification.where(isNotDeleted())
+    return Specification.<Role>where(notDeleted())
         .and(hasKeyword(criteria.keyword()))
         .and(hasCode(criteria.code()))
         .and(isActive(criteria.isActive()))

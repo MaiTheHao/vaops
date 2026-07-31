@@ -3,26 +3,14 @@ package c4f.vannang.vaops.modules.authorization.internal.repository;
 import c4f.vannang.vaops.modules.authorization.internal.domain.Permission;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionAction;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
-import c4f.vannang.vaops.shared.repository.BaseQueryRepository;
+import c4f.vannang.vaops.shared.repository.BaseSoftDeletableQueryRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface PermissionQueryRepository extends BaseQueryRepository<Permission, UUID> {
-
-  @Query("SELECT p FROM Permission p WHERE p.id = :id AND p.deletedAt IS NULL")
-  Optional<Permission> findById(@Param("id") UUID id);
-
-  @Query("SELECT p FROM Permission p WHERE p.id = :id")
-  Optional<Permission> findByIdWithDeleted(@Param("id") UUID id);
-
-  @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Permission p WHERE p.id = :id")
-  boolean existsByIdWithDeleted(@Param("id") UUID id);
-
-  @Query("SELECT p FROM Permission p WHERE p.id = :id AND p.active = true AND p.deletedAt IS NULL")
-  Optional<Permission> findActiveById(@Param("id") UUID id);
+public interface PermissionQueryRepository extends BaseSoftDeletableQueryRepository<Permission, UUID> {
 
   @Query("SELECT p FROM Permission p WHERE p.resource = :resource AND p.action = :action AND p.deletedAt IS NULL")
   Optional<Permission> findByResourceAndAction(
@@ -50,13 +38,6 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
   Optional<Permission> findActiveByResourceAndAction(
       @Param("resource") PermissionResource resource, @Param("action") PermissionAction action);
 
-  @Query("SELECT p FROM Permission p WHERE p.id IN :ids AND p.deletedAt IS NULL")
-  List<Permission> findAllByIdIn(@Param("ids") List<UUID> ids);
-
-  @Query(
-      "SELECT p FROM Permission p WHERE p.id IN :ids AND p.active = true AND p.deletedAt IS NULL")
-  List<Permission> findAllActiveByIdIn(@Param("ids") List<UUID> ids);
-
   @Query("SELECT DISTINCT p FROM UserRole ur "
       + "JOIN Role r ON ur.id.roleId = r.id "
       + "JOIN RolePermission rp ON r.id = rp.id.roleId "
@@ -80,4 +61,3 @@ public interface PermissionQueryRepository extends BaseQueryRepository<Permissio
       @Param("resource") PermissionResource resource,
       @Param("action") PermissionAction action);
 }
-
