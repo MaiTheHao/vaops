@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.identity.internal.repository;
+package c4f.vannang.vaops.modules.identity.internal.repository.spec;
 
 import org.springframework.data.jpa.domain.Specification;
 

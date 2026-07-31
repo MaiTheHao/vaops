@@ -8,10 +8,8 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
-import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.GetProfileUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
+import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
+import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +22,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final GetProfileUseCase getProfileUseCase;
-    private final UpdateProfileUseCase updateProfileUseCase;
-    private final ChangePasswordUseCase changePasswordUseCase;
-    private final SoftDeleteUseCase softDeleteUseCase;
+    private final UserProfileService userProfileService;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<ProfileWebResponse> getMyProfile(
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        User user = getProfileUseCase.execute(new FindByIdCommand(principal.userId()));
+        User user = userProfileService.getProfile(new FindByIdCommand(principal.userId()));
         return ResponseEntity.ok(toResponse(user));
     }
 
@@ -40,7 +36,7 @@ public class ProfileController {
     public ResponseEntity<ProfileWebResponse> putUpdateProfile(
             @Valid @RequestBody PutUpdateProfileWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        User user = updateProfileUseCase.execute(
+        User user = userProfileService.updateProfile(
             new UpdateProfileCommand(principal.userId(), request.displayName(), request.avatarUrl()));
         return ResponseEntity.ok(toResponse(user));
     }
@@ -49,7 +45,7 @@ public class ProfileController {
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        changePasswordUseCase.execute(
+        userProfileService.changePassword(
             new ChangePasswordCommand(principal.userId(), request.oldPassword(), request.newPassword()));
         return ResponseEntity.ok().build();
     }
@@ -57,7 +53,7 @@ public class ProfileController {
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        softDeleteUseCase.execute(new SoftDeleteUserCommand(principal.userId(), principal.userId()));
+        userService.softDelete(new SoftDeleteUserCommand(principal.userId(), principal.userId()));
         return ResponseEntity.noContent().build();
     }
 

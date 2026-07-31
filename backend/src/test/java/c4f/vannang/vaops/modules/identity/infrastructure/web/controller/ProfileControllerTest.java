@@ -16,10 +16,8 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
-import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.GetProfileUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
+import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
+import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 
@@ -37,16 +35,10 @@ import org.springframework.http.ResponseEntity;
 class ProfileControllerTest {
 
   @Mock
-  private GetProfileUseCase getProfileUseCase;
+  private UserProfileService userProfileService;
 
   @Mock
-  private UpdateProfileUseCase updateProfileUseCase;
-
-  @Mock
-  private ChangePasswordUseCase changePasswordUseCase;
-
-  @Mock
-  private SoftDeleteUseCase softDeleteUseCase;
+  private UserService userService;
 
   @InjectMocks
   private ProfileController profileController;
@@ -71,7 +63,7 @@ class ProfileControllerTest {
 
   @Test
   void getMyProfile_ShouldReturnProfile_WhenUserExists() {
-    when(getProfileUseCase.execute(any(FindByIdCommand.class))).thenReturn(user);
+    when(userProfileService.getProfile(any(FindByIdCommand.class))).thenReturn(user);
 
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
@@ -82,7 +74,7 @@ class ProfileControllerTest {
     assertEquals("Test User", response.getBody().displayName());
     assertEquals("https://example.com/avatar.png", response.getBody().avatarUrl());
 
-    verify(getProfileUseCase).execute(new FindByIdCommand(userId));
+    verify(userProfileService).getProfile(new FindByIdCommand(userId));
   }
 
   @Test
@@ -90,7 +82,7 @@ class ProfileControllerTest {
     User userWithNulls = User.register(null, new PasswordHash("hashed"), null, null);
     userWithNulls.setId(userId);
 
-    when(getProfileUseCase.execute(any(FindByIdCommand.class))).thenReturn(userWithNulls);
+    when(userProfileService.getProfile(any(FindByIdCommand.class))).thenReturn(userWithNulls);
 
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
@@ -104,7 +96,7 @@ class ProfileControllerTest {
 
   @Test
   void getMyProfile_ShouldThrowException_WhenUserNotFound() {
-    when(getProfileUseCase.execute(any(FindByIdCommand.class)))
+    when(userProfileService.getProfile(any(FindByIdCommand.class)))
         .thenThrow(new ResourceNotFoundException("User not found"));
 
     assertThrows(
@@ -118,7 +110,7 @@ class ProfileControllerTest {
     PutUpdateProfileWebRequest request = new PutUpdateProfileWebRequest("New Display Name", "https://example.com/new-avatar.png");
     user.updateProfile(new DisplayName("New Display Name"), new AvatarUrl("https://example.com/new-avatar.png"));
 
-    when(updateProfileUseCase.execute(any(UpdateProfileCommand.class))).thenReturn(user);
+    when(userProfileService.updateProfile(any(UpdateProfileCommand.class))).thenReturn(user);
 
     ResponseEntity<ProfileWebResponse> response = profileController.putUpdateProfile(request, principal);
 
@@ -127,7 +119,7 @@ class ProfileControllerTest {
     assertEquals("New Display Name", response.getBody().displayName());
     assertEquals("https://example.com/new-avatar.png", response.getBody().avatarUrl());
 
-    verify(updateProfileUseCase).execute(new UpdateProfileCommand(userId, "New Display Name", "https://example.com/new-avatar.png"));
+    verify(userProfileService).updateProfile(new UpdateProfileCommand(userId, "New Display Name", "https://example.com/new-avatar.png"));
   }
 
   @Test
@@ -139,7 +131,7 @@ class ProfileControllerTest {
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertNull(response.getBody());
 
-    verify(changePasswordUseCase).execute(new ChangePasswordCommand(userId, "OldPass123!", "NewPass123!"));
+    verify(userProfileService).changePassword(new ChangePasswordCommand(userId, "OldPass123!", "NewPass123!"));
   }
 
   @Test
@@ -149,6 +141,6 @@ class ProfileControllerTest {
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     assertNull(response.getBody());
 
-    verify(softDeleteUseCase).execute(new SoftDeleteUserCommand(userId, userId));
+    verify(userService).softDelete(new SoftDeleteUserCommand(userId, userId));
   }
 }

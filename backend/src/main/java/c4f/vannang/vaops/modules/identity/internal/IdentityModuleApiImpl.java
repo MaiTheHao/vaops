@@ -29,18 +29,9 @@ import c4f.vannang.vaops.modules.identity.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.ToggleUserStatusCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
-import c4f.vannang.vaops.modules.identity.internal.usecase.ChangePasswordUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.CheckAvailableUserUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByAccountNameUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.FindUserByIdUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.LoginFailedUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.LoginSuccessfulUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.RegisterUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.SoftDeleteUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.ToggleStatusUseCase;
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
-import c4f.vannang.vaops.modules.identity.internal.usecase.SearchUsersUseCase;
-import c4f.vannang.vaops.modules.identity.internal.usecase.UpdateProfileUseCase;
+import c4f.vannang.vaops.modules.identity.internal.service.UserProfileService;
+import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.modules.identity.internal.dto.UserSearchCriteria;
 
@@ -51,98 +42,89 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class IdentityModuleApiImpl implements IdentityModuleApi {
 
-  private final RegisterUseCase registerUseCase;
-  private final SoftDeleteUseCase softDeleteUseCase;
-  private final ToggleStatusUseCase toggleStatusUseCase;
-  private final UpdateProfileUseCase updateProfileUseCase;
-  private final ChangePasswordUseCase changePasswordUseCase;
-  private final LoginSuccessfulUseCase loginSuccessfulUseCase;
-  private final LoginFailedUseCase loginFailedUseCase;
-  private final FindUserByIdUseCase findUserByIdUseCase;
-  private final FindUserByAccountNameUseCase findUserByAccountNameUseCase;
-  private final CheckAvailableUserUseCase checkAvailableUserUseCase;
-  private final SearchUsersUseCase searchUsersUseCase;
+  private final UserService userService;
+  private final UserProfileService userProfileService;
   private final UserDtoMapper userDtoMapper;
   private final IdentityMapper identityMapper;
 
   @Override
   public Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query) {
     FindByAccountNameCommand internalQuery = identityMapper.toInternal(query);
-    return findUserByAccountNameUseCase.execute(internalQuery)
+    return userService.findUserByAccountName(internalQuery)
         .map(userDtoMapper::toAuthDto);
   }
 
   @Override
   public void checkAvailableUser(CheckAvailableUserQuery query) {
     CheckAvailableUserCommand internalQuery = identityMapper.toInternal(query);
-    checkAvailableUserUseCase.execute(internalQuery);
+    userService.checkAvailableUser(internalQuery);
   }
 
   @Override
   public void recordSuccessfulLogin(RecordSuccessfulLoginRequest command) {
     RecordSuccessfulLoginCommand internalCommand = identityMapper.toInternal(command);
-    loginSuccessfulUseCase.execute(internalCommand);
+    userService.recordSuccessfulLogin(internalCommand);
   }
 
   @Override
   public void recordFailedLogin(RecordFailedLoginRequest command) {
     RecordFailedLoginCommand internalCommand = identityMapper.toInternal(command);
-    loginFailedUseCase.execute(internalCommand);
+    userService.recordFailedLogin(internalCommand);
   }
 
   @Override
   public UserDto register(RegisterRequest registerDto) {
     RegisterCommand internalCommand = identityMapper.toInternal(registerDto);
-    return userDtoMapper.toDto(registerUseCase.execute(internalCommand));
+    return userDtoMapper.toDto(userService.register(internalCommand));
   }
 
   @Override
   public void softDelete(SoftDeleteUserRequest command) {
     SoftDeleteUserCommand internalCommand = identityMapper.toInternal(command);
-    softDeleteUseCase.execute(internalCommand);
+    userService.softDelete(internalCommand);
   }
 
   @Override
   public void deactivate(ToggleUserStatusRequest command) {
     ToggleUserStatusCommand internalCommand = identityMapper.toInternal(command);
-    toggleStatusUseCase.execute(internalCommand);
+    userService.toggleStatus(internalCommand);
   }
 
   @Override
   public void activate(ToggleUserStatusRequest command) {
     ToggleUserStatusCommand internalCommand = identityMapper.toInternal(command);
-    toggleStatusUseCase.execute(internalCommand);
+    userService.toggleStatus(internalCommand);
   }
 
   @Override
   public void updateProfile(UpdateProfileRequest command) {
     UpdateProfileCommand internalCommand = identityMapper.toInternal(command);
-    updateProfileUseCase.execute(internalCommand);
+    userProfileService.updateProfile(internalCommand);
   }
 
   @Override
   public void changePassword(ChangePasswordRequest command) {
     ChangePasswordCommand internalCommand = identityMapper.toInternal(command);
-    changePasswordUseCase.execute(internalCommand);
+    userProfileService.changePassword(internalCommand);
   }
 
   @Override
   public Optional<UserDto> getUserById(FindByIdQuery query) {
     FindByIdCommand internalQuery = identityMapper.toInternal(query);
-    return findUserByIdUseCase.execute(internalQuery)
+    return userService.findUserById(internalQuery)
         .map(userDtoMapper::toDto);
   }
 
   @Override
   public Optional<UserDto> findByAccountName(FindByAccountNameQuery query) {
     FindByAccountNameCommand internalQuery = identityMapper.toInternal(query);
-    return findUserByAccountNameUseCase.execute(internalQuery)
+    return userService.findUserByAccountName(internalQuery)
         .map(userDtoMapper::toDto);
   }
 
   @Override
   public PageResponse<UserDto> searchUsers(UserSearchCriteria criteria) {
-    Page<User> userPage = searchUsersUseCase.execute(criteria);
+    Page<User> userPage = userService.searchUsers(criteria);
     return PageResponse.from(userPage, userDtoMapper::toDto);
   }
 }
