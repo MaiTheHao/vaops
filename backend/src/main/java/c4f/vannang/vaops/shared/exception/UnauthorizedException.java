@@ -1,9 +1,8 @@
-package c4f.vannang.vaops.modules.authorization.api.exception;
+package c4f.vannang.vaops.shared.exception;
 
 import java.util.Map;
 
 import c4f.vannang.vaops.shared.enumeration.ErrorCode;
-import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
 
 public class UnauthorizedException extends AbstractPlatformException {
 
