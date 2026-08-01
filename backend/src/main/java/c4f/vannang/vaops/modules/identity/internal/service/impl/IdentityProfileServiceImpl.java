@@ -7,7 +7,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.mapper.UserDtoMapper;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileService;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileAPIService;
 import c4f.vannang.vaops.modules.identity.internal.dto.ChangePasswordCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.UpdateProfileCommand;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-class IdentityProfileServiceImpl implements IdentityProfileService {
+class IdentityProfileServiceImpl implements IdentityProfileAPIService {
 
   private final UserProfileService userProfileService;
   private final UserDtoMapper userDtoMapper;

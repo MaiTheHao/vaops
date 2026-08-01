@@ -11,7 +11,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 
-public interface IdentityUserService {
+public interface IdentityUserAPIService {
 
   Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query);
 

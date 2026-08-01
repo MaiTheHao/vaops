@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.authentication.api;
+package c4f.vannang.vaops.modules.authentication.api.service;
 
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginRequestDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginResponseDto;
@@ -9,7 +9,7 @@ import c4f.vannang.vaops.modules.authentication.api.dto.RefreshTokenResponseDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterRequestDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterResponseDto;
 
-public interface AuthenticationModuleApi {
+public interface AuthenticationAPIService {
 
   LoginResponseDto login(LoginRequestDto request);
 

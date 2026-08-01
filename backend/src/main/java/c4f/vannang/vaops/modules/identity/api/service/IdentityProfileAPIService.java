@@ -5,7 +5,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 
-public interface IdentityProfileService {
+public interface IdentityProfileAPIService {
 
   UserDto getProfile(FindByIdQuery query);
 

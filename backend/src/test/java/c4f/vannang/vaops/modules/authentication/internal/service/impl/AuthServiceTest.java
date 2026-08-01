@@ -1,25 +1,23 @@
-package c4f.vannang.vaops.modules.authentication.internal;
+package c4f.vannang.vaops.modules.authentication.internal.service.impl;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.UUID;
 
-import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
-import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
-import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
-import c4f.vannang.vaops.modules.authentication.internal.usecase.LoginUseCase;
-import c4f.vannang.vaops.modules.authentication.internal.usecase.LogoutUseCase;
-import c4f.vannang.vaops.modules.authentication.internal.usecase.RefreshTokenUseCase;
-import c4f.vannang.vaops.modules.authentication.internal.usecase.RegisterUseCase;
-import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
-import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginRequestDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.LoginResponseDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterRequestDto;
 import c4f.vannang.vaops.modules.authentication.api.dto.RegisterResponseDto;
+import c4f.vannang.vaops.modules.authentication.internal.AuthMapper;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.LoginCommandResult;
+import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
+import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
+import c4f.vannang.vaops.modules.authentication.internal.service.AuthenticationService;
+import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
+import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.shared.exception.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,10 +29,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AuthServiceTest {
 
     @Mock
-    private IdentityUserService identityUserService;
+    private IdentityUserAPIService identityUserService;
 
     @InjectMocks
-    private RegisterUseCase RegisterUseCase;
+    private AuthenticationService authenticationService;
 
     @Test
     void register_ShouldReturnResponse_WhenRegistrationSucceeds() {
@@ -44,7 +42,7 @@ class AuthServiceTest {
 
         when(identityUserService.register(any(RegisterRequest.class))).thenReturn(mockUserDto);
 
-        RegisterCommandResult response = RegisterUseCase.execute(request);
+        RegisterCommandResult response = authenticationService.register(request);
 
         assertNotNull(response);
         assertEquals(id, response.id());
@@ -58,15 +56,14 @@ class AuthServiceTest {
         RegisterCommand request = new RegisterCommand("", "password123", "John Doe", "avatar");
         when(identityUserService.register(any(RegisterRequest.class))).thenThrow(new ValidationException("Validation error"));
 
-        assertThrows(ValidationException.class, () -> RegisterUseCase.execute(request));
+        assertThrows(ValidationException.class, () -> authenticationService.register(request));
     }
 
     @Test
-    void authenticationModuleApiImpl_ShouldDelegateLoginToLoginUseCase() {
-        var loginUseCase = mock(LoginUseCase.class);
-        var registerUseCaseMock = mock(RegisterUseCase.class);
+    void authenticationModuleApiImpl_ShouldDelegateLoginToAuthenticationService() {
+        var authenticationServiceMock = mock(AuthenticationService.class);
         var authMapperMock = mock(AuthMapper.class);
-        var api = new AuthenticationModuleApiImpl(loginUseCase, registerUseCaseMock, mock(RefreshTokenUseCase.class), mock(LogoutUseCase.class), authMapperMock);
+        var api = new AuthenticationAPIServiceImpl(authenticationServiceMock, authMapperMock);
 
         LoginRequestDto dto = new LoginRequestDto("user", "pass");
         LoginCommand command = new LoginCommand("user", "pass");
@@ -74,21 +71,20 @@ class AuthServiceTest {
         LoginResponseDto expected = new LoginResponseDto("access", "refresh");
 
         when(authMapperMock.toInternal(dto)).thenReturn(command);
-        when(loginUseCase.execute(command)).thenReturn(commandResult);
+        when(authenticationServiceMock.login(command)).thenReturn(commandResult);
         when(authMapperMock.toApiResponse(commandResult)).thenReturn(expected);
 
         LoginResponseDto result = api.login(dto);
 
         assertSame(expected, result);
-        verify(loginUseCase).execute(command);
+        verify(authenticationServiceMock).login(command);
     }
 
     @Test
-    void authenticationModuleApiImpl_ShouldDelegateRegisterToRegisterUseCase() {
-        var loginUseCase = mock(LoginUseCase.class);
-        var registerUseCaseMock = mock(RegisterUseCase.class);
+    void authenticationModuleApiImpl_ShouldDelegateRegisterToAuthenticationService() {
+        var authenticationServiceMock = mock(AuthenticationService.class);
         var authMapperMock = mock(AuthMapper.class);
-        var api = new AuthenticationModuleApiImpl(loginUseCase, registerUseCaseMock, mock(RefreshTokenUseCase.class), mock(LogoutUseCase.class), authMapperMock);
+        var api = new AuthenticationAPIServiceImpl(authenticationServiceMock, authMapperMock);
 
         RegisterRequestDto dto = new RegisterRequestDto("user", "pass", "User", "av");
         RegisterCommand command = new RegisterCommand("user", "pass", "User", "av");
@@ -97,12 +93,12 @@ class AuthServiceTest {
         RegisterResponseDto expected = new RegisterResponseDto(randomId, "user", "User", "av");
 
         when(authMapperMock.toInternal(dto)).thenReturn(command);
-        when(registerUseCaseMock.execute(command)).thenReturn(commandResult);
+        when(authenticationServiceMock.register(command)).thenReturn(commandResult);
         when(authMapperMock.toApiResponse(commandResult)).thenReturn(expected);
 
         RegisterResponseDto result = api.register(dto);
 
         assertSame(expected, result);
-        verify(registerUseCaseMock).execute(command);
+        verify(authenticationServiceMock).register(command);
     }
 }

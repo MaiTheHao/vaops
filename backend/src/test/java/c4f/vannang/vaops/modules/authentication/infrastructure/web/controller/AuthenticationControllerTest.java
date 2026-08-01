@@ -10,7 +10,7 @@ import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginWebR
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebRequestDto;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.RegisterWebResponseDto;
 import c4f.vannang.vaops.modules.authentication.internal.dto.*;
-import c4f.vannang.vaops.modules.authentication.internal.usecase.*;
+import c4f.vannang.vaops.modules.authentication.internal.service.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.UUID;
@@ -27,13 +27,7 @@ import org.springframework.http.ResponseEntity;
 class AuthenticationControllerTest {
 
     @Mock
-    private LoginUseCase loginUseCase;
-    @Mock
-    private RegisterUseCase registerUseCase;
-    @Mock
-    private RefreshTokenUseCase refreshTokenUseCase;
-    @Mock
-    private LogoutUseCase logoutUseCase;
+    private AuthenticationService authenticationService;
     @Mock
     private AppProperties appProperties;
     @Mock
@@ -56,13 +50,13 @@ class AuthenticationControllerTest {
         LoginWebRequestDto webRequest = new LoginWebRequestDto("user", "password");
         LoginCommandResult commandResult = new LoginCommandResult("access-token-123", "refresh-token-123");
 
-        when(loginUseCase.execute(any(LoginCommand.class))).thenReturn(commandResult);
+        when(authenticationService.login(any(LoginCommand.class))).thenReturn(commandResult);
 
         ResponseEntity<Void> response = controller.login(webRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().getFirst(org.springframework.http.HttpHeaders.SET_COOKIE));
-        verify(loginUseCase).execute(new LoginCommand("user", "password"));
+        verify(authenticationService).login(new LoginCommand("user", "password"));
     }
 
     @Test
@@ -71,7 +65,7 @@ class AuthenticationControllerTest {
         UUID generatedId = UUID.randomUUID();
         RegisterCommandResult commandResult = new RegisterCommandResult(generatedId, "user", "Display Name", "avatar-url");
 
-        when(registerUseCase.execute(any(RegisterCommand.class))).thenReturn(commandResult);
+        when(authenticationService.register(any(RegisterCommand.class))).thenReturn(commandResult);
 
         ResponseEntity<RegisterWebResponseDto> response = controller.register(webRequest);
 
@@ -81,7 +75,7 @@ class AuthenticationControllerTest {
         assertEquals("user", response.getBody().accountName());
         assertEquals("Display Name", response.getBody().displayName());
         assertEquals("avatar-url", response.getBody().avatarUrl());
-        verify(registerUseCase).execute(new RegisterCommand("user", "password", "Display Name", "avatar-url"));
+        verify(authenticationService).register(new RegisterCommand("user", "password", "Display Name", "avatar-url"));
     }
 
     @Test
@@ -91,13 +85,13 @@ class AuthenticationControllerTest {
         when(request.getCookies()).thenReturn(new Cookie[]{cookie});
 
         RefreshTokenCommandResult commandResult = new RefreshTokenCommandResult("new-access-token", "new-refresh-token");
-        when(refreshTokenUseCase.execute(any(RefreshTokenCommand.class))).thenReturn(commandResult);
+        when(authenticationService.refreshToken(any(RefreshTokenCommand.class))).thenReturn(commandResult);
 
         ResponseEntity<Void> response = controller.refresh(request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().getFirst(org.springframework.http.HttpHeaders.SET_COOKIE));
-        verify(refreshTokenUseCase).execute(new RefreshTokenCommand("stored-refresh-token"));
+        verify(authenticationService).refreshToken(new RefreshTokenCommand("stored-refresh-token"));
     }
 
     @Test
@@ -110,6 +104,6 @@ class AuthenticationControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getHeaders().getFirst(org.springframework.http.HttpHeaders.SET_COOKIE));
-        verify(logoutUseCase).execute(new LogoutCommand("stored-refresh-token"));
+        verify(authenticationService).logout(new LogoutCommand("stored-refresh-token"));
     }
 }

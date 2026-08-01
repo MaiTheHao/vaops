@@ -8,7 +8,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.UpdateProfileRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileService;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileAPIService;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
@@ -31,7 +31,7 @@ import org.springframework.http.ResponseEntity;
 class ProfileControllerTest {
 
   @Mock
-  private IdentityProfileService identityProfileService;
+  private IdentityProfileAPIService identityProfileService;
 
   @Mock
   private UserService userService;

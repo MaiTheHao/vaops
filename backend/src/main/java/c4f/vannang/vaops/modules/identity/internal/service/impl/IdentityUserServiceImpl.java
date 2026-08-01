@@ -13,7 +13,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.RegisterRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.mapper.UserDtoMapper;
-import c4f.vannang.vaops.modules.identity.api.service.IdentityUserService;
+import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-class IdentityUserServiceImpl implements IdentityUserService {
+class IdentityUserServiceImpl implements IdentityUserAPIService {
 
   private final UserService userService;
   private final UserDtoMapper userDtoMapper;
