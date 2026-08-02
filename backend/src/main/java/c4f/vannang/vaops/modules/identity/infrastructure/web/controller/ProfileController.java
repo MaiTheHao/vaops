@@ -14,6 +14,7 @@ import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ public class ProfileController {
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('PROFILE:READ') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<ProfileWebResponse> getMyProfile(
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
         UserDto user = identityProfileService.getProfile(new FindByIdQuery(principal.userId()));
@@ -33,6 +35,7 @@ public class ProfileController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('PROFILE:UPDATE') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<ProfileWebResponse> putUpdateProfile(
             @Valid @RequestBody PutUpdateProfileWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
@@ -42,6 +45,7 @@ public class ProfileController {
     }
 
     @PutMapping("/password")
+    @PreAuthorize("hasAuthority('PROFILE:UPDATE') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {

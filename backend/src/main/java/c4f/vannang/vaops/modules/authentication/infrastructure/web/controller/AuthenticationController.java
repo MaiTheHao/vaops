@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -109,6 +110,7 @@ public class AuthenticationController {
   }
 
   @PostMapping("/logout")
+  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> logout(HttpServletRequest request) {
     String refreshTokenValue = extractRefreshTokenFromCookie(request);
     if (refreshTokenValue != null && !refreshTokenValue.isBlank()) {

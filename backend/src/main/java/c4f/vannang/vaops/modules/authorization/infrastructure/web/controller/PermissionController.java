@@ -15,6 +15,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ public class PermissionController {
   private final AuthorizationWebMapper mapper;
 
   @PostMapping
+  @PreAuthorize("hasAuthority('PERMISSION:CREATE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<PermissionWebResponseDto> createPermission(
       @Valid @RequestBody CreatePermissionWebRequestDto dto) {
     PermissionWebResponseDto response = mapper.toPermissionWebResponseDto(
@@ -43,6 +45,7 @@ public class PermissionController {
   }
 
   @PutMapping("/{permissionId}")
+  @PreAuthorize("hasAuthority('PERMISSION:UPDATE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<PermissionWebResponseDto> updatePermission(
       @PathVariable UUID permissionId,
       @Valid @RequestBody UpdatePermissionWebRequestDto dto) {
@@ -52,6 +55,7 @@ public class PermissionController {
   }
 
   @DeleteMapping("/{permissionId}")
+  @PreAuthorize("hasAuthority('PERMISSION:DELETE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> deletePermission(
       @PathVariable UUID permissionId,
       @RequestParam(defaultValue = "false") boolean hard,
@@ -65,6 +69,7 @@ public class PermissionController {
   }
 
   @GetMapping("/{permissionId}")
+  @PreAuthorize("hasAuthority('PERMISSION:READ') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<PermissionWebResponseDto> getPermission(@PathVariable UUID permissionId) {
     PermissionWebResponseDto response = mapper.toPermissionWebResponseDto(
         permissionService.getPermissionById(permissionId));
@@ -72,6 +77,7 @@ public class PermissionController {
   }
 
   @GetMapping
+  @PreAuthorize("hasAuthority('PERMISSION:READ') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<PageResponse<PermissionWebResponseDto>> searchPermissions(
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String resource,

@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class UserRoleController {
   private final AuthorizationWebMapper mapper;
 
   @PostMapping
+  @PreAuthorize("hasAuthority('USER:MANAGE_ROLE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> assignRoles(
       @PathVariable UUID userId,
       @Valid @RequestBody AssignRolesToUserWebRequestDto dto) {
@@ -32,6 +34,7 @@ public class UserRoleController {
   }
 
   @DeleteMapping
+  @PreAuthorize("hasAuthority('USER:MANAGE_ROLE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> revokeRoles(
       @PathVariable UUID userId,
       @Valid @RequestBody RevokeRoleFromUserWebRequestDto dto) {

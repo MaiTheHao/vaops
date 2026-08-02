@@ -16,6 +16,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +37,7 @@ public class RoleController {
   private final AuthorizationWebMapper mapper;
 
   @PostMapping
+  @PreAuthorize("hasAuthority('ROLE:CREATE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<RoleWebResponseDto> createRole(
       @Valid @RequestBody CreateRoleWebRequestDto dto) {
     RoleWebResponseDto response = mapper.toRoleWebResponseDto(
@@ -44,6 +46,7 @@ public class RoleController {
   }
 
   @PutMapping("/{roleId}")
+  @PreAuthorize("hasAuthority('ROLE:UPDATE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<RoleWebResponseDto> updateRole(
       @PathVariable UUID roleId,
       @Valid @RequestBody UpdateRoleWebRequestDto dto) {
@@ -53,6 +56,7 @@ public class RoleController {
   }
 
   @DeleteMapping("/{roleId}")
+  @PreAuthorize("hasAuthority('ROLE:DELETE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> deleteRole(
       @PathVariable UUID roleId,
       @RequestParam(defaultValue = "false") boolean hard,
@@ -66,12 +70,14 @@ public class RoleController {
   }
 
   @GetMapping("/{roleId}")
+  @PreAuthorize("hasAuthority('ROLE:READ') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<RoleWebResponseDto> getRole(@PathVariable UUID roleId) {
     RoleWebResponseDto response = mapper.toRoleWebResponseDto(roleService.getRoleById(roleId));
     return ResponseEntity.ok(response);
   }
 
   @GetMapping
+  @PreAuthorize("hasAuthority('ROLE:READ') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<PageResponse<RoleWebResponseDto>> searchRoles(
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String code,
@@ -91,6 +97,7 @@ public class RoleController {
   }
 
   @PostMapping("/{roleId}/permissions")
+  @PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> assignPermissions(
       @PathVariable UUID roleId,
       @Valid @RequestBody AssignPermissionsRequestDto dto) {
@@ -99,6 +106,7 @@ public class RoleController {
   }
 
   @DeleteMapping("/{roleId}/permissions")
+  @PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> revokePermissions(
       @PathVariable UUID roleId,
       @Valid @RequestBody RevokePermissionsRequestDto dto) {
