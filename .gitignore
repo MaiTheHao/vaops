@@ -67,4 +67,4 @@ buildNumber.properties
 **/docker/mysql_data/
 
 # Documentation / Agent Docs
-docs/superpowers/
+/docs
