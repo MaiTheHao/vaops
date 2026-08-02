@@ -5,10 +5,8 @@ import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.Permi
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionDescription;
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.PermissionResource;
 import c4f.vannang.vaops.modules.authorization.internal.dto.CreatePermissionCommand;
-import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionResponse;
 import c4f.vannang.vaops.modules.authorization.internal.dto.PermissionSearchCriteria;
 import c4f.vannang.vaops.modules.authorization.internal.dto.UpdatePermissionCommand;
-import c4f.vannang.vaops.modules.authorization.internal.mapper.PermissionResponseMapper;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionWriteRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.spec.PermissionSpecification;
@@ -32,10 +30,9 @@ public class PermissionServiceImpl implements PermissionService {
 
   private final PermissionQueryRepository permissionQueryRepository;
   private final PermissionWriteRepository permissionWriteRepository;
-  private final PermissionResponseMapper permissionResponseMapper;
 
   @Override
-  public PermissionResponse createPermission(CreatePermissionCommand command) {
+  public Permission createPermission(CreatePermissionCommand command) {
     if (command == null) {
       throw new ValidationException("Command must not be null");
     }
@@ -49,12 +46,11 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     Permission permission = Permission.create(resource, action, description);
-    Permission saved = permissionWriteRepository.save(permission);
-    return permissionResponseMapper.toResponse(saved);
+    return permissionWriteRepository.save(permission);
   }
 
   @Override
-  public PermissionResponse updatePermission(UpdatePermissionCommand command) {
+  public Permission updatePermission(UpdatePermissionCommand command) {
     if (command == null || command.id() == null) {
       throw new ValidationException("Command and ID must not be null");
     }
@@ -67,8 +63,7 @@ public class PermissionServiceImpl implements PermissionService {
     PermissionDescription description = new PermissionDescription(command.description());
 
     permission.update(resource, action, description);
-    Permission saved = permissionWriteRepository.save(permission);
-    return permissionResponseMapper.toResponse(saved);
+    return permissionWriteRepository.save(permission);
   }
 
   @Override
@@ -93,21 +88,20 @@ public class PermissionServiceImpl implements PermissionService {
 
   @Override
   @Transactional(readOnly = true)
-  public PermissionResponse getPermissionById(UUID id) {
+  public Permission getPermissionById(UUID id) {
     if (id == null) throw new ValidationException("ID must not be null");
-    Permission permission = permissionQueryRepository
+    return permissionQueryRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Permission not found"));
-    return permissionResponseMapper.toResponse(permission);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<PermissionResponse> searchPermissions(PermissionSearchCriteria criteria) {
+  public PageResponse<Permission> searchPermissions(PermissionSearchCriteria criteria) {
     Page<Permission> permissionPage = permissionQueryRepository.findAll(
         PermissionSpecification.search(criteria),
         criteria != null ? criteria.toPageable() : Pageable.unpaged());
-    return PageResponse.from(permissionPage, permissionResponseMapper::toResponse);
+    return PageResponse.from(permissionPage, permission -> permission);
   }
 
   @Override
@@ -123,9 +117,8 @@ public class PermissionServiceImpl implements PermissionService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<PermissionResponse> getPermissionsByUserId(UUID userId) {
+  public List<Permission> getPermissionsByUserId(UUID userId) {
     if (userId == null) throw new ValidationException("UserId must not be null");
-    List<Permission> permissions = permissionQueryRepository.findActiveByUserId(userId);
-    return permissions.stream().map(permissionResponseMapper::toResponse).toList();
+    return permissionQueryRepository.findActiveByUserId(userId);
   }
 }

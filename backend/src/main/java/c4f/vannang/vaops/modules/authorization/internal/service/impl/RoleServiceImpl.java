@@ -6,10 +6,8 @@ import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleC
 import c4f.vannang.vaops.modules.authorization.internal.dto.AssignPermissionsToRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.CreateRoleCommand;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RevokePermissionFromRoleCommand;
-import c4f.vannang.vaops.modules.authorization.internal.dto.RoleResponse;
 import c4f.vannang.vaops.modules.authorization.internal.dto.RoleSearchCriteria;
 import c4f.vannang.vaops.modules.authorization.internal.dto.UpdateRoleCommand;
-import c4f.vannang.vaops.modules.authorization.internal.mapper.RoleResponseMapper;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleWriteRepository;
@@ -36,10 +34,9 @@ public class RoleServiceImpl implements RoleService {
   private final RoleQueryRepository roleQueryRepository;
   private final RoleWriteRepository roleWriteRepository;
   private final PermissionQueryRepository permissionQueryRepository;
-  private final RoleResponseMapper roleResponseMapper;
 
   @Override
-  public RoleResponse createRole(CreateRoleCommand command) {
+  public Role createRole(CreateRoleCommand command) {
     if (command == null) throw new ValidationException("Command must not be null");
     RoleCode code = new RoleCode(command.code());
 
@@ -58,12 +55,11 @@ public class RoleServiceImpl implements RoleService {
       role.assignPermissions(permissions);
     }
 
-    Role saved = roleWriteRepository.save(role);
-    return roleResponseMapper.toResponse(saved);
+    return roleWriteRepository.save(role);
   }
 
   @Override
-  public RoleResponse updateRole(UpdateRoleCommand command) {
+  public Role updateRole(UpdateRoleCommand command) {
     if (command == null || command.id() == null)
       throw new ValidationException("Command and ID must not be null");
     Role role = roleQueryRepository
@@ -71,8 +67,7 @@ public class RoleServiceImpl implements RoleService {
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
     role.update(new RoleCode(command.code()), command.description());
-    Role saved = roleWriteRepository.save(role);
-    return roleResponseMapper.toResponse(saved);
+    return roleWriteRepository.save(role);
   }
 
   @Override
@@ -97,29 +92,27 @@ public class RoleServiceImpl implements RoleService {
 
   @Override
   @Transactional(readOnly = true)
-  public RoleResponse getRoleById(UUID id) {
+  public Role getRoleById(UUID id) {
     if (id == null) throw new ValidationException("ID must not be null");
-    Role role = roleQueryRepository
+    return roleQueryRepository
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
-    return roleResponseMapper.toResponse(role);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<RoleResponse> getRolesByUserId(UUID userId) {
+  public List<Role> getRolesByUserId(UUID userId) {
     if (userId == null) throw new ValidationException("UserId must not be null");
-    List<Role> roles = roleQueryRepository.findAllActiveByUserId(userId);
-    return roles.stream().map(roleResponseMapper::toResponse).toList();
+    return roleQueryRepository.findAllActiveByUserId(userId);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<RoleResponse> searchRoles(RoleSearchCriteria criteria) {
+  public PageResponse<Role> searchRoles(RoleSearchCriteria criteria) {
     Page<Role> rolePage =
         roleQueryRepository.findAll(RoleSpecification.search(criteria),
             criteria != null ? criteria.toPageable() : Pageable.unpaged());
-    return PageResponse.from(rolePage, roleResponseMapper::toResponse);
+    return PageResponse.from(rolePage, role -> role);
   }
 
   @Override
