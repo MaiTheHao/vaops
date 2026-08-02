@@ -1,4 +1,4 @@
-package c4f.vannang.vaops.modules.identity.internal.service;
+package c4f.vannang.vaops.modules.identity.internal.service.impl;
 
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
@@ -25,8 +25,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserProfileServiceTest {
@@ -39,7 +40,7 @@ class UserProfileServiceTest {
   private PasswordEncoder passwordEncoder;
 
   @InjectMocks
-  private UserProfileService userProfileService;
+  private UserProfileServiceImpl userProfileService;
 
   private UUID userId;
   private User user;
@@ -57,20 +58,26 @@ class UserProfileServiceTest {
 
   @Test
   @org.junit.jupiter.api.DisplayName("getProfile should return user when user exists")
-  void getProfile_Success() {
+  void getProfile_ShouldReturnUser_WhenUserExists() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
+    // when
     User result = userProfileService.getProfile(new FindByIdCommand(userId));
 
+    // then
     assertThat(result).isNotNull();
     assertThat(result.getAccountName().value()).isEqualTo("john_doe");
+    assertThat(result.getDisplayName().value()).isEqualTo("John Doe");
   }
 
   @Test
   @org.junit.jupiter.api.DisplayName("getProfile should throw ResourceNotFoundException when user does not exist")
-  void getProfile_NotFound() {
+  void getProfile_ShouldThrowResourceNotFound_WhenUserDoesNotExist() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
+    // when / then
     assertThatThrownBy(() -> userProfileService.getProfile(new FindByIdCommand(userId)))
         .isInstanceOf(ResourceNotFoundException.class)
         .hasMessage("User not found");
@@ -78,36 +85,46 @@ class UserProfileServiceTest {
 
   @Test
   @org.junit.jupiter.api.DisplayName("updateProfile should update display name and avatar url")
-  void updateProfile_Success() {
+  void updateProfile_ShouldUpdateDisplayNameAndAvatarUrl_WhenUserExists() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
-    when(userWriteRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(userWriteRepository.save(argThat(u -> u == user))).thenAnswer(inv -> inv.getArgument(0));
 
-    User updated = userProfileService.updateProfile(new UpdateProfileCommand(userId, "Jane Doe", "http://avatar.com/jane.png"));
+    // when
+    User updated = userProfileService.updateProfile(
+        new UpdateProfileCommand(userId, "Jane Doe", "http://avatar.com/jane.png"));
 
+    // then
     assertThat(updated.getDisplayName().value()).isEqualTo("Jane Doe");
     assertThat(updated.getAvatarUrl().value()).isEqualTo("http://avatar.com/jane.png");
   }
 
   @Test
   @org.junit.jupiter.api.DisplayName("changePassword should update password hash when old password matches")
-  void changePassword_Success() {
+  void changePassword_ShouldUpdatePasswordHash_WhenOldPasswordMatches() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("OldPass123!", "encoded_pass")).thenReturn(true);
     when(passwordEncoder.encode("NewPass123!")).thenReturn("new_encoded_pass");
 
+    // when
     userProfileService.changePassword(new ChangePasswordCommand(userId, "OldPass123!", "NewPass123!"));
 
+    // then
     verify(userWriteRepository).save(user);
     assertThat(user.getPasswordHash().value()).isEqualTo("new_encoded_pass");
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("changePassword should throw exception when old password does not match")
-  void changePassword_InvalidOldPassword() {
+  @org.junit.jupiter.api.DisplayName("changePassword should throw BusinessRuleViolationException when old password is invalid")
+  void changePassword_ShouldThrowBusinessRuleViolation_WhenOldPasswordIsInvalid() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
     when(passwordEncoder.matches("WrongPass!", "encoded_pass")).thenReturn(false);
 
-    assertThatThrownBy(() -> userProfileService.changePassword(new ChangePasswordCommand(userId, "WrongPass!", "NewPass123!")))
+    // when / then
+    assertThatThrownBy(() -> userProfileService.changePassword(
+        new ChangePasswordCommand(userId, "WrongPass!", "NewPass123!")))
         .isInstanceOf(BusinessRuleViolationException.class)
         .hasMessage("Invalid old password");
   }

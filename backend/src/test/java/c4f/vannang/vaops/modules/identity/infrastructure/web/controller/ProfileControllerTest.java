@@ -1,8 +1,9 @@
 package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import c4f.vannang.vaops.modules.identity.api.dto.ChangePasswordRequest;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
@@ -61,86 +62,108 @@ class ProfileControllerTest {
 
   @Test
   void getMyProfile_ShouldReturnProfile_WhenUserExists() {
-    when(identityProfileService.getProfile(any(FindByIdQuery.class))).thenReturn(user);
+    // given
+    when(identityProfileService.getProfile(new FindByIdQuery(userId))).thenReturn(user);
 
+    // when
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(userId, response.getBody().id());
-    assertEquals("test.user", response.getBody().accountName());
-    assertEquals("Test User", response.getBody().displayName());
-    assertEquals("https://example.com/avatar.png", response.getBody().avatarUrl());
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().id()).isEqualTo(userId);
+    assertThat(response.getBody().accountName()).isEqualTo("test.user");
+    assertThat(response.getBody().displayName()).isEqualTo("Test User");
+    assertThat(response.getBody().avatarUrl()).isEqualTo("https://example.com/avatar.png");
 
     verify(identityProfileService).getProfile(new FindByIdQuery(userId));
   }
 
   @Test
-  void getMyProfile_ShouldHandleNullValueObjects_InResponse() {
+  void getMyProfile_ShouldHandleNullValueObjects_WhenUserHasNullFields() {
+    // given
     UserDto userWithNulls = new UserDto(userId, null, null, null, true, null, null, null);
+    when(identityProfileService.getProfile(new FindByIdQuery(userId))).thenReturn(userWithNulls);
 
-    when(identityProfileService.getProfile(any(FindByIdQuery.class))).thenReturn(userWithNulls);
-
+    // when
     ResponseEntity<ProfileWebResponse> response = profileController.getMyProfile(principal);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals(userId, response.getBody().id());
-    assertNull(response.getBody().accountName());
-    assertNull(response.getBody().displayName());
-    assertNull(response.getBody().avatarUrl());
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().id()).isEqualTo(userId);
+    assertThat(response.getBody().accountName()).isNull();
+    assertThat(response.getBody().displayName()).isNull();
+    assertThat(response.getBody().avatarUrl()).isNull();
   }
 
   @Test
-  void getMyProfile_ShouldThrowException_WhenUserNotFound() {
-    when(identityProfileService.getProfile(any(FindByIdQuery.class)))
+  void getMyProfile_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+    // given
+    when(identityProfileService.getProfile(new FindByIdQuery(userId)))
         .thenThrow(new ResourceNotFoundException("User not found"));
 
-    assertThrows(
-        ResourceNotFoundException.class,
-        () -> profileController.getMyProfile(principal)
-    );
+    // when / then
+    assertThatThrownBy(() -> profileController.getMyProfile(principal))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessage("User not found");
   }
 
   @Test
-  void putUpdateProfile_ShouldExecuteUpdateAndReturnUpdatedProfile() {
-    PutUpdateProfileWebRequest request = new PutUpdateProfileWebRequest("New Display Name", "https://example.com/new-avatar.png");
+  void putUpdateProfile_ShouldExecuteUpdateAndReturnUpdatedProfile_WhenRequestValid() {
+    // given
+    PutUpdateProfileWebRequest request =
+        new PutUpdateProfileWebRequest("New Display Name", "https://example.com/new-avatar.png");
 
     UserDto updated = new UserDto(
         userId, "test.user", "New Display Name", "https://example.com/new-avatar.png",
         true, null, null, null);
 
-    when(identityProfileService.updateProfile(any(UpdateProfileRequest.class))).thenReturn(updated);
+    when(identityProfileService.updateProfile(
+            new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png")))
+        .thenReturn(updated);
 
+    // when
     ResponseEntity<ProfileWebResponse> response = profileController.putUpdateProfile(request, principal);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNotNull(response.getBody());
-    assertEquals("New Display Name", response.getBody().displayName());
-    assertEquals("https://example.com/new-avatar.png", response.getBody().avatarUrl());
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
+    assertThat(response.getBody().displayName()).isEqualTo("New Display Name");
+    assertThat(response.getBody().avatarUrl()).isEqualTo("https://example.com/new-avatar.png");
 
-    verify(identityProfileService).updateProfile(new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png"));
+    verify(identityProfileService).updateProfile(
+        new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png"));
   }
 
   @Test
-  void changePassword_ShouldExecuteChangeAndReturnOk() {
+  void changePassword_ShouldExecuteChangeAndReturnOk_WhenRequestValid() {
+    // given
     ChangePasswordWebRequest request = new ChangePasswordWebRequest("OldPass123!", "NewPass123!");
 
+    // when
     ResponseEntity<Void> response = profileController.changePassword(request, principal);
 
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertNull(response.getBody());
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNull();
 
-    verify(identityProfileService).changePassword(new ChangePasswordRequest(userId, "OldPass123!", "NewPass123!"));
+    verify(identityProfileService).changePassword(
+        new ChangePasswordRequest(userId, "OldPass123!", "NewPass123!"));
   }
 
   @Test
-  void deleteAccount_ShouldExecuteSoftDeleteAndReturnNoContent() {
+  void deleteAccount_ShouldExecuteSoftDeleteAndReturnNoContent_WhenPrincipalAuthenticated() {
+    // given
+    SoftDeleteUserCommand expectedCommand = new SoftDeleteUserCommand(userId, userId);
+
+    // when
     ResponseEntity<Void> response = profileController.deleteAccount(principal);
 
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-    assertNull(response.getBody());
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    assertThat(response.getBody()).isNull();
 
-    verify(userService).softDelete(new SoftDeleteUserCommand(userId, userId));
+    verify(userService).softDelete(expectedCommand);
   }
 }

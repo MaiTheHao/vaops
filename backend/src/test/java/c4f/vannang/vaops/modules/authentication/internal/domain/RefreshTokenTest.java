@@ -1,6 +1,6 @@
 package c4f.vannang.vaops.modules.authentication.internal.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -20,103 +20,155 @@ class RefreshTokenTest {
   }
 
   @Test
-  void create_shouldCreateTokenWithCorrectFields() {
+  void create_ShouldSetCorrectFields_WhenInvoked() {
+    // given
+    // when
     RefreshToken token = RefreshToken.create(userId, tokenHash, futureExpiry);
 
-    assertEquals(userId, token.getUserId());
-    assertEquals(tokenHash, token.getTokenHash());
-    assertEquals(futureExpiry, token.getExpiredAt());
-    assertNull(token.getRevokedAt());
-    assertNotNull(token.getCreatedAt());
+    // then
+    assertThat(token.getUserId()).isEqualTo(userId);
+    assertThat(token.getTokenHash()).isEqualTo(tokenHash);
+    assertThat(token.getExpiredAt()).isEqualTo(futureExpiry);
+    assertThat(token.getRevokedAt()).isNull();
+    assertThat(token.getCreatedAt()).isNotNull();
   }
 
   @Test
-  void revoke_shouldSetRevokedAt() {
+  void revoke_ShouldSetRevokedAt_WhenTokenIsNotRevoked() {
+    // given
     RefreshToken token = createValidToken();
-    assertNull(token.getRevokedAt());
+    assertThat(token.getRevokedAt()).isNull();
 
+    // when
     token.revoke();
 
-    assertNotNull(token.getRevokedAt());
+    // then
+    assertThat(token.getRevokedAt()).isNotNull();
   }
 
   @Test
-  void revoke_shouldBeIdempotent() {
+  void revoke_ShouldBeIdempotent_WhenInvokedTwice() {
+    // given
     RefreshToken token = createValidToken();
 
+    // when
     token.revoke();
     Instant firstRevokedAt = token.getRevokedAt();
-
     token.revoke();
-    assertEquals(firstRevokedAt, token.getRevokedAt());
+
+    // then
+    assertThat(token.getRevokedAt()).isEqualTo(firstRevokedAt);
   }
 
   @Test
-  void isExpired_shouldReturnTrueWhenExpired() {
+  void isExpired_ShouldReturnTrue_WhenExpiredAtIsInThePast() {
+    // given
     RefreshToken token = RefreshToken.create(userId, tokenHash, pastExpiry);
 
-    assertTrue(token.isExpired());
+    // when
+    boolean expired = token.isExpired();
+
+    // then
+    assertThat(expired).isTrue();
   }
 
   @Test
-  void isExpired_shouldReturnFalseWhenNotExpired() {
+  void isExpired_ShouldReturnFalse_WhenExpiredAtIsInTheFuture() {
+    // given
     RefreshToken token = createValidToken();
 
-    assertFalse(token.isExpired());
+    // when
+    boolean expired = token.isExpired();
+
+    // then
+    assertThat(expired).isFalse();
   }
 
   @Test
-  void isRevoked_shouldReturnTrueWhenRevoked() {
+  void isRevoked_ShouldReturnTrue_WhenTokenHasBeenRevoked() {
+    // given
     RefreshToken token = createValidToken();
     token.revoke();
 
-    assertTrue(token.isRevoked());
+    // when
+    boolean revoked = token.isRevoked();
+
+    // then
+    assertThat(revoked).isTrue();
   }
 
   @Test
-  void isRevoked_shouldReturnFalseWhenNotRevoked() {
+  void isRevoked_ShouldReturnFalse_WhenTokenHasNotBeenRevoked() {
+    // given
     RefreshToken token = createValidToken();
 
-    assertFalse(token.isRevoked());
+    // when
+    boolean revoked = token.isRevoked();
+
+    // then
+    assertThat(revoked).isFalse();
   }
 
   @Test
-  void isValid_shouldReturnTrueWhenNotExpiredAndNotRevoked() {
+  void isValid_ShouldReturnTrue_WhenNotExpiredAndNotRevoked() {
+    // given
     RefreshToken token = createValidToken();
 
-    assertTrue(token.isValid());
+    // when
+    boolean valid = token.isValid();
+
+    // then
+    assertThat(valid).isTrue();
   }
 
   @Test
-  void isValid_shouldReturnFalseWhenExpired() {
+  void isValid_ShouldReturnFalse_WhenExpired() {
+    // given
     RefreshToken token = RefreshToken.create(userId, tokenHash, pastExpiry);
 
-    assertFalse(token.isValid());
+    // when
+    boolean valid = token.isValid();
+
+    // then
+    assertThat(valid).isFalse();
   }
 
   @Test
-  void isValid_shouldReturnFalseWhenRevoked() {
+  void isValid_ShouldReturnFalse_WhenRevoked() {
+    // given
     RefreshToken token = createValidToken();
     token.revoke();
 
-    assertFalse(token.isValid());
+    // when
+    boolean valid = token.isValid();
+
+    // then
+    assertThat(valid).isFalse();
   }
 
   @Test
-  void isValid_shouldReturnFalseWhenExpiredAndRevoked() {
+  void isValid_ShouldReturnFalse_WhenExpiredAndRevoked() {
+    // given
     RefreshToken token = RefreshToken.create(userId, tokenHash, pastExpiry);
     token.revoke();
 
-    assertFalse(token.isValid());
+    // when
+    boolean valid = token.isValid();
+
+    // then
+    assertThat(valid).isFalse();
   }
 
   @Test
-  void setId_shouldSetId() {
+  void setId_ShouldSetId_WhenInvoked() {
+    // given
     RefreshToken token = createValidToken();
     UUID expectedId = UUID.randomUUID();
 
+    // when
     token.setId(expectedId);
 
-    assertEquals(expectedId, token.getId());
+    // then
+    assertThat(token.getId()).isEqualTo(expectedId);
   }
 }

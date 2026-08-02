@@ -1,9 +1,14 @@
-package c4f.vannang.vaops.modules.identity.internal.service;
+package c4f.vannang.vaops.modules.identity.internal.service.impl;
 
 import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.AccountName;
 import c4f.vannang.vaops.modules.identity.internal.domain.valueobject.PasswordHash;
-import c4f.vannang.vaops.modules.identity.internal.dto.*;
+import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.RecordFailedLoginCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.RecordSuccessfulLoginCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.RegisterCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
+import c4f.vannang.vaops.modules.identity.internal.dto.ToggleUserStatusCommand;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
@@ -21,8 +26,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -35,7 +41,7 @@ class UserServiceTest {
   private PasswordEncoder passwordEncoder;
 
   @InjectMocks
-  private UserService userService;
+  private UserServiceImpl userService;
 
   private UUID userId;
   private User user;
@@ -52,86 +58,121 @@ class UserServiceTest {
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("register should save new user when account name is available")
-  void register_Success() {
+  void register_ShouldSaveNewUser_WhenAccountNameIsAvailable() {
+    // given
     RegisterCommand cmd = new RegisterCommand("john_doe", "Pass123!", "John", null);
-    when(userQueryRepository.existsByAccountName(any(AccountName.class))).thenReturn(false);
+    when(userQueryRepository.existsByAccountName(new AccountName("john_doe"))).thenReturn(false);
     when(passwordEncoder.encode("Pass123!")).thenReturn("encoded_pass");
-    when(userWriteRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(userWriteRepository.save(argThat(u -> u != null))).thenAnswer(inv -> inv.getArgument(0));
 
+    // when
     User registered = userService.register(cmd);
 
+    // then
     assertThat(registered).isNotNull();
     assertThat(registered.getAccountName().value()).isEqualTo("john_doe");
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("register should throw ResourceAlreadyExistsException when account name exists")
-  void register_AlreadyExists() {
+  void register_ShouldThrowResourceAlreadyExistsException_WhenAccountNameAlreadyExists() {
+    // given
     RegisterCommand cmd = new RegisterCommand("john_doe", "Pass123!", "John", null);
-    when(userQueryRepository.existsByAccountName(any(AccountName.class))).thenReturn(true);
+    when(userQueryRepository.existsByAccountName(new AccountName("john_doe"))).thenReturn(true);
 
+    // when
     assertThatThrownBy(() -> userService.register(cmd))
-        .isInstanceOf(ResourceAlreadyExistsException.class);
+        // then
+        .isInstanceOf(ResourceAlreadyExistsException.class)
+        .hasMessage("Account name already exists");
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("checkAvailableUser should succeed when user is active and unlocked")
-  void checkAvailableUser_Success() {
+  void checkAvailableUser_ShouldSucceed_WhenUserIsActiveAndUnlocked() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
+    // when
     userService.checkAvailableUser(new CheckAvailableUserCommand(userId));
+
+    // then
+    assertThat(user.isActive()).isTrue();
+    assertThat(user.isLocked()).isFalse();
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("checkAvailableUser should throw UnauthenticatedException when user not found")
-  void checkAvailableUser_NotFound() {
+  void checkAvailableUser_ShouldThrowUnauthenticatedException_WhenUserNotFound() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
 
+    // when
     assertThatThrownBy(() -> userService.checkAvailableUser(new CheckAvailableUserCommand(userId)))
-        .isInstanceOf(UnauthenticatedException.class);
+        // then
+        .isInstanceOf(UnauthenticatedException.class)
+        .hasMessage("User not found: " + userId);
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("softDelete should soft delete user")
-  void softDelete_Success() {
+  void softDelete_ShouldSoftDeleteUser_WhenUserExists() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
+    // when
     userService.softDelete(new SoftDeleteUserCommand(userId, userId));
 
+    // then
     verify(userWriteRepository).save(user);
     assertThat(user.isDeleted()).isTrue();
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("toggleStatus should activate/deactivate user")
-  void toggleStatus_Success() {
+  void toggleStatus_ShouldActivateUser_WhenActiveFlagIsTrue() {
+    // given
+    user.deactivate();
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
-    userService.toggleStatus(new ToggleUserStatusCommand(userId, false));
-    assertThat(user.isActive()).isFalse();
-
+    // when
     userService.toggleStatus(new ToggleUserStatusCommand(userId, true));
+
+    // then
+    verify(userWriteRepository).save(user);
     assertThat(user.isActive()).isTrue();
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("recordSuccessfulLogin should reset login failures")
-  void recordSuccessfulLogin_Success() {
+  void toggleStatus_ShouldDeactivateUser_WhenActiveFlagIsFalse() {
+    // given
     when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
 
+    // when
+    userService.toggleStatus(new ToggleUserStatusCommand(userId, false));
+
+    // then
+    verify(userWriteRepository).save(user);
+    assertThat(user.isActive()).isFalse();
+  }
+
+  @Test
+  void recordSuccessfulLogin_ShouldResetLoginFailures_WhenUserExists() {
+    // given
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    // when
     userService.recordSuccessfulLogin(new RecordSuccessfulLoginCommand(userId));
 
+    // then
     verify(userWriteRepository).save(user);
   }
 
   @Test
-  @org.junit.jupiter.api.DisplayName("recordFailedLogin should record failed attempt")
-  void recordFailedLogin_Success() {
-    when(userQueryRepository.findByAccountName(any(AccountName.class))).thenReturn(Optional.of(user));
+  void recordFailedLogin_ShouldRecordFailedAttempt_WhenUserExists() {
+    // given
+    when(userQueryRepository.findByAccountName(new AccountName("john_doe")))
+        .thenReturn(Optional.of(user));
 
+    // when
     userService.recordFailedLogin(new RecordFailedLoginCommand("john_doe"));
 
+    // then
     verify(userWriteRepository).save(user);
   }
 }

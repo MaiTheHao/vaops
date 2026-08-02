@@ -1,6 +1,7 @@
 package c4f.vannang.vaops.shared.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategy;
@@ -26,71 +27,143 @@ class DeterministicHashStrategyTest {
     }
 
     @Test
-    void factory_shouldReturnCorrectStrategy() {
-        DeterministicHashStrategy strategy256 = factory.getStrategy(DeterministicHashAlgorithm.SHA_256);
-        assertNotNull(strategy256);
-        assertEquals(DeterministicHashAlgorithm.SHA_256, strategy256.getAlgorithm());
-        assertTrue(strategy256 instanceof Sha256DeterministicHashStrategy);
+    void factory_ShouldReturnSha256Strategy_WhenRequestingSha256() {
+        // given
+        DeterministicHashAlgorithm algorithm = DeterministicHashAlgorithm.SHA_256;
 
-        DeterministicHashStrategy strategy512 = factory.getStrategy(DeterministicHashAlgorithm.SHA_512);
-        assertNotNull(strategy512);
-        assertEquals(DeterministicHashAlgorithm.SHA_512, strategy512.getAlgorithm());
-        assertTrue(strategy512 instanceof Sha512DeterministicHashStrategy);
+        // when
+        DeterministicHashStrategy strategy = factory.getStrategy(algorithm);
+
+        // then
+        assertThat(strategy).isNotNull();
+        assertThat(strategy).isInstanceOf(Sha256DeterministicHashStrategy.class);
+        assertThat(strategy.getAlgorithm()).isEqualTo(DeterministicHashAlgorithm.SHA_256);
     }
 
     @Test
-    void factory_shouldThrowExceptionForUnsupportedAlgorithm() {
+    void factory_ShouldReturnSha512Strategy_WhenRequestingSha512() {
+        // given
+        DeterministicHashAlgorithm algorithm = DeterministicHashAlgorithm.SHA_512;
+
+        // when
+        DeterministicHashStrategy strategy = factory.getStrategy(algorithm);
+
+        // then
+        assertThat(strategy).isNotNull();
+        assertThat(strategy).isInstanceOf(Sha512DeterministicHashStrategy.class);
+        assertThat(strategy.getAlgorithm()).isEqualTo(DeterministicHashAlgorithm.SHA_512);
+    }
+
+    @Test
+    void factory_ShouldThrowIllegalArgumentException_WhenAlgorithmIsUnsupported() {
+        // given
         DeterministicHashStrategyFactory emptyFactory = new DeterministicHashStrategyFactory(List.of());
-        assertThrows(IllegalArgumentException.class, () -> emptyFactory.getStrategy(DeterministicHashAlgorithm.SHA_256));
+
+        // when, then
+        assertThatThrownBy(() -> emptyFactory.getStrategy(DeterministicHashAlgorithm.SHA_256))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("Unsupported deterministic hash algorithm: SHA_256");
     }
 
     @Test
-    void sha256_hash_shouldReturn64HexChars() {
-        String hash = sha256Strategy.hash("my-refresh-token-value");
-        assertNotNull(hash);
-        assertEquals(64, hash.length());
+    void sha256_hash_ShouldReturn64HexChars_WhenHashingInput() {
+        // given
+        String input = "my-refresh-token-value";
+
+        // when
+        String hash = sha256Strategy.hash(input);
+
+        // then
+        assertThat(hash).isNotNull().hasSize(64);
     }
 
     @Test
-    void sha256_hash_shouldBeDeterministic() {
+    void sha256_hash_ShouldBeDeterministic_WhenHashingSameInputTwice() {
+        // given
         String input = "same-input";
-        assertEquals(sha256Strategy.hash(input), sha256Strategy.hash(input));
+
+        // when
+        String firstHash = sha256Strategy.hash(input);
+        String secondHash = sha256Strategy.hash(input);
+
+        // then
+        assertThat(firstHash).isEqualTo(secondHash);
     }
 
     @Test
-    void sha256_hash_shouldProduceDifferentHashesForDifferentInputs() {
-        assertNotEquals(sha256Strategy.hash("input-a"), sha256Strategy.hash("input-b"));
+    void sha256_hash_ShouldProduceDifferentHashes_WhenInputsDiffer() {
+        // given
+        String inputA = "input-a";
+        String inputB = "input-b";
+
+        // when
+        String hashA = sha256Strategy.hash(inputA);
+        String hashB = sha256Strategy.hash(inputB);
+
+        // then
+        assertThat(hashA).isNotEqualTo(hashB);
     }
 
     @Test
-    void sha256_hash_shouldHandleEmptyString() {
-        String hash = sha256Strategy.hash("");
-        assertNotNull(hash);
-        assertEquals(64, hash.length());
+    void sha256_hash_ShouldHandleEmptyString_WhenInputIsEmpty() {
+        // given
+        String input = "";
+
+        // when
+        String hash = sha256Strategy.hash(input);
+
+        // then
+        assertThat(hash).isNotNull().hasSize(64);
     }
 
     @Test
-    void sha512_hash_shouldReturn128HexChars() {
-        String hash = sha512Strategy.hash("my-refresh-token-value");
-        assertNotNull(hash);
-        assertEquals(128, hash.length());
+    void sha512_hash_ShouldReturn128HexChars_WhenHashingInput() {
+        // given
+        String input = "my-refresh-token-value";
+
+        // when
+        String hash = sha512Strategy.hash(input);
+
+        // then
+        assertThat(hash).isNotNull().hasSize(128);
     }
 
     @Test
-    void sha512_hash_shouldBeDeterministic() {
+    void sha512_hash_ShouldBeDeterministic_WhenHashingSameInputTwice() {
+        // given
         String input = "same-input";
-        assertEquals(sha512Strategy.hash(input), sha512Strategy.hash(input));
+
+        // when
+        String firstHash = sha512Strategy.hash(input);
+        String secondHash = sha512Strategy.hash(input);
+
+        // then
+        assertThat(firstHash).isEqualTo(secondHash);
     }
 
     @Test
-    void sha512_hash_shouldProduceDifferentHashesForDifferentInputs() {
-        assertNotEquals(sha512Strategy.hash("input-a"), sha512Strategy.hash("input-b"));
+    void sha512_hash_ShouldProduceDifferentHashes_WhenInputsDiffer() {
+        // given
+        String inputA = "input-a";
+        String inputB = "input-b";
+
+        // when
+        String hashA = sha512Strategy.hash(inputA);
+        String hashB = sha512Strategy.hash(inputB);
+
+        // then
+        assertThat(hashA).isNotEqualTo(hashB);
     }
 
     @Test
-    void sha512_hash_shouldHandleEmptyString() {
-        String hash = sha512Strategy.hash("");
-        assertNotNull(hash);
-        assertEquals(128, hash.length());
+    void sha512_hash_ShouldHandleEmptyString_WhenInputIsEmpty() {
+        // given
+        String input = "";
+
+        // when
+        String hash = sha512Strategy.hash(input);
+
+        // then
+        assertThat(hash).isNotNull().hasSize(128);
     }
 }
