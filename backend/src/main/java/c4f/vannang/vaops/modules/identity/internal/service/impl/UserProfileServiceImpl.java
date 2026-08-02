@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class UserProfileServiceImpl implements UserProfileService {
+class UserProfileServiceImpl implements UserProfileService {
 
   private final UserQueryRepository userQueryRepository;
   private final UserWriteRepository userWriteRepository;

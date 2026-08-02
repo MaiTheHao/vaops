@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PermissionServiceImpl implements PermissionService {
+class PermissionServiceImpl implements PermissionService {
 
   private final PermissionQueryRepository permissionQueryRepository;
   private final PermissionWriteRepository permissionWriteRepository;

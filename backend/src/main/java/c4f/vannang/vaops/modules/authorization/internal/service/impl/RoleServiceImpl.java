@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class RoleServiceImpl implements RoleService {
+class RoleServiceImpl implements RoleService {
 
   private final RoleQueryRepository roleQueryRepository;
   private final RoleWriteRepository roleWriteRepository;

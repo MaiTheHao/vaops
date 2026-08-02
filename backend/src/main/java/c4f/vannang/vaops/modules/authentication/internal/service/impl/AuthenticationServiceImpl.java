@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationServiceImpl implements AuthenticationService {
+class AuthenticationServiceImpl implements AuthenticationService {
 
   private final PasswordEncoder passwordEncoder;
   private final IdentityUserAPIService identityUserService;
