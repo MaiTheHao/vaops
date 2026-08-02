@@ -12,9 +12,12 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -49,10 +52,25 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         identityUserService.checkAvailableUser(new CheckAvailableUserQuery(claims.userId()));
 
         AuthenticatedPrincipal principal = new AuthenticatedPrincipal(
-            claims.userId(), claims.accountName());
+            claims.userId(), claims.accountName(), claims.roles(), claims.permissions());
+
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (claims.roles() != null) {
+          claims.roles().stream()
+              .filter(StringUtils::hasText)
+              .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
+              .map(SimpleGrantedAuthority::new)
+              .forEach(authorities::add);
+        }
+        if (claims.permissions() != null) {
+          claims.permissions().stream()
+              .filter(StringUtils::hasText)
+              .map(SimpleGrantedAuthority::new)
+              .forEach(authorities::add);
+        }
 
         UserAuthenticationToken authentication =
-            new UserAuthenticationToken(principal, Collections.emptyList());
+            new UserAuthenticationToken(principal, authorities);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
