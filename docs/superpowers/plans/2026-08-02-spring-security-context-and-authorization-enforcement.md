@@ -2,16 +2,16 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Update `AuthenticatedPrincipal` and `AuthenticationFilter` to inject raw role/permission authorities into `SecurityContextHolder`, enable `@EnableMethodSecurity`, and enforce `@PreAuthorize` authorization checks on all REST API endpoints.
+**Goal:** Update `AuthenticatedPrincipal` and `AuthenticationFilter` to map roles into internal Spring Security authorities with `ROLE_` prefix (enabling `hasRole('...')`) while keeping raw strings in claims and `AuthenticatedPrincipal.roles()`, enable `@EnableMethodSecurity`, and enforce `@PreAuthorize` authorization checks on all REST API endpoints.
 
-**Architecture:** `AuthenticationFilter` extracts `roles` and `permissions` from JWT `AccessTokenClaims`, maps them directly to `SimpleGrantedAuthority` objects, and attaches them to `UserAuthenticationToken`. `@EnableMethodSecurity` enables method-level `@PreAuthorize("hasAuthority('...')")` checks across all controllers.
+**Architecture:** `AuthenticationFilter` extracts `roles` and `permissions` from JWT `AccessTokenClaims`, maps `roles` to `SimpleGrantedAuthority("ROLE_" + roleCode)` internally and `permissions` to `SimpleGrantedAuthority(permissionString)`. `@EnableMethodSecurity` enables method-level `@PreAuthorize("hasAuthority('...')")` and `@PreAuthorize("hasRole('...')")` checks across all controllers.
 
 **Tech Stack:** Java 21, Spring Boot 3, Spring Security, JUnit 5, Mockito, MockMvc.
 
 ## Global Constraints
 
-- Authority Mapping: Raw strings without prefixing (e.g. `'SUPER_ADMIN'`, `'ADMIN'`, `'USER:READ'`, `'ROLE:CREATE'`, `'USER:MANAGE_ROLE'`).
-- Security Principal: `AuthenticatedPrincipal` record with `userId`, `accountName`, `roles`, `permissions`.
+- External Authority Storage: Raw strings without prefixing in claims & `AuthenticatedPrincipal` (e.g. `'SUPER_ADMIN'`, `'ADMIN'`, `'USER:READ'`, `'ROLE:CREATE'`).
+- Internal Spring Security Context: Roles get `ROLE_` prefix automatically inside `AuthenticationFilter` (e.g. `GrantedAuthority` contains `'ROLE_ADMIN'`, enabling `hasRole('ADMIN')`).
 - Method Security: `@EnableMethodSecurity(prePostEnabled = true)` on `SecurityConfig`.
 
 ---
@@ -96,7 +96,7 @@ class AuthenticationFilterTest {
   }
 
   @Test
-  void doFilterInternal_shouldPopulateAuthorities_whenTokenIsValid() throws Exception {
+  void doFilterInternal_shouldPopulateAuthorities_withInternalRolePrefix() throws Exception {
     UUID userId = UUID.randomUUID();
     List<String> roles = List.of("ADMIN");
     List<String> permissions = List.of("USER:READ", "ROLE:CREATE");
@@ -113,14 +113,15 @@ class AuthenticationFilterTest {
     AuthenticatedPrincipal principal = auth.getPrincipal();
     assertEquals(userId, principal.userId());
     assertEquals("admin.user", principal.accountName());
-    assertEquals(roles, principal.roles());
+    assertEquals(roles, principal.roles()); // Raw "ADMIN" in principal
     assertEquals(permissions, principal.permissions());
 
     List<String> authorityStrings = auth.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
         .toList();
 
-    assertTrue(authorityStrings.contains("ADMIN"));
+    // Internal Spring Security GrantedAuthorities have ROLE_ prefix for roles
+    assertTrue(authorityStrings.contains("ROLE_ADMIN"));
     assertTrue(authorityStrings.contains("USER:READ"));
     assertTrue(authorityStrings.contains("ROLE:CREATE"));
 
@@ -224,6 +225,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         if (claims.roles() != null) {
           claims.roles().stream()
               .filter(StringUtils::hasText)
+              .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r)
               .map(SimpleGrantedAuthority::new)
               .forEach(authorities::add);
         }
@@ -279,7 +281,7 @@ Expected: `BUILD SUCCESS`
 git add backend/src/main/java/c4f/vannang/vaops/shared/feature/security/AuthenticatedPrincipal.java
 git add backend/src/main/java/c4f/vannang/vaops/core/web/filter/AuthenticationFilter.java
 git add backend/src/test/java/c4f/vannang/vaops/core/web/filter/AuthenticationFilterTest.java
-git commit -m "feat(security): populate raw role and permission authorities into SecurityContext"
+git commit -m "feat(security): populate raw role and permission authorities with ROLE_ prefix for Spring Security Context"
 ```
 
 ---
@@ -301,28 +303,28 @@ Modify `SecurityConfig.java`: Add `@org.springframework.security.config.annotati
 - [ ] **Step 2: Add `@PreAuthorize` to `RoleController.java`**
 
 Add annotations:
-- `createRole`: `@PreAuthorize("hasAuthority('ROLE:CREATE')")`
-- `updateRole`: `@PreAuthorize("hasAuthority('ROLE:UPDATE')")`
-- `deleteRole`: `@PreAuthorize("hasAuthority('ROLE:DELETE')")`
+- `createRole`: `@PreAuthorize("hasAuthority('ROLE:CREATE') or hasRole('SUPER_ADMIN')")`
+- `updateRole`: `@PreAuthorize("hasAuthority('ROLE:UPDATE') or hasRole('SUPER_ADMIN')")`
+- `deleteRole`: `@PreAuthorize("hasAuthority('ROLE:DELETE') or hasRole('SUPER_ADMIN')")`
 - `getRoleById`: `@PreAuthorize("hasAuthority('ROLE:READ')")`
 - `searchRoles`: `@PreAuthorize("hasAuthority('ROLE:READ')")`
-- `assignPermissions`: `@PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION')")`
-- `revokePermissions`: `@PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION')")`
+- `assignPermissions`: `@PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")`
+- `revokePermissions`: `@PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")`
 
 - [ ] **Step 3: Add `@PreAuthorize` to `PermissionController.java`**
 
 Add annotations:
-- `createPermission`: `@PreAuthorize("hasAuthority('PERMISSION:CREATE')")`
-- `updatePermission`: `@PreAuthorize("hasAuthority('PERMISSION:UPDATE')")`
-- `deletePermission`: `@PreAuthorize("hasAuthority('PERMISSION:DELETE')")`
+- `createPermission`: `@PreAuthorize("hasAuthority('PERMISSION:CREATE') or hasRole('SUPER_ADMIN')")`
+- `updatePermission`: `@PreAuthorize("hasAuthority('PERMISSION:UPDATE') or hasRole('SUPER_ADMIN')")`
+- `deletePermission`: `@PreAuthorize("hasAuthority('PERMISSION:DELETE') or hasRole('SUPER_ADMIN')")`
 - `getPermissionById`: `@PreAuthorize("hasAuthority('PERMISSION:READ')")`
 - `searchPermissions`: `@PreAuthorize("hasAuthority('PERMISSION:READ')")`
 
 - [ ] **Step 4: Add `@PreAuthorize` to `UserRoleController.java`**
 
 Add annotations:
-- `assignRoles`: `@PreAuthorize("hasAuthority('USER:MANAGE_ROLE')")`
-- `revokeRoles`: `@PreAuthorize("hasAuthority('USER:MANAGE_ROLE')")`
+- `assignRoles`: `@PreAuthorize("hasAuthority('USER:MANAGE_ROLE') or hasRole('SUPER_ADMIN')")`
+- `revokeRoles`: `@PreAuthorize("hasAuthority('USER:MANAGE_ROLE') or hasRole('SUPER_ADMIN')")`
 
 - [ ] **Step 5: Add `@PreAuthorize` to `ProfileController.java`**
 
@@ -346,7 +348,7 @@ Expected: `BUILD SUCCESS`
 ```bash
 git add backend/src/main/java/c4f/vannang/vaops/core/config/SecurityConfig.java
 git add backend/src/main/java/c4f/vannang/vaops/modules/
-git commit -m "feat(security): enable method security and add PreAuthorize to API controllers"
+git commit -m "feat(security): enable method security and add PreAuthorize with hasRole and hasAuthority to API controllers"
 ```
 
 ---
