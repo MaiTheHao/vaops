@@ -53,7 +53,7 @@ class IdentityUserServiceImplTest {
   private IdentityMapper identityMapper;
 
   @InjectMocks
-  private IdentityUserServiceImpl identityUserService;
+  private IdentityUserAPIServiceImpl identityUserService;
 
   @Test
   void getUserForAuth_ShouldReturnUserAuthDto_WhenUserExists() {

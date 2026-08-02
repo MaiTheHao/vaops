@@ -40,7 +40,7 @@ class IdentityProfileServiceImplTest {
   private IdentityMapper identityMapper;
 
   @InjectMocks
-  private IdentityProfileServiceImpl identityProfileService;
+  private IdentityProfileAPIServiceImpl identityProfileService;
 
   @Test
   void getProfile_ShouldReturnUserDto_WhenUserExists() {

@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-class IdentityProfileServiceImpl implements IdentityProfileAPIService {
+class IdentityProfileAPIServiceImpl implements IdentityProfileAPIService {
 
   private final UserProfileService userProfileService;
   private final UserDtoMapper userDtoMapper;
