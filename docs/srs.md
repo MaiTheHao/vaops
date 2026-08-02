@@ -169,21 +169,30 @@ Port contract tối thiểu để build `AuthenticatedPrincipal`:
   - `AuthorizationApiMapper` (`api.mapper`): MapStruct mapper cho `api.dto`.
   - `AuthorizationAPIServiceImpl` (`internal.service.impl`).
   - Tích hợp vào `AuthenticationServiceImpl` (nạp `roles` & `permissions` vào `AccessTokenClaims` và `JwtAccessTokenProvider`).
-- [ ] **Infrastructure Web Package (`authorization.infrastructure.web`) — CHƯA TRIỂN KHẢI (PENDING)**:
-  - Controller & DTOs quản trị Roles (`/api/v1/roles`).
-  - Controller & DTOs quản trị Permissions (`/api/v1/permissions`).
-  - Controller & DTOs gán/gỡ Role cho User (`/api/v1/users/{userId}/roles`).
-- **O2:** Xác nhận cơ chế phân quyền admin (role nào được gọi REST admin) — phụ thuộc Spring Security integration.
-- **O3:** Xác nhận `AuthenticatedPrincipal` được build ở đâu (module authentication hay authorization).
+- [x] **Infrastructure Web Package (`authorization.infrastructure.web`) — HOÀN THÀNH**:
+  - `RoleController` & Web DTOs quản trị Roles (`/api/v1/roles`).
+  - `PermissionController` & Web DTOs quản trị Permissions (`/api/v1/permissions`).
+  - `UserRoleController` & Web DTOs gán/gỡ Role cho User (`/api/v1/users/{userId}/roles`).
+  - `AuthorizationWebMapper` (MapStruct).
+- [x] **Spring Security Context & Method Security — HOÀN THÀNH**:
+  - Cập nhật `AuthenticatedPrincipal` chứa `roles` & `permissions`.
+  - `AuthenticationFilter` nạp GrantedAuthorities với tiền tố `ROLE_` nội bộ (hỗ trợ cả `hasRole('ADMIN')` và `hasAuthority('USER:READ')`).
+  - Bật `@EnableMethodSecurity` và áp dụng `@PreAuthorize` bảo vệ toàn bộ API endpoints.
+- [x] **Flyway Migration Data — HOÀN THÀNH**:
+  - Seeds roles (`SUPER_ADMIN`, `ADMIN`, `USER`), permissions (`USER:*`, `ROLE:*`, `PERMISSION:*`, `PROFILE:*`), và mappings (`V2__init_authorization_module_data.sql`).
 
 ---
 
 ## 10. Completed Walkthrough Log
 
-> Cập nhật sau khi triển khai `authorization.api` port và tích hợp token claims.
+> Cập nhật sau khi triển khai hoàn chỉnh Module Authorization & Spring Security Context.
 
 1. **[DONE]** Tạo package `c4f.vannang.vaops.modules.authorization.api` (`RoleDto`, `PermissionDto`, `AuthorizationAPIService`, `AuthorizationApiMapper`, `PermissionUtils`).
 2. **[DONE]** Đổi tên `PermissionQueryRepository.findActiveByUserId` -> `findAllActiveByUserId` cho đồng nhất với `RoleQueryRepository`.
 3. **[DONE]** Triển khai `AuthorizationAPIServiceImpl` trong `authorization.internal`.
 4. **[DONE]** Cập nhật `AccessTokenClaims` và `JwtAccessTokenProvider` hỗ trợ claims `roles` và `permissions`.
 5. **[DONE]** Tích hợp `AuthorizationAPIService` vào `AuthenticationServiceImpl` cho `login` và `refreshToken`.
+6. **[DONE]** Triển khai package `authorization.infrastructure.web` (`RoleController`, `PermissionController`, `UserRoleController`, Web DTOs, `AuthorizationWebMapper`).
+7. **[DONE]** Seeding dữ liệu khởi tạo qua Flyway migration `V2__init_authorization_module_data.sql`.
+8. **[DONE]** Cập nhật `AuthenticatedPrincipal` và `AuthenticationFilter` tự động nạp `ROLE_` prefix nội bộ cho Spring Security Context.
+9. **[DONE]** Bật `@EnableMethodSecurity` và thêm `@PreAuthorize` kiểm soát truy cập trên toàn bộ API endpoints.
