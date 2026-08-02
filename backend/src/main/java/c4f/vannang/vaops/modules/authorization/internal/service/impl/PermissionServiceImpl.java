@@ -119,6 +119,6 @@ class PermissionServiceImpl implements PermissionService {
   @Transactional(readOnly = true)
   public List<Permission> getPermissionsByUserId(UUID userId) {
     if (userId == null) throw new ValidationException("UserId must not be null");
-    return permissionQueryRepository.findActiveByUserId(userId);
+    return permissionQueryRepository.findAllActiveByUserId(userId);
   }
 }

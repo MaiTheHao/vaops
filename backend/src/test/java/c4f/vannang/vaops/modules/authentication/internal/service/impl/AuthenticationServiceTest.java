@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +21,7 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
+import c4f.vannang.vaops.modules.authorization.api.service.AuthorizationAPIService;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
@@ -44,6 +46,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -87,8 +90,17 @@ class AuthenticationServiceTest {
   @Mock
   private DeterministicHashStrategyFactory deterministicHashStrategyFactory;
 
+  @Mock
+  private AuthorizationAPIService authorizationAPIService;
+
   @InjectMocks
   private AuthenticationServiceImpl authenticationService;
+
+  @BeforeEach
+  void setUp() {
+    lenient().when(authorizationAPIService.getRolesByUserId(any(UUID.class))).thenReturn(List.of());
+    lenient().when(authorizationAPIService.getPermissionsByUserId(any(UUID.class))).thenReturn(List.of());
+  }
 
   // ---------------------------------------------------------------------
   // Helper methods

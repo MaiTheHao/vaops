@@ -13,6 +13,10 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResu
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenQueryRepository;
 import c4f.vannang.vaops.modules.authentication.internal.repository.RefreshTokenWriteRepository;
 import c4f.vannang.vaops.modules.authentication.internal.service.AuthenticationService;
+import c4f.vannang.vaops.modules.authorization.api.dto.PermissionDto;
+import c4f.vannang.vaops.modules.authorization.api.dto.RoleDto;
+import c4f.vannang.vaops.modules.authorization.api.service.AuthorizationAPIService;
+import c4f.vannang.vaops.modules.authorization.api.util.PermissionUtils;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.RecordFailedLoginRequest;
@@ -55,6 +59,7 @@ class AuthenticationServiceImpl implements AuthenticationService {
   private final RefreshTokenQueryRepository refreshTokenQueryRepository;
   private final RefreshTokenWriteRepository refreshTokenWriteRepository;
   private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
+  private final AuthorizationAPIService authorizationAPIService;
 
   @Override
   public LoginCommandResult login(LoginCommand command) {
@@ -78,7 +83,7 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
       UUID userId = userAuth.id();
 
-      AccessTokenClaims accessClaims = new AccessTokenClaims(userId, command.accountName());
+      AccessTokenClaims accessClaims = buildAccessTokenClaims(userId, command.accountName());
       RefreshTokenClaims refreshClaims = new RefreshTokenClaims(userId);
 
       String accessToken = accessTokenSpec.generate(accessClaims);
@@ -154,7 +159,7 @@ class AuthenticationServiceImpl implements AuthenticationService {
     storedToken.revoke();
     tokensToSave.add(storedToken);
 
-    AccessTokenClaims accessClaims = new AccessTokenClaims(claims.userId(), user.accountName());
+    AccessTokenClaims accessClaims = buildAccessTokenClaims(claims.userId(), user.accountName());
     RefreshTokenClaims refreshClaims = new RefreshTokenClaims(claims.userId());
     String newAccessToken = accessTokenSpec.generate(accessClaims);
     String newRefreshToken = refreshTokenSpec.generate(refreshClaims);
@@ -184,5 +189,15 @@ class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     return new LogoutCommandResult(false);
+  }
+
+  private AccessTokenClaims buildAccessTokenClaims(UUID userId, String accountName) {
+    List<RoleDto> roleDtos = authorizationAPIService.getRolesByUserId(userId);
+    List<PermissionDto> permDtos = authorizationAPIService.getPermissionsByUserId(userId);
+
+    List<String> roles = roleDtos.stream().map(RoleDto::code).toList();
+    List<String> permissions = permDtos.stream().map(PermissionUtils::format).toList();
+
+    return new AccessTokenClaims(userId, accountName, roles, permissions);
   }
 }

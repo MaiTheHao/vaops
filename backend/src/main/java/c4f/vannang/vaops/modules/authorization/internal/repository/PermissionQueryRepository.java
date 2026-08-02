@@ -45,7 +45,7 @@ public interface PermissionQueryRepository extends BaseSoftDeletableQueryReposit
       + "WHERE ur.id.userId = :userId "
       + "AND r.active = true AND r.deletedAt IS NULL "
       + "AND p.active = true AND p.deletedAt IS NULL")
-  List<Permission> findActiveByUserId(@Param("userId") UUID userId);
+  List<Permission> findAllActiveByUserId(@Param("userId") UUID userId);
 
   @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END "
       + "FROM UserRole ur "

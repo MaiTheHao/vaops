@@ -12,6 +12,7 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,8 @@ public final class JwtAccessTokenProvider implements AccessTokenSpec {
         .issuer(authProperties.getJwt().getIssuer())
         .subject(claims.accountName())
         .claim("userId", claims.userId().toString())
+        .claim("roles", claims.roles())
+        .claim("permissions", claims.permissions())
         .issuedAt(Date.from(now))
         .expiration(Date.from(expiry))
         .signWith(accessKey)
@@ -44,6 +47,7 @@ public final class JwtAccessTokenProvider implements AccessTokenSpec {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public AccessTokenClaims validate(String token) {
     try {
       Claims claims =
@@ -53,7 +57,16 @@ public final class JwtAccessTokenProvider implements AccessTokenSpec {
       if (userIdStr == null) {
         throw new UnauthenticatedException("Invalid token claims");
       }
-      return new AccessTokenClaims(UUID.fromString(userIdStr), claims.getSubject());
+
+      List<String> roles = claims.get("roles", List.class);
+      List<String> permissions = claims.get("permissions", List.class);
+
+      return new AccessTokenClaims(
+          UUID.fromString(userIdStr),
+          claims.getSubject(),
+          roles != null ? roles : List.of(),
+          permissions != null ? permissions : List.of()
+      );
     } catch (ExpiredJwtException e) {
       throw new TokenExpiredException("Access token expired");
     } catch (Exception e) {
