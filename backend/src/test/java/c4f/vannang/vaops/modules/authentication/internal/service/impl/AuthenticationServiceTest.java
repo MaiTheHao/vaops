@@ -34,6 +34,7 @@ import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
+import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
 import c4f.vannang.vaops.shared.feature.crypto.DeterministicHashStrategy;
@@ -202,16 +203,31 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void register_ShouldWrapUnexpectedExceptionInInternalServerException_WhenIdentityServiceThrowsRuntimeException() {
+    void register_ShouldPropagateResourceNotFoundException_WhenDefaultRoleIsMissing() {
       // given
       RegisterCommand command = new RegisterCommand(ACCOUNT_NAME, PASSWORD, DISPLAY_NAME, AVATAR_URL);
       when(identityUserService.register(any(RegisterRequest.class)))
-          .thenThrow(new IllegalStateException("boom"));
+          .thenThrow(new ResourceNotFoundException("Default role not found: USER"));
+
+      // when / then
+      assertThatThrownBy(() -> authenticationService.register(command))
+          .isInstanceOf(ResourceNotFoundException.class)
+          .hasMessage("Default role not found: USER");
+    }
+
+    @Test
+    void register_ShouldWrapUnexpectedExceptionInInternalServerException_WhenIdentityServiceThrowsRuntimeException() {
+      // given
+      RegisterCommand command = new RegisterCommand(ACCOUNT_NAME, PASSWORD, DISPLAY_NAME, AVATAR_URL);
+      IllegalStateException rootCause = new IllegalStateException("boom");
+      when(identityUserService.register(any(RegisterRequest.class)))
+          .thenThrow(rootCause);
 
       // when / then
       assertThatThrownBy(() -> authenticationService.register(command))
           .isInstanceOf(InternalServerException.class)
-          .hasMessage("Unexpected error while registering. Please try again.");
+          .hasMessage("Unexpected error while registering. Please try again.")
+          .hasCause(rootCause);
     }
   }
 

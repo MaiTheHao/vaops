@@ -26,6 +26,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
+import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
 import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
@@ -43,10 +44,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 class AuthenticationServiceImpl implements AuthenticationService {
@@ -102,9 +105,10 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
       return new LoginCommandResult(accessToken, refreshToken);
 
-    } catch (UnauthenticatedException | AccountLockedException e) {
+    } catch (AbstractPlatformException e) {
       throw e;
     } catch (Exception e) {
+      log.error("Unexpected error while logging in for account: {}", command.accountName(), e);
       throw new InternalServerException("Unexpected error while logging in. Please try again.", e);
     }
   }
@@ -119,10 +123,11 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
       return new RegisterCommandResult(registeredUser.id(), registeredUser.accountName(),
               registeredUser.displayName(), registeredUser.avatarUrl());
-    } catch (ValidationException | ResourceAlreadyExistsException e) {
+    } catch (AbstractPlatformException e) {
       throw e;
     } catch (Exception e) {
-      throw new InternalServerException("Unexpected error while registering. Please try again.");
+      log.error("Unexpected error during registration for account: {}", command.accountName(), e);
+      throw new InternalServerException("Unexpected error while registering. Please try again.", e);
     }
   }
 
