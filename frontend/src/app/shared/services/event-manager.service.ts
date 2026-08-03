@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { AppEvent } from '../const/app-event.const';
+import { AppEvent } from '../constants/app-event.const';
 
 @Injectable({
   providedIn: 'root',

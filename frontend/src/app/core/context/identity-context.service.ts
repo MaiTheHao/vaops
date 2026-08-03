@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ProfileApiService } from '../api/profile.api.service';
-import { EventManager } from '../shared/service/event-manager.service';
-import { AppEventKey } from '../shared/const/app-event.const';
-import { UserProfile } from '../type/profile.model';
+import { EventManager } from '../../shared/services/event-manager.service';
+import { AppEventKey } from '../../shared/constants/app-event.const';
+import { UserProfile } from '../models/profile.model';
 
 @Injectable({
   providedIn: 'root',

@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { TranslateKeyType } from '../const/translate-key.const';
+import { TranslateKeyType } from '../constants/translate-key.const';
 
 type SupportedLangCode = 'vi' | 'en';
 

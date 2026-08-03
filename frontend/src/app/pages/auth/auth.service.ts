@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { AuthApiService } from '../../api/auth.api.service';
-import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
-import { EventManager } from '../../shared/service/event-manager.service';
-import { AppEventKey } from '../../shared/const/app-event.const';
+import { AuthApiService } from '../../core/api/auth.api.service';
+import { DialogFactoryService } from '../../shared/components/dialogs/dialog-factory.service';
+import { EventManager } from '../../shared/services/event-manager.service';
+import { AppEventKey } from '../../shared/constants/app-event.const';
 
 @Injectable()
 export class AuthService {

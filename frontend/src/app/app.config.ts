@@ -6,8 +6,8 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { DialogModule } from '@angular/cdk/dialog';
 
 import { routes } from './app.routes';
-import { EventManager } from './shared/service/event-manager.service';
-import { AppEventKey } from './shared/const/app-event.const';
+import { EventManager } from './shared/services/event-manager.service';
+import { AppEventKey } from './shared/constants/app-event.const';
 
 export const appConfig: ApplicationConfig = {
   providers: [

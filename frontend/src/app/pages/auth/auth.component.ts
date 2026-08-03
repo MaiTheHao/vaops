@@ -2,20 +2,20 @@ import { Component, computed, inject, signal, OnInit, OnDestroy } from '@angular
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
-import { IdentityContextService } from '../../context/identity-context.service';
-import { DialogFactoryService } from '../../shared/component/dialogs/dialog-factory.service';
-import { EventManager } from '../../shared/service/event-manager.service';
-import { AppEventKey } from '../../shared/const/app-event.const';
-import { UserProfile } from '../../type/profile.model';
+import { IdentityContextService } from '../../core/context/identity-context.service';
+import { DialogFactoryService } from '../../shared/components/dialogs/dialog-factory.service';
+import { EventManager } from '../../shared/services/event-manager.service';
+import { AppEventKey } from '../../shared/constants/app-event.const';
+import { UserProfile } from '../../core/models/profile.model';
 import { Subscription } from 'rxjs';
 
-import { LanguageService } from '../../shared/service/language.service';
-import { InputComponent } from '../../shared/component/input/input.component';
-import { InputFactoryService } from '../../shared/component/input/input.factory';
-import { PasswordInputComponent } from '../../shared/component/password-input/password-input.component';
-import { SubmitButtonComponent } from '../../shared/component/submit-button/submit-button.component';
-import { ButtonFactoryService } from '../../shared/component/submit-button/submit-button.factory';
-import { TranslateKey } from '../../shared/const/translate-key.const';
+import { LanguageService } from '../../shared/services/language.service';
+import { InputComponent } from '../../shared/components/input/input.component';
+import { InputFactoryService } from '../../shared/components/input/input.factory';
+import { PasswordInputComponent } from '../../shared/components/password-input/password-input.component';
+import { SubmitButtonComponent } from '../../shared/components/submit-button/submit-button.component';
+import { ButtonFactoryService } from '../../shared/components/submit-button/submit-button.factory';
+import { TranslateKey } from '../../shared/constants/translate-key.const';
 
 import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angular';
 

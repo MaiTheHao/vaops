@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { env } from '../../env';
+import { env } from '../../../env';
 import {
   UserProfile,
   UpdateProfileReq,
   ChangePasswordReq,
-} from '../type/profile.model';
+} from '../models/profile.model';
 
 @Injectable({
   providedIn: 'root',
