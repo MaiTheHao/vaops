@@ -10,6 +10,8 @@ import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.Permi
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
 import c4f.vannang.vaops.modules.authorization.internal.repository.PermissionQueryRepository;
 import c4f.vannang.vaops.modules.authorization.internal.repository.RoleQueryRepository;
+import c4f.vannang.vaops.core.env.AuthProperties;
+import c4f.vannang.vaops.modules.authorization.internal.service.UserRoleService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,13 +34,19 @@ class AuthorizationAPIServiceImplTest {
   @Mock
   private PermissionQueryRepository permissionQueryRepository;
 
+  @Mock
+  private AuthProperties authProperties;
+
+  @Mock
+  private UserRoleService userRoleService;
+
   private AuthorizationApiMapper authorizationApiMapper;
   private AuthorizationAPIServiceImpl service;
 
   @BeforeEach
   void setUp() {
     authorizationApiMapper = Mappers.getMapper(AuthorizationApiMapper.class);
-    service = new AuthorizationAPIServiceImpl(roleQueryRepository, permissionQueryRepository, authorizationApiMapper);
+    service = new AuthorizationAPIServiceImpl(roleQueryRepository, permissionQueryRepository, authorizationApiMapper, authProperties, userRoleService);
   }
 
   @Test

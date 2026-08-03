@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import c4f.vannang.vaops.modules.authorization.api.service.AuthorizationAPIService;
 import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
@@ -51,6 +52,9 @@ class IdentityUserServiceImplTest {
 
   @Mock
   private IdentityMapper identityMapper;
+
+  @Mock
+  private AuthorizationAPIService authorizationApiService;
 
   @InjectMocks
   private IdentityUserAPIServiceImpl identityUserService;
@@ -156,6 +160,7 @@ class IdentityUserServiceImplTest {
     // then
     assertThat(result).isEqualTo(expectedDto);
     verify(userService).register(internalCommand);
+    verify(authorizationApiService).assignDefaultRoleToUser(user.getId());
   }
 
   @Test
