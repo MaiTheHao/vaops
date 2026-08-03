@@ -1,5 +1,6 @@
 package c4f.vannang.vaops.core.web.advice;
 
+import c4f.vannang.vaops.shared.enumeration.ErrorCode;
 import c4f.vannang.vaops.shared.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "VALIDATION_FAILED",
+            ErrorCode.VALIDATION.code(),
             "Input validation failed",
             request.getRequestURI(),
             reqId,
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "VALIDATION_FAILED",
+            ErrorCode.VALIDATION.code(),
             "Constraint validation failed",
             request.getRequestURI(),
             reqId,
@@ -91,7 +92,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "TYPE_MISMATCH",
+            ErrorCode.TYPE_MISMATCH.code(),
             "Invalid value for field '" + ex.getName() + "'",
             request.getRequestURI(),
             reqId,
@@ -105,7 +106,7 @@ public class GlobalExceptionHandler {
     log.error("Data integrity violation [{}]: {}", reqId, ex.getMessage(), ex);
 
     String message = "Database constraint violation";
-    String code = "DATA_INTEGRITY_VIOLATION";
+    String code = ErrorCode.DATA_INTEGRITY.code();
 
     Throwable rootCause = ex.getMostSpecificCause();
     if (rootCause instanceof java.sql.SQLException sqlEx) {
@@ -114,15 +115,15 @@ public class GlobalExceptionHandler {
         switch (sqlState) {
           case "23505" -> {
             message = "Resource already exists";
-            code = "RESOURCE_ALREADY_EXISTS";
+            code = ErrorCode.RESOURCE_ALREADY_EXISTS.code();
           }
           case "23503" -> {
             message = "Referenced resource not found";
-            code = "RESOURCE_NOT_FOUND";
+            code = ErrorCode.RESOURCE_NOT_FOUND.code();
           }
           case "23502" -> {
             message = "Required database field is missing";
-            code = "VALIDATION_FAILED";
+            code = ErrorCode.VALIDATION.code();
           }
         }
       }
@@ -131,10 +132,10 @@ public class GlobalExceptionHandler {
       if (detailMessage != null) {
         if (detailMessage.contains("unique") || detailMessage.contains("duplicate")) {
           message = "Resource already exists";
-          code = "RESOURCE_ALREADY_EXISTS";
+          code = ErrorCode.RESOURCE_ALREADY_EXISTS.code();
         } else if (detailMessage.contains("foreign key")) {
           message = "Referenced resource not found";
-          code = "RESOURCE_NOT_FOUND";
+          code = ErrorCode.RESOURCE_NOT_FOUND.code();
         }
       }
     }
@@ -152,7 +153,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(ErrorResponse.of(
             HttpStatus.CONFLICT.value(),
-            "CONCURRENCY_CONFLICT",
+            ErrorCode.CONCURRENCY_CONFLICT.code(),
             "Concurrent update conflict, please retry",
             request.getRequestURI(),
             reqId,
@@ -167,7 +168,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN)
         .body(ErrorResponse.of(
             HttpStatus.FORBIDDEN.value(),
-            "ACCESS_DENIED",
+            ErrorCode.UNAUTHORIZED.code(),
             "Insufficient permissions",
             request.getRequestURI(),
             reqId,
@@ -182,7 +183,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.badRequest()
         .body(ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "MALFORMED_REQUEST",
+            ErrorCode.MALFORMED_REQUEST.code(),
             "Malformed JSON request payload",
             request.getRequestURI(),
             reqId,
@@ -197,7 +198,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
         .body(ErrorResponse.of(
             HttpStatus.METHOD_NOT_ALLOWED.value(),
-            "METHOD_NOT_ALLOWED",
+            ErrorCode.METHOD_NOT_ALLOWED.code(),
             ex.getMessage(),
             request.getRequestURI(),
             reqId,
@@ -212,7 +213,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(ErrorResponse.of(
             HttpStatus.NOT_FOUND.value(),
-            "RESOURCE_NOT_FOUND",
+            ErrorCode.RESOURCE_NOT_FOUND.code(),
             "Endpoint not found",
             request.getRequestURI(),
             reqId,
@@ -229,7 +230,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(ErrorResponse.of(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "INTERNAL_ERROR",
+            ErrorCode.INTERNAL_SERVER.code(),
             "An unexpected error occurred",
             request.getRequestURI(),
             reqId,
