@@ -3,7 +3,9 @@ package c4f.vannang.vaops.modules.identity.internal.service.impl;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import c4f.vannang.vaops.modules.authorization.api.service.AuthorizationAPIService;
 import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindByIdQuery;
 import c4f.vannang.vaops.modules.identity.api.dto.FindForAuthQuery;
@@ -14,6 +16,7 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.mapper.UserDtoMapper;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
+import c4f.vannang.vaops.modules.identity.internal.domain.User;
 import c4f.vannang.vaops.modules.identity.internal.dto.CheckAvailableUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByAccountNameCommand;
 import c4f.vannang.vaops.modules.identity.internal.dto.FindByIdCommand;
@@ -32,6 +35,7 @@ class IdentityUserAPIServiceImpl implements IdentityUserAPIService {
   private final UserService userService;
   private final UserDtoMapper userDtoMapper;
   private final IdentityMapper identityMapper;
+  private final AuthorizationAPIService authorizationApiService;
 
   @Override
   public Optional<UserAuthDto> getUserForAuth(FindForAuthQuery query) {
@@ -59,9 +63,12 @@ class IdentityUserAPIServiceImpl implements IdentityUserAPIService {
   }
 
   @Override
+  @Transactional
   public UserDto register(RegisterRequest registerDto) {
     RegisterCommand internalCommand = identityMapper.toInternal(registerDto);
-    return userDtoMapper.toDto(userService.register(internalCommand));
+    User user = userService.register(internalCommand);
+    authorizationApiService.assignDefaultRoleToUser(user.getId());
+    return userDtoMapper.toDto(user);
   }
 
   @Override

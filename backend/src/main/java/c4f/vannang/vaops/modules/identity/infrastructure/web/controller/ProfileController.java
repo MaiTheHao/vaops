@@ -26,7 +26,7 @@ public class ProfileController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('PROFILE:READ') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PROFILE:READ')")
     public ResponseEntity<ProfileWebResponse> getMyProfile(
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
         UserDto user = identityProfileService.getProfile(new FindByIdQuery(principal.userId()));
@@ -34,7 +34,7 @@ public class ProfileController {
     }
 
     @PutMapping
-    @PreAuthorize("hasAuthority('PROFILE:UPDATE') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PROFILE:UPDATE')")
     public ResponseEntity<ProfileWebResponse> putUpdateProfile(
             @Valid @RequestBody PutUpdateProfileWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
@@ -44,7 +44,7 @@ public class ProfileController {
     }
 
     @PutMapping("/password")
-    @PreAuthorize("hasAuthority('PROFILE:UPDATE') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('PROFILE:UPDATE')")
     public ResponseEntity<Void> changePassword(
             @Valid @RequestBody ChangePasswordWebRequest request,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
@@ -54,6 +54,7 @@ public class ProfileController {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasAuthority('PROFILE:DELETE')")
     public ResponseEntity<Void> deleteAccount(
             @RequestParam(defaultValue = "false") boolean hard,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {

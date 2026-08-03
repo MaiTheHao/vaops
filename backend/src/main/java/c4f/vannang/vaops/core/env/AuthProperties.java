@@ -22,6 +22,9 @@ public class AuthProperties {
     @NotNull
     private Jwt jwt = new Jwt();
 
+    @NotBlank(message = "vaops.auth.default-role-code is required")
+    private String defaultRoleCode = "USER";
+
     @PostConstruct
     private void logging() {
         log.debug("AuthProperties: {}", this);

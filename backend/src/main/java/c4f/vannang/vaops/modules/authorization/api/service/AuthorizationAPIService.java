@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface AuthorizationAPIService {
   List<RoleDto> getRolesByUserId(UUID userId);
   List<PermissionDto> getPermissionsByUserId(UUID userId);
+  void assignDefaultRoleToUser(UUID userId);
 }

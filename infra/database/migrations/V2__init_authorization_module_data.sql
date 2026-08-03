@@ -61,7 +61,8 @@ SET description = EXCLUDED.description,
 INSERT INTO permissions (id, resource, action, description, is_active, created_at, updated_at)
 VALUES
     ('b0000000-0000-0000-0000-000000000031', 'PROFILE', 'READ', 'Read own user profile', TRUE, NOW(), NOW()),
-    ('b0000000-0000-0000-0000-000000000032', 'PROFILE', 'UPDATE', 'Update own user profile', TRUE, NOW(), NOW())
+    ('b0000000-0000-0000-0000-000000000032', 'PROFILE', 'UPDATE', 'Update own user profile', TRUE, NOW(), NOW()),
+    ('b0000000-0000-0000-0000-000000000033', 'PROFILE', 'DELETE', 'Delete own user profile', TRUE, NOW(), NOW())
 ON CONFLICT (resource, action) DO UPDATE
 SET description = EXCLUDED.description,
     is_active = EXCLUDED.is_active,
