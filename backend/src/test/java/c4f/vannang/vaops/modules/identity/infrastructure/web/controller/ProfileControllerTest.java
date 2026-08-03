@@ -13,7 +13,6 @@ import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileAPIService;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
-import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
@@ -153,17 +152,26 @@ class ProfileControllerTest {
   }
 
   @Test
-  void deleteAccount_ShouldExecuteSoftDeleteAndReturnNoContent_WhenPrincipalAuthenticated() {
-    // given
-    SoftDeleteUserCommand expectedCommand = new SoftDeleteUserCommand(userId, userId);
-
+  void deleteAccount_ShouldExecuteSoftDeleteAndReturnNoContent_WhenHardIsFalse() {
     // when
-    ResponseEntity<Void> response = profileController.deleteAccount(principal);
+    ResponseEntity<Void> response = profileController.deleteAccount(false, principal);
 
     // then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     assertThat(response.getBody()).isNull();
 
-    verify(userService).softDelete(expectedCommand);
+    verify(userService).softDeleteUser(userId, userId);
+  }
+
+  @Test
+  void deleteAccount_ShouldExecuteHardDeleteAndReturnNoContent_WhenHardIsTrue() {
+    // when
+    ResponseEntity<Void> response = profileController.deleteAccount(true, principal);
+
+    // then
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    assertThat(response.getBody()).isNull();
+
+    verify(userService).hardDeleteUser(userId);
   }
 }

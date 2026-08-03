@@ -12,6 +12,7 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ToggleUserStatusCommand;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
+import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -122,6 +123,53 @@ class UserServiceTest {
     // then
     verify(userWriteRepository).save(user);
     assertThat(user.isDeleted()).isTrue();
+  }
+
+  @Test
+  void softDeleteUser_ShouldSoftDeleteUser_WhenUserExists() {
+    // given
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.of(user));
+
+    // when
+    userService.softDeleteUser(userId, userId);
+
+    // then
+    verify(userWriteRepository).save(user);
+    assertThat(user.isDeleted()).isTrue();
+  }
+
+  @Test
+  void softDeleteUser_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+    // given
+    when(userQueryRepository.findById(userId)).thenReturn(Optional.empty());
+
+    // when / then
+    assertThatThrownBy(() -> userService.softDeleteUser(userId, userId))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessage("User not found");
+  }
+
+  @Test
+  void hardDeleteUser_ShouldDeleteUser_WhenUserExists() {
+    // given
+    when(userQueryRepository.existsByIdWithDeleted(userId)).thenReturn(true);
+
+    // when
+    userService.hardDeleteUser(userId);
+
+    // then
+    verify(userWriteRepository).deleteById(userId);
+  }
+
+  @Test
+  void hardDeleteUser_ShouldThrowResourceNotFoundException_WhenUserNotFound() {
+    // given
+    when(userQueryRepository.existsByIdWithDeleted(userId)).thenReturn(false);
+
+    // when / then
+    assertThatThrownBy(() -> userService.hardDeleteUser(userId))
+        .isInstanceOf(ResourceNotFoundException.class)
+        .hasMessage("User not found");
   }
 
   @Test

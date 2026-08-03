@@ -8,7 +8,6 @@ import c4f.vannang.vaops.modules.identity.api.service.IdentityProfileAPIService;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ChangePasswordWebRequest;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.ProfileWebResponse;
 import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfileWebRequest;
-import c4f.vannang.vaops.modules.identity.internal.dto.SoftDeleteUserCommand;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
 import jakarta.validation.Valid;
@@ -56,8 +55,13 @@ public class ProfileController {
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(
+            @RequestParam(defaultValue = "false") boolean hard,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        userService.softDelete(new SoftDeleteUserCommand(principal.userId(), principal.userId()));
+        if (hard) {
+            userService.hardDeleteUser(principal.userId());
+        } else {
+            userService.softDeleteUser(principal.userId(), principal.userId());
+        }
         return ResponseEntity.noContent().build();
     }
 

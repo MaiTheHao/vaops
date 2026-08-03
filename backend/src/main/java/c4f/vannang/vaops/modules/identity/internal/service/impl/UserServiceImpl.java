@@ -14,7 +14,9 @@ import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
+import c4f.vannang.vaops.shared.exception.ValidationException;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -93,11 +95,30 @@ class UserServiceImpl implements UserService {
 
   @Override
   public void softDelete(SoftDeleteUserCommand command) {
-    User user = userQueryRepository.findById(command.userId())
-        .orElseThrow(() -> new ResourceNotFoundException("User not found or already deleted"));
+    softDeleteUser(command.userId(), command.deletedBy());
+  }
 
-    user.softDelete(command.deletedBy());
+  @Override
+  public void softDeleteUser(UUID userId, UUID deletedBy) {
+    if (userId == null) {
+      throw new ValidationException("ID must not be null");
+    }
+    User user = userQueryRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+    user.softDelete(deletedBy);
     userWriteRepository.save(user);
+  }
+
+  @Override
+  public void hardDeleteUser(UUID userId) {
+    if (userId == null) {
+      throw new ValidationException("ID must not be null");
+    }
+    if (!userQueryRepository.existsByIdWithDeleted(userId)) {
+      throw new ResourceNotFoundException("User not found");
+    }
+    userWriteRepository.deleteById(userId);
   }
 
   @Override
