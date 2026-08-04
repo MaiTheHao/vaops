@@ -28,7 +28,8 @@ vaops:
       - "Content-Type"
       - "Cache-Control"
     allow-credentials: true
-    exposed-headers: []
+    exposed-headers:
+      - X-Request-Id
     max-age: 3600
   databases:
     primary:
