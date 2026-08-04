@@ -1,6 +1,3 @@
-// Codes must stay in sync with BE `ErrorCode.java` (see docs/error-contract.md).
-// `UNKNOWN_ERROR` is intentionally FE-only (client fallback, never sent by BE).
-// ADDITIVE-ONLY: never change or delete existing code strings; add new entries only.
 export enum ErrorCode {
   // 400 Bad Request
   VALIDATION_FAILED = 'VALIDATION_FAILED',

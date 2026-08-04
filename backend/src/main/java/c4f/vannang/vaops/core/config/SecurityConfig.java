@@ -18,14 +18,20 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
   private final AuthenticationFilter authenticationFilter;
   private final CorsProperties corsProperties;
-
-  @Qualifier("handlerExceptionResolver")
   private final HandlerExceptionResolver resolver;
+
+  public SecurityConfig(
+      AuthenticationFilter authenticationFilter,
+      CorsProperties corsProperties,
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+    this.authenticationFilter = authenticationFilter;
+    this.corsProperties = corsProperties;
+    this.resolver = resolver;
+  }
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
