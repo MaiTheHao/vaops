@@ -98,13 +98,31 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   }
 
   private fallbackApiError(response: HttpErrorResponse): ApiError {
+    const code = this.mapper.mapStatusCode(response.status);
     return {
       timestamp: new Date().toISOString(),
       status: response.status || 500,
-      code: response.status === 0 ? ErrorCode.TIMEOUT : ErrorCode.INTERNAL_ERROR,
-      message: response.message || 'Mất kết nối với máy chủ',
+      code,
+      message: this.fallbackMessage(code),
       path: response.url || '',
       requestId: response.headers?.get('X-Request-Id') || 'UNKNOWN',
     };
+  }
+
+  private fallbackMessage(code: ErrorCode): string {
+    switch (code) {
+      case ErrorCode.TIMEOUT:
+        return 'Connection lost. Please try again.';
+      case ErrorCode.AUTHENTICATION_FAILED:
+        return 'Authentication failed. Please sign in again.';
+      case ErrorCode.ACCESS_DENIED:
+        return 'You do not have permission to perform this action.';
+      case ErrorCode.RESOURCE_NOT_FOUND:
+        return 'The requested resource was not found.';
+      case ErrorCode.UNKNOWN_ERROR:
+        return 'An unexpected error occurred.';
+      default:
+        return 'An internal error occurred. Please try again later.';
+    }
   }
 }

@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -155,6 +156,21 @@ public class GlobalExceptionHandler {
             HttpStatus.CONFLICT.value(),
             ErrorCode.CONCURRENCY_CONFLICT.code(),
             "Concurrent update conflict, please retry",
+            request.getRequestURI(),
+            reqId,
+            null));
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<ErrorResponse> handleAuthentication(
+      AuthenticationException ex, HttpServletRequest request) {
+    String reqId = getRequestId();
+    log.warn("Authentication failed [{}]: {}", reqId, ex.getMessage());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(ErrorResponse.of(
+            HttpStatus.UNAUTHORIZED.value(),
+            ErrorCode.UNAUTHENTICATED.code(),
+            "Authentication failed. Please sign in again.",
             request.getRequestURI(),
             reqId,
             null));

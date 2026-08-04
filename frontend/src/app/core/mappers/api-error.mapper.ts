@@ -9,6 +9,13 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ApiErrorMapper {
+  private static readonly STATUS_CODE_MAP: Readonly<Record<number, ErrorCode>> = {
+    0: ErrorCode.TIMEOUT,
+    401: ErrorCode.AUTHENTICATION_FAILED,
+    403: ErrorCode.ACCESS_DENIED,
+    404: ErrorCode.RESOURCE_NOT_FOUND,
+  };
+
   public mapToDomain(apiError: ApiError): DomainError {
     const code = this.normalizeCode(apiError.code);
 
@@ -117,6 +124,22 @@ export class ApiErrorMapper {
           originalError: apiError,
         };
     }
+  }
+
+  public mapStatusCode(status: number): ErrorCode {
+    if (status >= 500) {
+      return ErrorCode.INTERNAL_ERROR;
+    }
+
+    const code = ApiErrorMapper.STATUS_CODE_MAP[status];
+    if (code !== undefined) {
+      return code;
+    }
+
+    console.warn(
+      `[ApiErrorMapper] Unmapped HTTP status ${status}; mapping to UNKNOWN_ERROR`,
+    );
+    return ErrorCode.UNKNOWN_ERROR;
   }
 
   private normalizeCode(code: ErrorCode | string): ErrorCode {

@@ -2,8 +2,8 @@ package c4f.vannang.vaops.core.config;
 
 import c4f.vannang.vaops.core.env.CorsProperties;
 import c4f.vannang.vaops.core.web.filter.AuthenticationFilter;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -14,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableMethodSecurity
@@ -22,6 +23,9 @@ public class SecurityConfig {
 
   private final AuthenticationFilter authenticationFilter;
   private final CorsProperties corsProperties;
+
+  @Qualifier("handlerExceptionResolver")
+  private final HandlerExceptionResolver resolver;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,8 +36,9 @@ public class SecurityConfig {
         .formLogin((abstractHttpConfig) -> abstractHttpConfig.disable())
         .logout((abstractHttpConfig) -> abstractHttpConfig.disable())
         .httpBasic((abstractHttpConfig) -> abstractHttpConfig.disable())
-        .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) ->
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint((req, res, e) -> resolver.resolveException(req, res, null, e))
+            .accessDeniedHandler((req, res, e) -> resolver.resolveException(req, res, null, e)))
         .authorizeHttpRequests(auth -> auth.requestMatchers("/hello", "/api/v1/hello")
             .permitAll()
             .requestMatchers("/api/v1/auth/login")
