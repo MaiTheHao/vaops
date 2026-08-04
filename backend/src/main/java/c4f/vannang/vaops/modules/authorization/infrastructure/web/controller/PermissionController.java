@@ -58,13 +58,8 @@ public class PermissionController {
   @PreAuthorize("hasAuthority('PERMISSION:DELETE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> deletePermission(
       @PathVariable UUID permissionId,
-      @RequestParam(defaultValue = "false") boolean hard,
       @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-    if (hard) {
-      permissionService.hardDeletePermission(permissionId);
-    } else {
-      permissionService.softDeletePermission(permissionId, principal != null ? principal.userId() : null);
-    }
+    permissionService.softDeletePermission(permissionId, principal != null ? principal.userId() : null);
     return ResponseEntity.noContent().build();
   }
 

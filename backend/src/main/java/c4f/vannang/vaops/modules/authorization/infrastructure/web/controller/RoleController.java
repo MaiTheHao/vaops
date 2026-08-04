@@ -59,13 +59,8 @@ public class RoleController {
   @PreAuthorize("hasAuthority('ROLE:DELETE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> deleteRole(
       @PathVariable UUID roleId,
-      @RequestParam(defaultValue = "false") boolean hard,
       @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-    if (hard) {
-      roleService.hardDeleteRole(roleId);
-    } else {
-      roleService.softDeleteRole(roleId, principal != null ? principal.userId() : null);
-    }
+    roleService.softDeleteRole(roleId, principal != null ? principal.userId() : null);
     return ResponseEntity.noContent().build();
   }
 

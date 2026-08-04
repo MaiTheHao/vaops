@@ -56,13 +56,10 @@ public class ProfileController {
     @DeleteMapping
     @PreAuthorize("hasAuthority('PROFILE:DELETE')")
     public ResponseEntity<Void> deleteAccount(
-            @RequestParam(defaultValue = "false") boolean hard,
             @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-        if (hard) {
-            userService.hardDeleteUser(principal.userId());
-        } else {
-            userService.softDeleteUser(principal.userId(), principal.userId());
-        }
+
+        userService.softDeleteUser(principal.userId(), principal.userId());
+        
         return ResponseEntity.noContent().build();
     }
 

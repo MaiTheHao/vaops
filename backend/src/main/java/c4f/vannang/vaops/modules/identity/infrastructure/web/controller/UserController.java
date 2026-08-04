@@ -40,13 +40,8 @@ public class UserController {
   @PreAuthorize("hasAuthority('USER:DELETE') or hasRole('SUPER_ADMIN')")
   public ResponseEntity<Void> deleteUser(
       @PathVariable UUID userId,
-      @RequestParam(defaultValue = "false") boolean hard,
       @AuthenticationPrincipal AuthenticatedPrincipal principal) {
-    if (hard) {
-      userService.hardDeleteUser(userId);
-    } else {
-      userService.softDeleteUser(userId, principal != null ? principal.userId() : null);
-    }
+    userService.softDeleteUser(userId, principal != null ? principal.userId() : null);
     return ResponseEntity.noContent().build();
   }
 
