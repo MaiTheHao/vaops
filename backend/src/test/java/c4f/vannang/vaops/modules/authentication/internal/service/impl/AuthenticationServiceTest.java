@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,7 +33,6 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserAuthDto;
 import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
-import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
@@ -101,6 +102,7 @@ class AuthenticationServiceTest {
   void setUp() {
     lenient().when(authorizationAPIService.getRolesByUserId(any(UUID.class))).thenReturn(List.of());
     lenient().when(authorizationAPIService.getPermissionsByUserId(any(UUID.class))).thenReturn(List.of());
+    lenient().when(authProperties.getRefreshGraceWindowSeconds()).thenReturn(30L);
   }
 
   // ---------------------------------------------------------------------
@@ -281,7 +283,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void login_ShouldThrowAccountLockedException_WhenAccountIsLocked() {
+    void login_ShouldThrowUnauthenticatedException_WhenAccountIsLocked() {
       // given
       LoginCommand command = new LoginCommand(ACCOUNT_NAME, PASSWORD);
       UUID userId = UUID.randomUUID();
@@ -292,8 +294,8 @@ class AuthenticationServiceTest {
 
       // when / then
       assertThatThrownBy(() -> authenticationService.login(command))
-          .isInstanceOf(AccountLockedException.class)
-          .hasMessage("Account is locked until " + lockedUntil);
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
     }
 
     @Test
@@ -308,7 +310,7 @@ class AuthenticationServiceTest {
       // when / then
       assertThatThrownBy(() -> authenticationService.login(command))
           .isInstanceOf(UnauthenticatedException.class)
-          .hasMessage("Account is deactivated");
+          .hasMessage("Invalid credentials");
     }
 
     @Test
@@ -322,6 +324,84 @@ class AuthenticationServiceTest {
       assertThatThrownBy(() -> authenticationService.login(command))
           .isInstanceOf(InternalServerException.class)
           .hasMessage("Unexpected error while logging in. Please try again.");
+    }
+
+    @Test
+    void login_ShouldThrowUniformUnauthenticatedException_ForAllFailureCases() {
+      // given
+      LoginCommand command = new LoginCommand(ACCOUNT_NAME, PASSWORD);
+      UUID userId = UUID.randomUUID();
+      Instant lockedUntil = Instant.now().plusSeconds(3600);
+
+      // case 1: user not found
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.empty());
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+
+      // case 2: account locked
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, lockedUntil, true)));
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+
+      // case 3: account deactivated
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, null, false)));
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+
+      // case 4: wrong password
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, null, true)));
+      when(passwordEncoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+    }
+
+    @Test
+    void login_ShouldInvokePasswordEncoderMatches_ForEveryFailureBranch() {
+      // given
+      LoginCommand command = new LoginCommand(ACCOUNT_NAME, PASSWORD);
+      UUID userId = UUID.randomUUID();
+      Instant lockedUntil = Instant.now().plusSeconds(3600);
+
+      // case 1: user not found -> dummy BCrypt match before throwing
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.empty());
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+      verify(passwordEncoder).matches(eq(PASSWORD), anyString());
+
+      // case 2: account locked -> real BCrypt match before throwing
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, lockedUntil, true)));
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+      verify(passwordEncoder, times(2)).matches(eq(PASSWORD), anyString());
+
+      // case 3: account deactivated -> real BCrypt match before throwing
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, null, false)));
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+      verify(passwordEncoder, times(3)).matches(eq(PASSWORD), anyString());
+
+      // case 4: wrong password -> real BCrypt match before throwing
+      when(identityUserService.getUserForAuth(new FindForAuthQuery(ACCOUNT_NAME)))
+          .thenReturn(Optional.of(userAuth(userId, null, true)));
+      when(passwordEncoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(false);
+      assertThatThrownBy(() -> authenticationService.login(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Invalid credentials");
+      verify(passwordEncoder, times(4)).matches(eq(PASSWORD), anyString());
     }
   }
 
@@ -390,13 +470,34 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void refreshToken_ShouldRevokeActiveTokensAndThrowException_WhenTokenIsRevoked() {
+    void refreshToken_ShouldNotRevokeActiveTokens_WhenTokenIsRevokedWithinGraceWindow() {
       // given
       RefreshTokenCommand command = new RefreshTokenCommand("refresh-token");
       UUID userId = UUID.randomUUID();
       when(refreshTokenSpec.validate("refresh-token")).thenReturn(new RefreshTokenClaims(userId));
       stubHashStrategy();
       RefreshToken revokedToken = revokedToken(userId);
+      when(refreshTokenQueryRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(revokedToken));
+      RefreshToken activeToken = validRefreshToken(userId);
+
+      // when / then
+      assertThatThrownBy(() -> authenticationService.refreshToken(command))
+          .isInstanceOf(UnauthenticatedException.class)
+          .hasMessage("Refresh token has already been used within grace window.");
+      assertThat(activeToken.isRevoked()).isFalse();
+      verify(refreshTokenWriteRepository, never()).saveAll(any(List.class));
+    }
+
+    @Test
+    void refreshToken_ShouldRevokeActiveTokensAndThrowException_WhenTokenIsRevokedOutsideGraceWindow() {
+      // given
+      RefreshTokenCommand command = new RefreshTokenCommand("refresh-token");
+      UUID userId = UUID.randomUUID();
+      when(refreshTokenSpec.validate("refresh-token")).thenReturn(new RefreshTokenClaims(userId));
+      stubHashStrategy();
+      RefreshToken revokedToken = revokedToken(userId);
+      org.springframework.test.util.ReflectionTestUtils.setField(
+          revokedToken, "revokedAt", java.time.Instant.now().minusSeconds(60));
       when(refreshTokenQueryRepository.findByTokenHash(TOKEN_HASH)).thenReturn(Optional.of(revokedToken));
       RefreshToken activeToken = validRefreshToken(userId);
       when(refreshTokenQueryRepository.findValidRefreshTokensByUserId(userId))

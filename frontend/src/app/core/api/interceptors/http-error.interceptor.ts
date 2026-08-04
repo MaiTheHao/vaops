@@ -12,6 +12,7 @@ import { ErrorCode } from '../../constants/error-code';
 import { ApiErrorMapper } from '../../mappers/api-error.mapper';
 import { DomainErrorBusService } from '../../services/domain-error-bus.service';
 import { AuthApiService } from '../auth.api.service';
+import { SKIP_ERROR_EMISSION } from '../http-context.tokens';
 import { ApiError } from '../../../shared/models/api-error.model';
 import { DomainError, ErrorActionType } from '../../../shared/models/domain-error.model';
 
@@ -30,6 +31,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((errorResponse: HttpErrorResponse) => {
+        if (req.context.get(SKIP_ERROR_EMISSION)) {
+          // Auth endpoints: auth.service owns error presentation. Still throw so callers can react.
+          return throwError(() => errorResponse);
+        }
+
         const apiError: ApiError = this.isApiErrorBody(errorResponse.error)
           ? (errorResponse.error as ApiError)
           : this.fallbackApiError(errorResponse);
@@ -101,7 +107,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     const code = this.mapper.mapStatusCode(response.status);
     return {
       timestamp: new Date().toISOString(),
-      status: response.status || 500,
+      status: response.status === 0 ? 0 : response.status || 500,
       code,
       message: this.fallbackMessage(code),
       path: response.url || '',

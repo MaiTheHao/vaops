@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.slf4j.MDC;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,13 +19,16 @@ public class RequestTraceFilter extends OncePerRequestFilter {
   public static final String REQUEST_ID_HEADER = "X-Request-Id";
   public static final String MDC_KEY = "requestId";
 
+  private static final Pattern UUID_PATTERN =
+      Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
     String requestId = request.getHeader(REQUEST_ID_HEADER);
-    if (!StringUtils.hasText(requestId)) {
+    if (!isValidUuid(requestId)) {
       requestId = UUID.randomUUID().toString();
     }
 
@@ -38,6 +42,10 @@ public class RequestTraceFilter extends OncePerRequestFilter {
     } finally {
       MDC.remove(MDC_KEY);
     }
+  }
+
+  private boolean isValidUuid(String id) {
+    return StringUtils.hasText(id) && UUID_PATTERN.matcher(id.trim()).matches();
   }
 
   private static class TraceableRequestWrapper extends HttpServletRequestWrapper {

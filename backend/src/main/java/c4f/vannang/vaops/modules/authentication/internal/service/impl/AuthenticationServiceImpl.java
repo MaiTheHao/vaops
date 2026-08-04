@@ -27,7 +27,6 @@ import c4f.vannang.vaops.modules.identity.api.dto.UserDto;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.shared.enumeration.DeterministicHashAlgorithm;
 import c4f.vannang.vaops.shared.exception.AbstractPlatformException;
-import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.InternalServerException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
@@ -64,23 +63,36 @@ class AuthenticationServiceImpl implements AuthenticationService {
   private final DeterministicHashStrategyFactory deterministicHashStrategyFactory;
   private final AuthorizationAPIService authorizationAPIService;
 
+  private static final String DUMMY_HASH = "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi8Lh5W4YN8V8k9w9V3d5zP2Vx1bG0y";
+
   @Override
   public LoginCommandResult login(LoginCommand command) {
     try {
       UserAuthDto userAuth = identityUserService
           .getUserForAuth(new FindForAuthQuery(command.accountName()))
-          .orElseThrow(() -> new UnauthenticatedException("Invalid credentials"));
+          .orElse(null);
+
+      if (userAuth == null) {
+        passwordEncoder.matches(command.password(), DUMMY_HASH);
+        throw new UnauthenticatedException("Invalid credentials");
+      }
+
+      boolean passwordMatches = passwordEncoder.matches(command.password(), userAuth.passwordHash());
 
       if (userAuth.lockedUntil() != null && Instant.now().isBefore(userAuth.lockedUntil())) {
-        throw new AccountLockedException("Account is locked until " + userAuth.lockedUntil());
+        throw new UnauthenticatedException("Invalid credentials");
       }
 
       if (!userAuth.active()) {
-        throw new UnauthenticatedException("Account is deactivated");
+        throw new UnauthenticatedException("Invalid credentials");
       }
 
-      if (!passwordEncoder.matches(command.password(), userAuth.passwordHash())) {
-        identityUserService.recordFailedLogin(new RecordFailedLoginRequest(command.accountName()));
+      if (!passwordMatches) {
+        try {
+          identityUserService.recordFailedLogin(new RecordFailedLoginRequest(command.accountName()));
+        } catch (RuntimeException e) {
+          log.warn("Failed to record failed login", e);
+        }
         throw new UnauthenticatedException("Invalid credentials");
       }
 
@@ -108,7 +120,7 @@ class AuthenticationServiceImpl implements AuthenticationService {
     } catch (AbstractPlatformException e) {
       throw e;
     } catch (Exception e) {
-      log.error("Unexpected error while logging in for account: {}", command.accountName(), e);
+      log.error("Login failed: {}", e.getMessage(), e);
       throw new InternalServerException("Unexpected error while logging in. Please try again.", e);
     }
   }
@@ -145,13 +157,22 @@ class AuthenticationServiceImpl implements AuthenticationService {
 
     if (storedToken.isExpired()) throw new UnauthenticatedException("Refresh token is expired");
     if (storedToken.isRevoked()) {
-      List<RefreshToken> activeTokens =
-          refreshTokenQueryRepository.findValidRefreshTokensByUserId(claims.userId());
-      activeTokens.forEach(refreshToken -> refreshToken.revoke());
-      refreshTokenWriteRepository.saveAll(activeTokens);
+      Instant revokedAt = storedToken.getRevokedAt();
+      boolean withinGraceWindow =
+          revokedAt != null && Instant.now().isBefore(revokedAt.plusSeconds(authProperties.getRefreshGraceWindowSeconds()));
+
+      if (!withinGraceWindow) {
+        List<RefreshToken> activeTokens =
+            refreshTokenQueryRepository.findValidRefreshTokensByUserId(claims.userId());
+        activeTokens.forEach(refreshToken -> refreshToken.revoke());
+        refreshTokenWriteRepository.saveAll(activeTokens);
+
+        throw new UnauthenticatedException(
+            "Refresh token has been revoked previously. Potential breach detected.");
+      }
 
       throw new UnauthenticatedException(
-          "Refresh token has been revoked previously. Potential breach detected.");
+          "Refresh token has already been used within grace window.");
     }
 
     UserDto user = identityUserService

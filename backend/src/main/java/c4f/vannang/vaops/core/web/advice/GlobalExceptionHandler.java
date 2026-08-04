@@ -215,7 +215,7 @@ public class GlobalExceptionHandler {
         .body(ErrorResponse.of(
             HttpStatus.METHOD_NOT_ALLOWED.value(),
             ErrorCode.METHOD_NOT_ALLOWED.code(),
-            ex.getMessage(),
+            "Method not allowed",
             request.getRequestURI(),
             reqId,
             null));
@@ -247,7 +247,7 @@ public class GlobalExceptionHandler {
         .body(ErrorResponse.of(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             ErrorCode.INTERNAL_SERVER.code(),
-            "An unexpected error occurred",
+            "An unexpected error occurred. Please try again later.",
             request.getRequestURI(),
             reqId,
             null));

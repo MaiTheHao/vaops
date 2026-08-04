@@ -16,6 +16,7 @@ import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,7 +43,8 @@ class PermissionServiceImpl implements PermissionService {
 
     if (permissionQueryRepository.existsByResourceAndAction(resource, action)) {
       throw new ResourceAlreadyExistsException(
-          "Permission with resource and action already exists");
+          "Permission with resource and action already exists",
+          Map.of("reason", "DUPLICATE_RESOURCE_ACTION"));
     }
 
     Permission permission = Permission.create(resource, action, description);

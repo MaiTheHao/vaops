@@ -21,6 +21,13 @@ public class PlatformExceptionHandler {
 
   private static final String MDC_KEY = "requestId";
 
+  private static final String GENERIC_SERVER_ERROR_MESSAGE =
+      "An unexpected error occurred. Please try again later.";
+  private static final String EXTERNAL_SERVICE_ERROR_MESSAGE =
+      "External service temporarily unavailable.";
+  private static final String TIMEOUT_ERROR_MESSAGE =
+      "The request timed out. Please try again.";
+
   private String getRequestId() {
     String id = MDC.get(MDC_KEY);
     return id != null ? id : "N/A";
@@ -39,10 +46,10 @@ public class PlatformExceptionHandler {
         .body(ErrorResponse.of(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             ErrorCode.INTERNAL_SERVER.code(),
-            ex.getMessage(),
+            genericServerMessage(ErrorCode.INTERNAL_SERVER),
             request.getRequestURI(),
             reqId,
-            ex.getDetails()));
+            null));
   }
 
   @ExceptionHandler(AbstractPlatformException.class)
@@ -57,14 +64,24 @@ public class PlatformExceptionHandler {
       log.warn("Platform client error [{}]: {} - {}", reqId, ec.code(), ex.getMessage());
     }
 
+    boolean serverError = ec.status().is5xxServerError();
     return ResponseEntity.status(ec.status())
         .body(ErrorResponse.of(
             ec.status().value(),
             ec.code(),
-            ex.getMessage(),
+            serverError ? genericServerMessage(ec) : ex.getMessage(),
             request.getRequestURI(),
             reqId,
-            ex.getDetails()));
+            serverError ? null : ex.getDetails()));
+  }
+
+  private String genericServerMessage(ErrorCode ec) {
+    return switch (ec) {
+      case INTERNAL_SERVER -> GENERIC_SERVER_ERROR_MESSAGE;
+      case EXTERNAL_SERVICE -> EXTERNAL_SERVICE_ERROR_MESSAGE;
+      case TIMEOUT -> TIMEOUT_ERROR_MESSAGE;
+      default -> GENERIC_SERVER_ERROR_MESSAGE;
+    };
   }
 
   private static void logCauseChain(String prefix, Throwable throwable) {

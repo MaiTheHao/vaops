@@ -19,10 +19,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     final long startTime = System.nanoTime();
 
     final String requestId = request.getHeader(RequestTraceFilter.REQUEST_ID_HEADER);
-    final String method = request.getMethod();
+    final String method = sanitize(request.getMethod());
     final String uri = sanitize(request.getRequestURI());
     final String query = sanitize(request.getQueryString());
-    final String clientIp = getClientIp(request);
+    final String clientIp = sanitize(getClientIp(request));
     final String userAgent = sanitize(request.getHeader("User-Agent"));
 
     log.info(
@@ -46,7 +46,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
           requestId,
           method,
           uri,
-          ex.getClass().getName(),
+          sanitize(ex.getClass().getName()),
           sanitize(ex.getMessage()),
           ex);
       throw ex;
@@ -73,7 +73,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     java.util.Enumeration<String> headerNames = request.getHeaderNames();
     if (headerNames != null) {
       while (headerNames.hasMoreElements()) {
-        String name = headerNames.nextElement();
+        String name = sanitize(headerNames.nextElement());
         // Mask sensitive header values like Authorization
         String value = "Authorization".equalsIgnoreCase(name) ? "******" : request.getHeader(name);
         sb.append(name).append(": ").append(sanitize(value)).append("; ");
@@ -87,8 +87,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     java.util.Collection<String> headerNames = response.getHeaderNames();
     if (headerNames != null) {
       for (String name : headerNames) {
+        String sanitizedName = sanitize(name);
         String value = response.getHeader(name);
-        sb.append(name).append(": ").append(sanitize(value)).append("; ");
+        sb.append(sanitizedName).append(": ").append(sanitize(value)).append("; ");
       }
     }
     return sb.toString();

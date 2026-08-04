@@ -16,7 +16,7 @@ export class DomainErrorBusService {
   }
 
   public emit(error: DomainError): void {
-    console.error(`[ErrorBus] [${error.code}] [ReqId: ${error.requestId}]`, error);
+    console.error(`[ErrorBus] [${error.code}] [ReqId: ${error.requestId}]`);
     this.errorSubject.next(error);
   }
 }

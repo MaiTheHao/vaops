@@ -41,6 +41,7 @@ vaops:
 
   auth:
     "[default-role-code]": USER
+    "[refresh-grace-window-seconds]": 30
     jwt:
       access-expiration-ms: 3600000
       refresh-expiration-ms: 604800000

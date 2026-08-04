@@ -10,11 +10,11 @@ import c4f.vannang.vaops.modules.identity.internal.repository.UserQueryRepositor
 import c4f.vannang.vaops.modules.identity.internal.repository.UserWriteRepository;
 import c4f.vannang.vaops.modules.identity.internal.repository.spec.UserSpecification;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
-import c4f.vannang.vaops.shared.exception.AccountLockedException;
 import c4f.vannang.vaops.shared.exception.ResourceAlreadyExistsException;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,8 @@ class UserServiceImpl implements UserService {
     AccountName accountName = new AccountName(dto.accountName());
 
     if (userQueryRepository.existsByAccountName(accountName)) {
-      throw new ResourceAlreadyExistsException("Account name already exists");
+      throw new ResourceAlreadyExistsException(
+          "Account name already exists", Map.of("reason", "DUPLICATE_ACCOUNT_NAME"));
     }
 
     String passwordHash = passwordEncoder.encode(dto.rawPassword());
@@ -82,14 +83,14 @@ class UserServiceImpl implements UserService {
 
     User user = userQueryRepository
         .findById(command.userId())
-        .orElseThrow(() -> new UnauthenticatedException("User not found: " + command.userId()));
+        .orElseThrow(() -> new UnauthenticatedException("Invalid credentials"));
 
     if (!user.isActive()) {
-      throw new UnauthenticatedException("Account is deactivated");
+      throw new UnauthenticatedException("Invalid credentials");
     }
 
     if (user.isLocked()) {
-      throw new AccountLockedException("Account is locked until " + user.getLockedUntil());
+      throw new UnauthenticatedException("Invalid credentials");
     }
   }
 

@@ -8,6 +8,7 @@ export interface DialogDataPayload {
   type: 'confirm' | 'info' | 'error';
   confirmText?: string;
   cancelText?: string;
+  requestId?: string;
 }
 
 @Component({
@@ -39,6 +40,16 @@ export interface DialogDataPayload {
           <div class="bg-error-container/20 border border-error/20 p-4 text-on-error-container text-sm leading-relaxed mb-2">
             {{ data.message }}
           </div>
+          @if (data.requestId) {
+            <details class="mb-2 text-xs">
+              <summary class="cursor-pointer select-none font-button uppercase tracking-widest text-[10px] text-outline hover:text-primary transition-colors">
+                Mã yêu cầu
+              </summary>
+              <p class="mt-1.5 p-2 bg-surface-container-low border border-outline-variant rounded font-mono text-[11px] text-on-secondary-container break-all">
+                {{ data.requestId }}
+              </p>
+            </details>
+          }
         } @else {
           <p class="text-on-secondary-container text-sm leading-relaxed">{{ data.message }}</p>
         }

@@ -25,6 +25,8 @@ public class AuthProperties {
     @NotBlank(message = "vaops.auth.default-role-code is required")
     private String defaultRoleCode = "USER";
 
+    private long refreshGraceWindowSeconds = 30L;
+
     @PostConstruct
     private void logging() {
         log.debug("AuthProperties: {}", this);

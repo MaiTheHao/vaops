@@ -19,6 +19,7 @@ import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.exception.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,7 +42,7 @@ class RoleServiceImpl implements RoleService {
     RoleCode code = new RoleCode(command.code());
 
     if (roleQueryRepository.existsByCode(code)) {
-      throw new ResourceAlreadyExistsException("Role code already exists");
+      throw new ResourceAlreadyExistsException("Role code already exists", Map.of("reason", "DUPLICATE_CODE"));
     }
 
     Role role = Role.create(code, command.description());
@@ -50,7 +51,7 @@ class RoleServiceImpl implements RoleService {
       List<Permission> permissions =
           permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
       if (permissions.size() != command.permissionIds().size()) {
-        throw new ResourceNotFoundException("One or more permissions were not found");
+        throw new ResourceNotFoundException("One or more permissions were not found", Map.of("reason", "PERMISSIONS_NOT_FOUND"));
       }
       role.assignPermissions(permissions);
     }
@@ -131,7 +132,7 @@ class RoleServiceImpl implements RoleService {
     List<Permission> permissions =
         permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
     if (permissions.size() != command.permissionIds().size()) {
-      throw new ResourceNotFoundException("One or more permissions were not found");
+      throw new ResourceNotFoundException("One or more permissions were not found", Map.of("reason", "PERMISSIONS_NOT_FOUND"));
     }
 
     role.assignPermissions(permissions);
@@ -154,7 +155,7 @@ class RoleServiceImpl implements RoleService {
     List<Permission> permissions =
         permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
     if (permissions.size() != command.permissionIds().size()) {
-      throw new ResourceNotFoundException("One or more permissions were not found");
+      throw new ResourceNotFoundException("One or more permissions were not found", Map.of("reason", "PERMISSIONS_NOT_FOUND"));
     }
 
     role.unassignPermissions(permissions);

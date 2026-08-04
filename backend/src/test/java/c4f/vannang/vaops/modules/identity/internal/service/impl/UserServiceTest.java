@@ -109,7 +109,7 @@ class UserServiceTest {
     assertThatThrownBy(() -> userService.checkAvailableUser(new CheckAvailableUserCommand(userId)))
         // then
         .isInstanceOf(UnauthenticatedException.class)
-        .hasMessage("User not found: " + userId);
+        .hasMessage("Invalid credentials");
   }
 
   @Test
