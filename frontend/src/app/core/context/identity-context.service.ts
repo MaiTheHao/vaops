@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ProfileApiService } from '../api/profile.api.service';
-import { EventManager } from '../../shared/services/event-manager.service';
-import { AppEventKey } from '../../shared/constants/app-event.const';
-import { UserProfile } from '../models/profile.model';
+import { EventBusService } from '../services/event-bus.service';
+import { AppEventKey } from '../constants/app-event.const';
+import { UserProfile } from '../../shared/models/profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -11,26 +11,22 @@ export class IdentityContextService {
   readonly userProfile = signal<UserProfile | null>(null);
 
   private readonly profileApi = inject(ProfileApiService);
-  private readonly eventManager = inject(EventManager);
+  private readonly EventBusService = inject(EventBusService);
 
   constructor() {
     this.initEventListeners();
   }
 
   private initEventListeners(): void {
-    this.eventManager
-      .listen<void>([
-        AppEventKey.APP_INIT,
-        AppEventKey.LOGIN_SUCCESS,
-        AppEventKey.PROFILE_CHANGED,
-      ])
+    this.EventBusService
+      .listen<void>([AppEventKey.APP_INIT, AppEventKey.LOGIN_SUCCESS, AppEventKey.PROFILE_CHANGED])
       .subscribe(() => {
         this.fetchProfile();
       });
 
-    this.eventManager.listen<void>(AppEventKey.LOGOUT).subscribe(() => {
+    this.EventBusService.listen<void>(AppEventKey.LOGOUT).subscribe(() => {
       this.clearProfile();
-      this.eventManager.publish(AppEventKey.PROFILE_CLEARED);
+      this.EventBusService.publish(AppEventKey.PROFILE_CLEARED);
     });
   }
 
@@ -38,7 +34,7 @@ export class IdentityContextService {
     this.profileApi.getMyProfile().subscribe({
       next: (profile) => {
         this.setProfile(profile);
-        this.eventManager.publish(AppEventKey.PROFILE_SYNCED, profile);
+        this.EventBusService.publish(AppEventKey.PROFILE_SYNCED, profile);
       },
       error: () => {
         this.clearProfile();

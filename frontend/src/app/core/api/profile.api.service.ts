@@ -6,7 +6,7 @@ import {
   UserProfile,
   UpdateProfileReq,
   ChangePasswordReq,
-} from '../models/profile.model';
+} from '../../shared/models/profile.model';
 
 @Injectable({
   providedIn: 'root',

@@ -30,8 +30,13 @@
       "registerSubmit": "Register account"
     },
     "dialog": {
+      "loginError": "Login Error",
       "registerError": "Registration Error",
-      "passwordMismatch": "Confirm password does not match."
+      "passwordMismatch": "Confirm password does not match.",
+      "loginFailedMessage": "Invalid username or password. Please check your credentials.",
+      "registerFailedMessage": "Registration failed. Username may already exist.",
+      "loginSuccess": "Login Successful",
+      "registerSuccess": "Registration Successful"
     },
     "footer": {
       "noAccountText": "Don't have an account?",
@@ -40,6 +45,94 @@
       "gotoLogin": "Log in now",
       "companyCopyright": "© 2026 VAN NANG MECHANICAL CO., LTD",
       "taxId": "Tax Code: 3703143102"
+    }
+  },
+  "error": {
+    "domain": {
+      "VALIDATION_FAILED": {
+        "title": "Invalid Data",
+        "message": "Entered information is invalid. Please check your input."
+      },
+      "TYPE_MISMATCH": {
+        "title": "Type Mismatch",
+        "message": "The data format submitted does not match system requirements."
+      },
+      "MALFORMED_REQUEST": {
+        "title": "Malformed Request",
+        "message": "The submitted request format is invalid or incomplete."
+      },
+      "FILE_UPLOAD_ERROR": {
+        "title": "File Upload Error",
+        "message": "Failed to upload file. Please try again later."
+      },
+      "AUTHENTICATION_FAILED": {
+        "title": "Authentication Failed",
+        "message": "Invalid account credentials provided."
+      },
+      "TOKEN_EXPIRED": {
+        "title": "Session Expired",
+        "message": "Your session has expired. Please log in again."
+      },
+      "ACCESS_DENIED": {
+        "title": "Access Denied",
+        "message": "You do not have permission to perform this action."
+      },
+      "RESOURCE_NOT_FOUND": {
+        "title": "Resource Not Found",
+        "message": "The requested resource does not exist or has been deleted."
+      },
+      "METHOD_NOT_ALLOWED": {
+        "title": "Method Not Allowed",
+        "message": "The HTTP method used is not supported by the server."
+      },
+      "RESOURCE_ALREADY_EXISTS": {
+        "title": "Resource Already Exists",
+        "message": "The item you are creating already exists in the system."
+      },
+      "DATA_INTEGRITY_VIOLATION": {
+        "title": "Data Integrity Conflict",
+        "message": "The operation cannot be completed due to data integrity constraints."
+      },
+      "CONCURRENCY_CONFLICT": {
+        "title": "Data Conflict",
+        "message": "Data has been modified by another user. Please reload the page."
+      },
+      "INVALID_STATE": {
+        "title": "Invalid State",
+        "message": "The action is not allowed for the current state of the resource."
+      },
+      "FILE_SIZE_LIMIT_EXCEEDED": {
+        "title": "File Size Limit Exceeded",
+        "message": "The uploaded file size exceeds the allowed threshold."
+      },
+      "BUSINESS_RULE_VIOLATION": {
+        "title": "Business Rule Violation",
+        "message": "The operation violates a core business rule of the system."
+      },
+      "ACCOUNT_LOCKED": {
+        "title": "Account Locked",
+        "message": "Your account is temporarily locked. Please contact an administrator."
+      },
+      "LIMIT_EXCEEDED": {
+        "title": "Rate Limit Exceeded",
+        "message": "Too many requests. Please wait a moment before trying again."
+      },
+      "INTERNAL_ERROR": {
+        "title": "System Error",
+        "message": "An internal server error occurred. Please try again later."
+      },
+      "EXTERNAL_SERVICE_ERROR": {
+        "title": "External Service Error",
+        "message": "Failed to communicate with an external provider. Please try again later."
+      },
+      "TIMEOUT": {
+        "title": "Connection Timeout",
+        "message": "The server request timed out. Please check your network connection."
+      },
+      "UNKNOWN_ERROR": {
+        "title": "Unknown Error",
+        "message": "An unknown error occurred. Please try again."
+      }
     }
   }
 }

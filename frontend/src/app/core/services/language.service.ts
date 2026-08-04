@@ -4,7 +4,9 @@ import { TranslateKeyType } from '../constants/translate-key.const';
 
 type SupportedLangCode = 'vi' | 'en';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class LanguageService {
   private readonly translator = inject(TranslateService);
 

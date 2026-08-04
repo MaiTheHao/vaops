@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LoginRequestDto, RegisterRequestDto, RegisterResponseDto } from '../models/auth.model';
+import { LoginRequestDto, RegisterRequestDto, RegisterResponseDto } from '../../shared/models/auth.model';
 import { env } from '../../../env';
 
 @Injectable({

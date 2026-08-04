@@ -3,19 +3,21 @@ import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AuthService } from './auth.service';
 import { IdentityContextService } from '../../core/context/identity-context.service';
-import { DialogFactoryService } from '../../shared/components/dialogs/dialog-factory.service';
-import { EventManager } from '../../shared/services/event-manager.service';
-import { AppEventKey } from '../../shared/constants/app-event.const';
-import { UserProfile } from '../../core/models/profile.model';
+import { EventBusService } from '../../core/services/event-bus.service';
+import { DomainErrorBusService } from '../../core/services/domain-error-bus.service';
+import { AppEventKey } from '../../core/constants/app-event.const';
+import { ErrorCode } from '../../core/constants/error-code';
+import { ErrorActionType, ErrorSeverity } from '../../shared/models/domain-error.model';
+import { UserProfile } from '../../shared/models/profile.model';
 import { Subscription } from 'rxjs';
 
-import { LanguageService } from '../../shared/services/language.service';
+import { LanguageService } from '../../core/services/language.service';
 import { InputComponent } from '../../shared/components/input/input.component';
 import { InputFactoryService } from '../../shared/components/input/input.factory';
 import { PasswordInputComponent } from '../../shared/components/password-input/password-input.component';
 import { SubmitButtonComponent } from '../../shared/components/submit-button/submit-button.component';
 import { ButtonFactoryService } from '../../shared/components/submit-button/submit-button.factory';
-import { TranslateKey } from '../../shared/constants/translate-key.const';
+import { TranslateKey } from '../../core/constants/translate-key.const';
 
 import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angular';
 
@@ -37,9 +39,9 @@ export class AuthComponent implements OnInit, OnDestroy {
   readonly langService = inject(LanguageService);
   readonly inputFactory = inject(InputFactoryService);
   readonly buttonFactory = inject(ButtonFactoryService);
-  readonly dialogService = inject(DialogFactoryService);
   readonly authContext = inject(IdentityContextService);
-  private readonly eventManager = inject(EventManager);
+  private readonly EventBusService = inject(EventBusService);
+  private readonly errorBus = inject(DomainErrorBusService);
 
   readonly mode = signal<'login' | 'register'>('login');
   readonly accountName = signal('');
@@ -53,7 +55,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   private sub?: Subscription;
 
   ngOnInit() {
-    this.sub = this.eventManager.listen<UserProfile>(AppEventKey.PROFILE_SYNCED).subscribe(() => {
+    this.sub = this.EventBusService.listen<UserProfile>(AppEventKey.PROFILE_SYNCED).subscribe(() => {
       const now = new Date().toLocaleTimeString();
       this.lastSyncedTime.set(now);
     });
@@ -131,11 +133,16 @@ export class AuthComponent implements OnInit, OnDestroy {
       this.authService.login(account, pwd);
     } else {
       if (pwd !== this.confirmPassword()) {
-        this.dialogService.open(
-          'error',
-          this.langService.translate(TranslateKey.auth.dialog.registerError),
-          this.langService.translate(TranslateKey.auth.dialog.passwordMismatch),
-        ).subscribe();
+        this.errorBus.emit({
+          code: ErrorCode.VALIDATION_FAILED,
+          title: this.langService.translate(TranslateKey.auth.dialog.registerError),
+          message: this.langService.translate(TranslateKey.auth.dialog.passwordMismatch),
+          httpStatus: 400,
+          severity: ErrorSeverity.WARNING,
+          actionType: ErrorActionType.DIALOG,
+          retryable: false,
+          requestId: `CLIENT-${Date.now()}`,
+        });
         return;
       }
       this.authService.register(

@@ -1,88 +1,86 @@
 import { inject, Injectable, signal } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { AuthApiService } from '../../core/api/auth.api.service';
-import { DialogFactoryService } from '../../shared/components/dialogs/dialog-factory.service';
-import { EventManager } from '../../shared/services/event-manager.service';
-import { AppEventKey } from '../../shared/constants/app-event.const';
+import { EventBusService } from '../../core/services/event-bus.service';
+import { AppEventKey } from '../../core/constants/app-event.const';
+import { DomainErrorBusService } from '../../core/services/domain-error-bus.service';
+import { ErrorCode } from '../../core/constants/error-code';
+import { ErrorActionType, ErrorSeverity } from '../../shared/models/domain-error.model';
+import { LanguageService } from '../../core/services/language.service';
+import { TranslateKey } from '../../core/constants/translate-key.const';
 
 @Injectable()
 export class AuthService {
   readonly loading = signal(false);
-  private readonly dialogService = inject(DialogFactoryService);
-  private readonly eventManager = inject(EventManager);
-
-  constructor(private readonly authApi: AuthApiService) {}
+  private readonly authApi = inject(AuthApiService);
+  private readonly eventBus = inject(EventBusService);
+  private readonly domainErrorBus = inject(DomainErrorBusService);
+  private readonly languageService = inject(LanguageService);
 
   login(accountName: string, password: string): void {
-    if (!accountName) {
-      this.dialogService.open('error', 'Lỗi đăng nhập', 'Tên tài khoản không được để trống.').subscribe();
-      return;
-    }
-    if (password.length < 8) {
-      this.dialogService.open('error', 'Lỗi đăng nhập', 'Mật khẩu phải có ít nhất 8 ký tự.').subscribe();
-      return;
-    }
-
     this.loading.set(true);
-    this.authApi.login({ accountName, password }).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.eventManager.publish(AppEventKey.LOGIN_SUCCESS);
-        this.dialogService.open('info', 'Thông báo', 'Đăng nhập thành công!').subscribe();
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const detail = err.error?.message || 'Login failed. Please check your credentials.';
-        this.dialogService.open('error', 'Lỗi đăng nhập', detail).subscribe();
-      }
-    });
+    this.authApi
+      .login({ accountName, password })
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => {
+          this.eventBus.publish(AppEventKey.LOGIN_SUCCESS);
+        },
+        error: (error) => {
+          this.domainErrorBus.emit({
+            code: ErrorCode.AUTHENTICATION_FAILED,
+            title: this.languageService.translate(TranslateKey.auth.dialog.loginError),
+            message: this.languageService.translate(TranslateKey.auth.dialog.loginFailedMessage),
+            httpStatus: 0,
+            severity: ErrorSeverity.ERROR,
+            actionType: ErrorActionType.DIALOG,
+            retryable: false,
+            requestId: `CLIENT-${Date.now()}`,
+            originalError: error instanceof Error ? error : new Error(String(error)),
+          });
+        },
+      });
   }
 
   register(accountName: string, password: string, displayName: string, avatarUrl?: string): void {
-    if (!accountName) {
-      this.dialogService.open('error', 'Lỗi đăng ký', 'Tên tài khoản không được để trống.').subscribe();
-      return;
-    }
-    if (password.length < 8) {
-      this.dialogService.open('error', 'Lỗi đăng ký', 'Mật khẩu phải có ít nhất 8 ký tự.').subscribe();
-      return;
-    }
-    if (!displayName) {
-      this.dialogService.open('error', 'Lỗi đăng ký', 'Tên hiển thị không được để trống.').subscribe();
-      return;
-    }
-
     this.loading.set(true);
-    this.authApi.register({
-      accountName,
-      password,
-      displayName,
-      avatarUrl: avatarUrl || undefined
-    }).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.dialogService.open('info', 'Thông báo', 'Đăng ký tài khoản thành công! Bạn đã có thể đăng nhập.').subscribe();
-      },
-      error: (err) => {
-        this.loading.set(false);
-        const detail = err.error?.message || 'Registration failed. Try a different account name.';
-        this.dialogService.open('error', 'Lỗi đăng ký', detail).subscribe();
-      }
-    });
+    this.authApi
+      .register({
+        accountName,
+        password,
+        displayName,
+        avatarUrl: avatarUrl || undefined,
+      })
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        error: (error) => {
+          this.domainErrorBus.emit({
+            code: ErrorCode.VALIDATION_FAILED,
+            title: this.languageService.translate(TranslateKey.auth.dialog.registerError),
+            message: this.languageService.translate(TranslateKey.auth.dialog.registerFailedMessage),
+            httpStatus: 0,
+            severity: ErrorSeverity.ERROR,
+            actionType: ErrorActionType.DIALOG,
+            retryable: false,
+            requestId: `CLIENT-${Date.now()}`,
+            originalError: error instanceof Error ? error : new Error(String(error)),
+          });
+        },
+      });
   }
 
   logout(): void {
     this.loading.set(true);
-    this.authApi.logout().subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.eventManager.publish(AppEventKey.LOGOUT);
-        this.dialogService.open('info', 'Thông báo', 'Đăng xuất thành công.').subscribe();
-      },
-      error: () => {
-        this.loading.set(false);
-        this.eventManager.publish(AppEventKey.LOGOUT);
-        this.dialogService.open('info', 'Thông báo', 'Đăng xuất thành công.').subscribe();
-      }
-    });
+    this.authApi
+      .logout()
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: () => {
+          this.eventBus.publish(AppEventKey.LOGOUT);
+        },
+        error: () => {
+          this.eventBus.publish(AppEventKey.LOGOUT);
+        },
+      });
   }
 }

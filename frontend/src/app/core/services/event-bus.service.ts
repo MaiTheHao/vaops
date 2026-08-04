@@ -6,7 +6,7 @@ import { AppEvent } from '../constants/app-event.const';
 @Injectable({
   providedIn: 'root',
 })
-export class EventManager {
+export class EventBusService {
   private bus$ = new Subject<AppEvent>();
 
   publish<T>(name: string, payload?: T): void {
@@ -16,16 +16,16 @@ export class EventManager {
   listen<T>(eventNames: string | string[]): Observable<T> {
     const names = Array.isArray(eventNames) ? eventNames : [eventNames];
     return this.bus$.asObservable().pipe(
-      filter(event => names.includes(event.name)),
-      map(event => event.payload as T)
+      filter((event) => names.includes(event.name)),
+      map((event) => event.payload as T),
     );
   }
 
   listenEvent<T>(eventNames: string | string[]): Observable<AppEvent<T>> {
     const names = Array.isArray(eventNames) ? eventNames : [eventNames];
     return this.bus$.asObservable().pipe(
-      filter(event => names.includes(event.name)),
-      map(event => event as AppEvent<T>)
+      filter((event) => names.includes(event.name)),
+      map((event) => event as AppEvent<T>),
     );
   }
 }

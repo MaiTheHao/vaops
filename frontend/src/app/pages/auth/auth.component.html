@@ -126,7 +126,7 @@
           <app-submit-button
             [config]="buttonFactory.createConfig({ label: submitLabel() })"
             [loading]="authService.loading()"
-            [disabled]="authService.loading()"
+            [disabled]="authForm.invalid || authService.loading()"
           />
         </form>
 

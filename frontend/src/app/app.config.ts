@@ -1,13 +1,18 @@
-import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideAppInitializer, inject } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideAppInitializer, inject, ErrorHandler } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { DialogModule } from '@angular/cdk/dialog';
 
 import { routes } from './app.routes';
-import { EventManager } from './shared/services/event-manager.service';
-import { AppEventKey } from './shared/constants/app-event.const';
+import { EventBusService } from './core/services/event-bus.service';
+import { AppEventKey } from './core/constants/app-event.const';
+import { GlobalErrorHandler } from './core/error/handlers/global-error-handler';
+import { HttpErrorInterceptor } from './core/api/interceptors/http-error.interceptor';
+import { DialogErrorListener } from './core/error/listeners/dialog-error.listener';
+import { RedirectErrorListener } from './core/error/listeners/redirect-error.listener';
+import { SilentErrorListener } from './core/error/listeners/silent-error.listener';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +20,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withFetch()),
     importProvidersFrom(DialogModule),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
     provideTranslateService({
       loader: provideTranslateHttpLoader({
         prefix: './assets/i18n/',
@@ -24,8 +31,13 @@ export const appConfig: ApplicationConfig = {
       fallbackLang: 'vi'
     }),
     provideAppInitializer(() => {
-      const eventManager = inject(EventManager);
-      eventManager.publish(AppEventKey.APP_INIT);
+      const eventBusService = inject(EventBusService);
+      eventBusService.publish(AppEventKey.APP_INIT);
+    }),
+    provideAppInitializer(() => {
+      inject(DialogErrorListener);
+      inject(RedirectErrorListener);
+      inject(SilentErrorListener);
     })
   ]
 };

@@ -30,8 +30,13 @@
       "registerSubmit": "Đăng ký tài khoản"
     },
     "dialog": {
+      "loginError": "Lỗi đăng nhập",
       "registerError": "Lỗi đăng ký",
-      "passwordMismatch": "Mật khẩu xác nhận không khớp."
+      "passwordMismatch": "Mật khẩu xác nhận không khớp.",
+      "loginFailedMessage": "Tên tài khoản hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.",
+      "registerFailedMessage": "Đăng ký thất bại. Tên tài khoản có thể đã tồn tại.",
+      "loginSuccess": "Đăng nhập thành công",
+      "registerSuccess": "Đăng ký thành công"
     },
     "footer": {
       "noAccountText": "Chưa có tài khoản truy cập?",
@@ -40,6 +45,94 @@
       "gotoLogin": "Đăng nhập ngay",
       "companyCopyright": "© 2026 CÔNG TY TNHH CƠ KHÍ VẠN NĂNG",
       "taxId": "MST: 3703143102"
+    }
+  },
+  "error": {
+    "domain": {
+      "VALIDATION_FAILED": {
+        "title": "Dữ liệu không hợp lệ",
+        "message": "Thông tin nhập vào chưa đúng định dạng. Vui lòng kiểm tra lại."
+      },
+      "TYPE_MISMATCH": {
+        "title": "Sai định dạng dữ liệu",
+        "message": "Kiểu dữ liệu gửi lên không đúng với yêu cầu của hệ thống."
+      },
+      "MALFORMED_REQUEST": {
+        "title": "Yêu cầu không hợp lệ",
+        "message": "Cấu trúc yêu cầu bị lỗi hoặc không đầy đủ."
+      },
+      "FILE_UPLOAD_ERROR": {
+        "title": "Lỗi tải tệp",
+        "message": "Không thể tải tệp lên. Vui lòng thử lại sau."
+      },
+      "AUTHENTICATION_FAILED": {
+        "title": "Xác thực thất bại",
+        "message": "Tài khoản hoặc mật khẩu không chính xác."
+      },
+      "TOKEN_EXPIRED": {
+        "title": "Phiên làm việc hết hạn",
+        "message": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+      },
+      "ACCESS_DENIED": {
+        "title": "Truy cập bị từ chối",
+        "message": "Bạn không có quyền thực hiện thao tác này."
+      },
+      "RESOURCE_NOT_FOUND": {
+        "title": "Không tìm thấy dữ liệu",
+        "message": "Dữ liệu yêu cầu không tồn tại hoặc đã bị xóa."
+      },
+      "METHOD_NOT_ALLOWED": {
+        "title": "Phương thức không hỗ trợ",
+        "message": "Phương thức yêu cầu không được máy chủ chấp nhận."
+      },
+      "RESOURCE_ALREADY_EXISTS": {
+        "title": "Dữ liệu đã tồn tại",
+        "message": "Dữ liệu bạn muốn khởi tạo đã có trên hệ thống."
+      },
+      "DATA_INTEGRITY_VIOLATION": {
+        "title": "Vi phạm ràng buộc dữ liệu",
+        "message": "Thao tác không thể hoàn tất do vi phạm ràng buộc dữ liệu."
+      },
+      "CONCURRENCY_CONFLICT": {
+        "title": "Xung đột dữ liệu",
+        "message": "Dữ liệu đã bị thay đổi bởi người dùng khác. Vui lòng tải lại trang."
+      },
+      "INVALID_STATE": {
+        "title": "Trạng thái không hợp lệ",
+        "message": "Thao tác không hợp lệ đối với trạng thái hiện tại của dữ liệu."
+      },
+      "FILE_SIZE_LIMIT_EXCEEDED": {
+        "title": "Vượt quá dung lượng tệp",
+        "message": "Dung lượng tệp tải lên vượt quá giới hạn cho phép."
+      },
+      "BUSINESS_RULE_VIOLATION": {
+        "title": "Vi phạm quy tắc nghiệp vụ",
+        "message": "Thao tác vi phạm quy định nghiệp vụ của hệ thống."
+      },
+      "ACCOUNT_LOCKED": {
+        "title": "Tài khoản bị khóa",
+        "message": "Tài khoản của bạn tạm thời bị khóa. Vui lòng liên hệ quản trị viên."
+      },
+      "LIMIT_EXCEEDED": {
+        "title": "Vượt quá giới hạn truy cập",
+        "message": "Bạn đã thực hiện quá nhiều yêu cầu. Vui lòng đợi trong giây lát."
+      },
+      "INTERNAL_ERROR": {
+        "title": "Lỗi hệ thống",
+        "message": "Máy chủ gặp sự cố nội bộ. Vui lòng thử lại sau."
+      },
+      "EXTERNAL_SERVICE_ERROR": {
+        "title": "Lỗi dịch vụ bên ngoài",
+        "message": "Không thể kết nối với dịch vụ đối tác. Vui lòng thử lại sau."
+      },
+      "TIMEOUT": {
+        "title": "Hết thời gian chờ",
+        "message": "Kết nối tới máy chủ quá thời hạn. Vui lòng kiểm tra đường truyền."
+      },
+      "UNKNOWN_ERROR": {
+        "title": "Lỗi không xác định",
+        "message": "Đã xảy ra lỗi không xác định. Vui lòng thử lại."
+      }
     }
   }
 }
