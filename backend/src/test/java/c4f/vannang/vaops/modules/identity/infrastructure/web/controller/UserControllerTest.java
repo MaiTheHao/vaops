@@ -3,6 +3,7 @@ package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -96,22 +97,13 @@ class UserControllerTest {
 
   @Test
   @DisplayName("DELETE /api/v1/users/{id} soft deletes and returns 204")
-  void deleteUser_soft_returnsNoContent() throws Exception {
+  void deleteUser_ShouldExecuteCorrectDeleteTypeAndReturnNoContent() throws Exception {
     mockMvc.perform(delete("/api/v1/users/{id}", userId))
         .andDo(print())
         .andExpect(status().isNoContent());
 
     verify(userService).softDeleteUser(eq(userId), any());
-  }
-
-  @Test
-  @DisplayName("DELETE /api/v1/users/{id}?hard=true hard deletes and returns 204")
-  void deleteUser_hard_returnsNoContent() throws Exception {
-    mockMvc.perform(delete("/api/v1/users/{id}", userId).param("hard", "true"))
-        .andDo(print())
-        .andExpect(status().isNoContent());
-
-    verify(userService).hardDeleteUser(userId);
+    verify(userService, never()).hardDeleteUser(any());
   }
 
   @Test

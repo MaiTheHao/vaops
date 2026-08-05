@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -117,21 +118,12 @@ class PermissionControllerTest {
 
   @Test
   @DisplayName("DELETE /api/v1/permissions/{id} soft deletes and returns 204")
-  void deletePermission_soft_returnsNoContent() throws Exception {
+  void deletePermission_ShouldExecuteCorrectDeleteTypeAndReturnNoContent() throws Exception {
     mockMvc.perform(delete("/api/v1/permissions/{id}", permissionId))
         .andDo(print())
         .andExpect(status().isNoContent());
 
     verify(permissionService).softDeletePermission(eq(permissionId), isNull());
-  }
-
-  @Test
-  @DisplayName("DELETE /api/v1/permissions/{id}?hard=true hard deletes and returns 204")
-  void deletePermission_hard_returnsNoContent() throws Exception {
-    mockMvc.perform(delete("/api/v1/permissions/{id}", permissionId).param("hard", "true"))
-        .andDo(print())
-        .andExpect(status().isNoContent());
-
-    verify(permissionService).hardDeletePermission(permissionId);
+    verify(permissionService, never()).hardDeletePermission(any());
   }
 }

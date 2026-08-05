@@ -2,6 +2,8 @@ package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,11 +18,12 @@ import c4f.vannang.vaops.modules.identity.infrastructure.web.dto.PutUpdateProfil
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.exception.ResourceNotFoundException;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
-
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,14 +52,7 @@ class ProfileControllerTest {
     principal = new AuthenticatedPrincipal(userId, "test.user");
 
     user = new UserDto(
-        userId,
-        "test.user",
-        "Test User",
-        "https://example.com/avatar.png",
-        true,
-        null,
-        null,
-        null);
+        userId, "test.user", "Test User", "https://example.com/avatar.png", true, null, null, null);
   }
 
   @Test
@@ -115,15 +111,22 @@ class ProfileControllerTest {
         new PutUpdateProfileWebRequest("New Display Name", "https://example.com/new-avatar.png");
 
     UserDto updated = new UserDto(
-        userId, "test.user", "New Display Name", "https://example.com/new-avatar.png",
-        true, null, null, null);
+        userId,
+        "test.user",
+        "New Display Name",
+        "https://example.com/new-avatar.png",
+        true,
+        null,
+        null,
+        null);
 
-    when(identityProfileService.updateProfile(
-            new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png")))
+    when(identityProfileService.updateProfile(new UpdateProfileRequest(
+            userId, "New Display Name", "https://example.com/new-avatar.png")))
         .thenReturn(updated);
 
     // when
-    ResponseEntity<ProfileWebResponse> response = profileController.putUpdateProfile(request, principal);
+    ResponseEntity<ProfileWebResponse> response =
+        profileController.putUpdateProfile(request, principal);
 
     // then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -131,8 +134,9 @@ class ProfileControllerTest {
     assertThat(response.getBody().displayName()).isEqualTo("New Display Name");
     assertThat(response.getBody().avatarUrl()).isEqualTo("https://example.com/new-avatar.png");
 
-    verify(identityProfileService).updateProfile(
-        new UpdateProfileRequest(userId, "New Display Name", "https://example.com/new-avatar.png"));
+    verify(identityProfileService)
+        .updateProfile(new UpdateProfileRequest(
+            userId, "New Display Name", "https://example.com/new-avatar.png"));
   }
 
   @Test
@@ -147,31 +151,20 @@ class ProfileControllerTest {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(response.getBody()).isNull();
 
-    verify(identityProfileService).changePassword(
-        new ChangePasswordRequest(userId, "OldPass123!", "NewPass123!"));
+    verify(identityProfileService)
+        .changePassword(new ChangePasswordRequest(userId, "OldPass123!", "NewPass123!"));
   }
 
   @Test
-  void deleteAccount_ShouldExecuteSoftDeleteAndReturnNoContent_WhenHardIsFalse() {
+  void deleteAccount_ShouldExecuteCorrectDeleteTypeAndReturnNoContent() {
     // when
-    ResponseEntity<Void> response = profileController.deleteAccount(false, principal);
+    ResponseEntity<Void> response = profileController.deleteAccount(principal);
 
     // then
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     assertThat(response.getBody()).isNull();
 
     verify(userService).softDeleteUser(userId, userId);
-  }
-
-  @Test
-  void deleteAccount_ShouldExecuteHardDeleteAndReturnNoContent_WhenHardIsTrue() {
-    // when
-    ResponseEntity<Void> response = profileController.deleteAccount(true, principal);
-
-    // then
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-    assertThat(response.getBody()).isNull();
-
-    verify(userService).hardDeleteUser(userId);
+    verify(userService, never()).hardDeleteUser(any());
   }
 }

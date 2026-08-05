@@ -9,6 +9,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  
+springdoc:
+  swagger-ui: 
+    path: /apidocs.html
 
 server:
   port: 8080
