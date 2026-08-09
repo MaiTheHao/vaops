@@ -11,8 +11,15 @@ spring:
       ddl-auto: validate
   
 springdoc:
-  swagger-ui: 
-    path: /apidocs.html
+  swagger-ui:
+    path: /api-docs
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+    with-credentials: true
+  api-docs:
+    path: /openapi-docs
 
 server:
   port: 8080

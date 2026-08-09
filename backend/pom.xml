@@ -70,6 +70,14 @@
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>3.1.0</version>
 		</dependency>
+		<!-- 
+		!NOTE: springdoc-openapi-starter-webmvc-ui includes springdoc-openapi-starter-webmvc-api
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+			<version>3.1.0</version>
+		</dependency> 
+		-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

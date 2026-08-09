@@ -16,6 +16,12 @@ logging:
     root: info
     c4f.vannang.vaops: error
 
+springdoc:
+  swagger-ui: 
+    enabled: false
+  api-docs:
+    enabled: false
+
 vaops:
   app:
     is-prod: true
