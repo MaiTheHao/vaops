@@ -20,6 +20,9 @@ springdoc:
     with-credentials: true
   api-docs:
     path: /api-docs
+  
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
 
 server:
   port: 8080
