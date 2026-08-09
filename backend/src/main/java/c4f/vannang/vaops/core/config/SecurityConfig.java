@@ -46,19 +46,18 @@ public class SecurityConfig {
             .accessDeniedHandler((req, res, e) -> resolver.resolveException(req, res, null, e)))
         .authorizeHttpRequests(auth -> auth.requestMatchers(
                 "/hello",
-                "/api/*/hello",
+                "/api/v1/hello",
                 "/api-uidocs",
                 "/api-docs",
                 "/api-docs/**",
                 "/swagger-ui/**",
-                "/swagger-ui.html",
-                "/v3/api-docs/**")
+                "/swagger-ui.html")
             .permitAll()
-            .requestMatchers("/api/*/auth/login")
+            .requestMatchers("/api/v1/auth/login")
             .permitAll()
-            .requestMatchers("/api/*/auth/register")
+            .requestMatchers("/api/v1/auth/register")
             .permitAll()
-            .requestMatchers("/api/*/auth/refresh")
+            .requestMatchers("/api/v1/auth/refresh")
             .permitAll()
             .anyRequest()
             .authenticated())

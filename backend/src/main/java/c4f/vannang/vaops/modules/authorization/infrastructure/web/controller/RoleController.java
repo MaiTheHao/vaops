@@ -116,16 +116,16 @@ public class RoleController {
       @ApiResponse(responseCode = "403", description = "Forbidden")
   })
   public ResponseEntity<PageResponse<RoleWebResponseDto>> searchRoles(
-      @Parameter(description = "Search keyword") @RequestParam(required = false) String keyword,
-      @Parameter(description = "Filter by role code") @RequestParam(required = false) String code,
-      @Parameter(description = "Filter by active status") @RequestParam(required = false) Boolean isActive,
-      @Parameter(description = "Filter by assigned user ID") @RequestParam(required = false) UUID userId,
-      @Parameter(description = "Filter created from timestamp") @RequestParam(required = false) Instant createdFrom,
-      @Parameter(description = "Filter created to timestamp") @RequestParam(required = false) Instant createdTo,
-      @Parameter(description = "Page index (0-based)") @RequestParam(defaultValue = "0") int page,
-      @Parameter(description = "Page size limit") @RequestParam(defaultValue = "20") int size,
-      @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
-      @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false) String sortDirection) {
+      @Parameter(name = "keyword", description = "Search keyword") @RequestParam(name = "keyword", required = false) String keyword,
+      @Parameter(name = "code", description = "Filter by role code") @RequestParam(name = "code", required = false) String code,
+      @Parameter(name = "isActive", description = "Filter by active status") @RequestParam(name = "isActive", required = false) Boolean isActive,
+      @Parameter(name = "userId", description = "Filter by assigned user ID") @RequestParam(name = "userId", required = false) UUID userId,
+      @Parameter(name = "createdFrom", description = "Filter created from timestamp") @RequestParam(name = "createdFrom", required = false) Instant createdFrom,
+      @Parameter(name = "createdTo", description = "Filter created to timestamp") @RequestParam(name = "createdTo", required = false) Instant createdTo,
+      @Parameter(name = "page", description = "Page index (0-based)") @RequestParam(name = "page", defaultValue = "0") int page,
+      @Parameter(name = "size", description = "Page size limit") @RequestParam(name = "size", defaultValue = "20") int size,
+      @Parameter(name = "sortBy", description = "Sort field") @RequestParam(name = "sortBy", required = false) String sortBy,
+      @Parameter(name = "sortDirection", description = "Sort direction (ASC or DESC)") @RequestParam(name = "sortDirection", required = false) String sortDirection) {
     RoleSearchCriteria criteria = new RoleSearchCriteria(
         keyword, code, isActive, userId, createdFrom, createdTo, page, size, sortBy, sortDirection);
     PageResponse<RoleWebResponseDto> response = mapper.toRolePageResponse(

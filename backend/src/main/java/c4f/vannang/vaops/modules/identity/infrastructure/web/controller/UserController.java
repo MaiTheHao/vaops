@@ -83,12 +83,12 @@ public class UserController {
       @ApiResponse(responseCode = "403", description = "Forbidden")
   })
   public ResponseEntity<PageResponse<UserWebResponseDto>> searchUsers(
-      @Parameter(description = "Search keyword (matches account name or display name)") @RequestParam(required = false) String keyword,
-      @Parameter(description = "Filter by active status") @RequestParam(required = false) Boolean isActive,
-      @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-      @Parameter(description = "Page size limit") @RequestParam(defaultValue = "20") int size,
-      @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
-      @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false) String sortDirection) {
+      @Parameter(name = "keyword", description = "Search keyword (matches account name or display name)") @RequestParam(name = "keyword", required = false) String keyword,
+      @Parameter(name = "isActive", description = "Filter by active status") @RequestParam(name = "isActive", required = false) Boolean isActive,
+      @Parameter(name = "page", description = "Page number (0-based)") @RequestParam(name = "page", defaultValue = "0") int page,
+      @Parameter(name = "size", description = "Page size limit") @RequestParam(name = "size", defaultValue = "20") int size,
+      @Parameter(name = "sortBy", description = "Sort field") @RequestParam(name = "sortBy", required = false) String sortBy,
+      @Parameter(name = "sortDirection", description = "Sort direction (ASC or DESC)") @RequestParam(name = "sortDirection", required = false) String sortDirection) {
     UserSearchCriteria criteria = new UserSearchCriteria(
         page,
         size,

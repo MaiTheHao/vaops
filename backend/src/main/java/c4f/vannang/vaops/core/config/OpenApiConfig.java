@@ -13,16 +13,22 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+@Slf4j
 @Configuration
 @Profile("!prod")
 @ConditionalOnProperty(value = "vaops.openapi.enabled", havingValue = "true", matchIfMissing = true)
 public class OpenApiConfig {
+
+  private static final Map<String, Schema> ERROR_SCHEMAS = ModelConverters.getInstance().readAll(ErrorResponse.class);
+  private static final Set<String> SUPPORTED_ERROR_CODES = Set.of("400", "401", "403", "404", "500");
 
   @Bean
   public OpenAPI customOpenApi() {
@@ -52,9 +58,8 @@ public class OpenApiConfig {
         openApi.setComponents(new Components());
       }
 
-      Map<String, Schema> schemas = ModelConverters.getInstance().readAll(ErrorResponse.class);
-      if (schemas != null) {
-        schemas.forEach((name, schema) -> openApi.getComponents().addSchemas(name, schema));
+      if (ERROR_SCHEMAS != null) {
+        ERROR_SCHEMAS.forEach((name, schema) -> openApi.getComponents().addSchemas(name, schema));
       }
 
       Schema<?> errorRefSchema = new Schema<>().$ref(ERROR_REF_SCHEMA);
@@ -66,20 +71,29 @@ public class OpenApiConfig {
             .forEach(pathItem -> pathItem.readOperations().forEach(operation -> {
               if (operation.getResponses() != null) {
                 operation.getResponses().forEach((code, response) -> {
-                  if (isErrorCode(code)) {
-                    int statusCode = parseStatusCode(code);
-                    Map<String, Object> dynamicExample =
-                        buildDynamicErrorExample(statusCode, response.getDescription());
-
-                    MediaType mediaType = new MediaType()
-                        .schema(errorRefSchema)
-                        .example(dynamicExample);
-
-                    Content content = new Content().addMediaType(
-                        org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                        mediaType);
-                    response.setContent(content);
+                  if (response.getContent() != null && !response.getContent().isEmpty()) {
+                    return;
                   }
+
+                  if (!SUPPORTED_ERROR_CODES.contains(code)) {
+                    if (isErrorCodeCandidate(code)) {
+                      log.warn("Skipping dynamic error example generation for unsupported or custom status code: {}", code);
+                    }
+                    return;
+                  }
+
+                  int statusCode = Integer.parseInt(code);
+                  Map<String, Object> dynamicExample =
+                      buildDynamicErrorExample(statusCode, response.getDescription());
+
+                  MediaType mediaType = new MediaType()
+                      .schema(errorRefSchema)
+                      .example(dynamicExample);
+
+                  Content content = new Content().addMediaType(
+                      org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+                      mediaType);
+                  response.setContent(content);
                 });
               }
             }));
@@ -87,20 +101,12 @@ public class OpenApiConfig {
     };
   }
 
-  private boolean isErrorCode(String statusCode) {
+  private boolean isErrorCodeCandidate(String statusCode) {
     try {
       int code = Integer.parseInt(statusCode);
       return code >= 400;
     } catch (NumberFormatException e) {
       return statusCode.startsWith("4") || statusCode.startsWith("5");
-    }
-  }
-
-  private int parseStatusCode(String statusCode) {
-    try {
-      return Integer.parseInt(statusCode);
-    } catch (NumberFormatException e) {
-      return 500;
     }
   }
 
