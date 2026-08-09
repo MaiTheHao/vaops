@@ -12,14 +12,14 @@ spring:
   
 springdoc:
   swagger-ui:
-    path: /api-docs
+    path: /api-uidocs
     operations-sorter: method
     tags-sorter: alpha
     try-it-out-enabled: true
     display-request-duration: true
     with-credentials: true
   api-docs:
-    path: /openapi-docs
+    path: /api-docs
 
 server:
   port: 8080
