@@ -1,5 +1,6 @@
 package c4f.vannang.vaops.core.web.filter;
 
+import c4f.vannang.vaops.core.constant.AuthConstant;
 import c4f.vannang.vaops.modules.identity.api.dto.CheckAvailableUserQuery;
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
@@ -92,7 +93,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
 
     if (request.getCookies() != null) {
       for (Cookie cookie : request.getCookies()) {
-        if ("access_token".equals(cookie.getName())) {
+        if (AuthConstant.ACCESS_TOKEN_KEY.equals(cookie.getName())) {
           return cookie.getValue();
         }
       }

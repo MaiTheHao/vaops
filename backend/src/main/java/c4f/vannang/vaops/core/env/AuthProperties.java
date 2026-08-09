@@ -11,6 +11,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
+import c4f.vannang.vaops.core.constant.AppConstant;
+
 @Data
 @Slf4j
 @Component
@@ -50,7 +52,7 @@ public class AuthProperties {
         private long refreshExpirationMs;
         
         @NotBlank(message = "vaops.auth.jwt.issuer is required")
-        private String issuer = "vaops";
+        private String issuer = AppConstant.ISSUER;
 
         @Override
         public String toString() {

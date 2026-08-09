@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import c4f.vannang.vaops.core.constant.AuthConstant;
 import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.core.env.AuthProperties.Jwt;
@@ -45,7 +46,7 @@ class AuthenticationControllerTest {
     private static final String AVATAR_URL = "avatar-url";
     private static final String ACCESS_TOKEN = "access-token-123";
     private static final String REFRESH_TOKEN = "refresh-token-123";
-    private static final String REFRESH_COOKIE_NAME = "refresh_token";
+    private static final String REFRESH_COOKIE_NAME = AuthConstant.REFRESH_TOKEN_KEY;
 
     @Mock
     private AuthenticationService authenticationService;

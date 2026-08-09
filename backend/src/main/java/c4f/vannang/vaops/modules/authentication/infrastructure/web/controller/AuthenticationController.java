@@ -1,5 +1,6 @@
 package c4f.vannang.vaops.modules.authentication.infrastructure.web.controller;
 
+import c4f.vannang.vaops.core.constant.AuthConstant;
 import c4f.vannang.vaops.core.env.AppProperties;
 import c4f.vannang.vaops.core.env.AuthProperties;
 import c4f.vannang.vaops.modules.authentication.infrastructure.web.dto.LoginWebRequestDto;
@@ -43,7 +44,7 @@ public class AuthenticationController {
     LoginCommandResult result =
         authenticationService.login(new LoginCommand(request.accountName(), request.password()));
 
-    ResponseCookie accessCookie = ResponseCookie.from("access_token", result.accessToken())
+    ResponseCookie accessCookie = ResponseCookie.from(AuthConstant.ACCESS_TOKEN_KEY, result.accessToken())
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -51,7 +52,7 @@ public class AuthenticationController {
         .sameSite("Lax")
         .build();
 
-    ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", result.refreshToken())
+    ResponseCookie refreshCookie = ResponseCookie.from(AuthConstant.REFRESH_TOKEN_KEY, result.refreshToken())
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -87,7 +88,7 @@ public class AuthenticationController {
     RefreshTokenCommandResult result =
         authenticationService.refreshToken(new RefreshTokenCommand(refreshTokenValue));
 
-    ResponseCookie accessCookie = ResponseCookie.from("access_token", result.accessToken())
+    ResponseCookie accessCookie = ResponseCookie.from(AuthConstant.ACCESS_TOKEN_KEY, result.accessToken())
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -95,7 +96,7 @@ public class AuthenticationController {
         .sameSite("Lax")
         .build();
 
-    ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", result.refreshToken())
+    ResponseCookie refreshCookie = ResponseCookie.from(AuthConstant.REFRESH_TOKEN_KEY, result.refreshToken())
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -117,7 +118,7 @@ public class AuthenticationController {
       authenticationService.logout(new LogoutCommand(refreshTokenValue));
     }
 
-    ResponseCookie accessCookie = ResponseCookie.from("access_token", "")
+    ResponseCookie accessCookie = ResponseCookie.from(AuthConstant.ACCESS_TOKEN_KEY, "")
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -125,7 +126,7 @@ public class AuthenticationController {
         .sameSite("Lax")
         .build();
 
-    ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", "")
+    ResponseCookie refreshCookie = ResponseCookie.from(AuthConstant.REFRESH_TOKEN_KEY, "")
         .httpOnly(true)
         .secure(appProperties.isProd())
         .path("/")
@@ -142,7 +143,7 @@ public class AuthenticationController {
   private String extractRefreshTokenFromCookie(HttpServletRequest request) {
     if (request.getCookies() == null) return null;
     for (Cookie cookie : request.getCookies()) {
-      if ("refresh_token".equals(cookie.getName())) {
+      if (AuthConstant.REFRESH_TOKEN_KEY.equals(cookie.getName())) {
         return cookie.getValue();
       }
     }
