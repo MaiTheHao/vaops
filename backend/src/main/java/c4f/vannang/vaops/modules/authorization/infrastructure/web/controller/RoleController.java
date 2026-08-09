@@ -10,6 +10,11 @@ import c4f.vannang.vaops.modules.authorization.internal.dto.RoleSearchCriteria;
 import c4f.vannang.vaops.modules.authorization.internal.service.RoleService;
 import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.shared.feature.security.AuthenticatedPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
@@ -31,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/roles")
 @RequiredArgsConstructor
+@Tag(name = "Role Management", description = "Role CRUD, permission assignment/revocation, and search operations")
 public class RoleController {
 
   private final RoleService roleService;
@@ -38,6 +44,13 @@ public class RoleController {
 
   @PostMapping
   @PreAuthorize("hasAuthority('ROLE:CREATE') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Create a new role")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "Role created successfully"),
+      @ApiResponse(responseCode = "400", description = "Invalid request payload or duplicate role code"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden")
+  })
   public ResponseEntity<RoleWebResponseDto> createRole(
       @Valid @RequestBody CreateRoleWebRequestDto dto) {
     RoleWebResponseDto response = mapper.toRoleWebResponseDto(
@@ -47,8 +60,16 @@ public class RoleController {
 
   @PutMapping("/{roleId}")
   @PreAuthorize("hasAuthority('ROLE:UPDATE') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Update role details by ID")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Role updated successfully"),
+      @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden"),
+      @ApiResponse(responseCode = "404", description = "Role not found")
+  })
   public ResponseEntity<RoleWebResponseDto> updateRole(
-      @PathVariable UUID roleId,
+      @Parameter(description = "Role UUID", example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID roleId,
       @Valid @RequestBody UpdateRoleWebRequestDto dto) {
     RoleWebResponseDto response = mapper.toRoleWebResponseDto(
         roleService.updateRole(mapper.toUpdateRoleCommand(roleId, dto)));
@@ -57,8 +78,15 @@ public class RoleController {
 
   @DeleteMapping("/{roleId}")
   @PreAuthorize("hasAuthority('ROLE:DELETE') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Soft delete role by ID")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Role soft deleted successfully"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden"),
+      @ApiResponse(responseCode = "404", description = "Role not found")
+  })
   public ResponseEntity<Void> deleteRole(
-      @PathVariable UUID roleId,
+      @Parameter(description = "Role UUID", example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID roleId,
       @AuthenticationPrincipal AuthenticatedPrincipal principal) {
     roleService.softDeleteRole(roleId, principal != null ? principal.userId() : null);
     return ResponseEntity.noContent().build();
@@ -66,24 +94,38 @@ public class RoleController {
 
   @GetMapping("/{roleId}")
   @PreAuthorize("hasAuthority('ROLE:READ') or hasRole('SUPER_ADMIN')")
-  public ResponseEntity<RoleWebResponseDto> getRole(@PathVariable UUID roleId) {
+  @Operation(summary = "Get role details with assigned permissions by ID")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Role details retrieved successfully"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden"),
+      @ApiResponse(responseCode = "404", description = "Role not found")
+  })
+  public ResponseEntity<RoleWebResponseDto> getRole(
+      @Parameter(description = "Role UUID", example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID roleId) {
     RoleWebResponseDto response = mapper.toRoleWebResponseDto(roleService.getRoleById(roleId));
     return ResponseEntity.ok(response);
   }
 
   @GetMapping
   @PreAuthorize("hasAuthority('ROLE:READ') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Search roles with pagination and filters")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Paginated roles search results"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden")
+  })
   public ResponseEntity<PageResponse<RoleWebResponseDto>> searchRoles(
-      @RequestParam(required = false) String keyword,
-      @RequestParam(required = false) String code,
-      @RequestParam(required = false) Boolean isActive,
-      @RequestParam(required = false) UUID userId,
-      @RequestParam(required = false) Instant createdFrom,
-      @RequestParam(required = false) Instant createdTo,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
-      @RequestParam(required = false) String sortBy,
-      @RequestParam(required = false) String sortDirection) {
+      @Parameter(description = "Search keyword") @RequestParam(required = false) String keyword,
+      @Parameter(description = "Filter by role code") @RequestParam(required = false) String code,
+      @Parameter(description = "Filter by active status") @RequestParam(required = false) Boolean isActive,
+      @Parameter(description = "Filter by assigned user ID") @RequestParam(required = false) UUID userId,
+      @Parameter(description = "Filter created from timestamp") @RequestParam(required = false) Instant createdFrom,
+      @Parameter(description = "Filter created to timestamp") @RequestParam(required = false) Instant createdTo,
+      @Parameter(description = "Page index (0-based)") @RequestParam(defaultValue = "0") int page,
+      @Parameter(description = "Page size limit") @RequestParam(defaultValue = "20") int size,
+      @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+      @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(required = false) String sortDirection) {
     RoleSearchCriteria criteria = new RoleSearchCriteria(
         keyword, code, isActive, userId, createdFrom, createdTo, page, size, sortBy, sortDirection);
     PageResponse<RoleWebResponseDto> response = mapper.toRolePageResponse(
@@ -93,8 +135,16 @@ public class RoleController {
 
   @PostMapping("/{roleId}/permissions")
   @PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Assign permissions to role")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Permissions assigned to role successfully"),
+      @ApiResponse(responseCode = "400", description = "Invalid permission ID payload"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden"),
+      @ApiResponse(responseCode = "404", description = "Role not found")
+  })
   public ResponseEntity<Void> assignPermissions(
-      @PathVariable UUID roleId,
+      @Parameter(description = "Role UUID", example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID roleId,
       @Valid @RequestBody AssignPermissionsRequestDto dto) {
     roleService.assignPermissionsToRole(mapper.toAssignPermissionsToRoleCommand(roleId, dto));
     return ResponseEntity.noContent().build();
@@ -102,8 +152,16 @@ public class RoleController {
 
   @DeleteMapping("/{roleId}/permissions")
   @PreAuthorize("hasAuthority('ROLE:MANAGE_PERMISSION') or hasRole('SUPER_ADMIN')")
+  @Operation(summary = "Revoke permissions from role")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Permissions revoked from role successfully"),
+      @ApiResponse(responseCode = "400", description = "Invalid permission ID payload"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated"),
+      @ApiResponse(responseCode = "403", description = "Forbidden"),
+      @ApiResponse(responseCode = "404", description = "Role not found")
+  })
   public ResponseEntity<Void> revokePermissions(
-      @PathVariable UUID roleId,
+      @Parameter(description = "Role UUID", example = "123e4567-e89b-12d3-a456-426614174000") @PathVariable UUID roleId,
       @Valid @RequestBody RevokePermissionsRequestDto dto) {
     roleService.unassignPermissionsFromRole(mapper.toRevokePermissionFromRoleCommand(roleId, dto));
     return ResponseEntity.noContent().build();

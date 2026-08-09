@@ -44,7 +44,15 @@ public class SecurityConfig {
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((req, res, e) -> resolver.resolveException(req, res, null, e))
             .accessDeniedHandler((req, res, e) -> resolver.resolveException(req, res, null, e)))
-        .authorizeHttpRequests(auth -> auth.requestMatchers("/hello", "/api/*/hello", "/api-uidocs", "/api-docs")
+        .authorizeHttpRequests(auth -> auth.requestMatchers(
+                "/hello",
+                "/api/*/hello",
+                "/api-uidocs",
+                "/api-docs",
+                "/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/v3/api-docs/**")
             .permitAll()
             .requestMatchers("/api/*/auth/login")
             .permitAll()

@@ -15,6 +15,11 @@ import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommand;
 import c4f.vannang.vaops.modules.authentication.internal.dto.RegisterCommandResult;
 import c4f.vannang.vaops.modules.authentication.internal.service.AuthenticationService;
 import c4f.vannang.vaops.shared.exception.UnauthenticatedException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -33,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "User login, registration, token refresh, and logout operations")
 public class AuthenticationController {
 
   private final AuthenticationService authenticationService;
@@ -40,6 +46,13 @@ public class AuthenticationController {
   private final AuthProperties authProperties;
 
   @PostMapping("/login")
+  @Operation(summary = "User login with account credentials")
+  @SecurityRequirements({})
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Login successful (Sets authentication cookies)"),
+      @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+      @ApiResponse(responseCode = "401", description = "Invalid credentials")
+  })
   public ResponseEntity<Void> login(@Valid @RequestBody LoginWebRequestDto request) {
     LoginCommandResult result =
         authenticationService.login(new LoginCommand(request.accountName(), request.password()));
@@ -67,6 +80,12 @@ public class AuthenticationController {
   }
 
   @PostMapping("/register")
+  @Operation(summary = "Register new user account")
+  @SecurityRequirements({})
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "User registered successfully"),
+      @ApiResponse(responseCode = "400", description = "Validation error or username taken")
+  })
   public ResponseEntity<RegisterWebResponseDto> register(
       @Valid @RequestBody RegisterWebRequestDto request) {
     RegisterCommandResult result = authenticationService.register(new RegisterCommand(
@@ -79,6 +98,12 @@ public class AuthenticationController {
   }
 
   @PostMapping("/refresh")
+  @Operation(summary = "Refresh access token using refresh cookie")
+  @SecurityRequirements({})
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+      @ApiResponse(responseCode = "401", description = "Missing or invalid refresh token")
+  })
   public ResponseEntity<Void> refresh(HttpServletRequest request) {
     String refreshTokenValue = extractRefreshTokenFromCookie(request);
     if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
@@ -112,6 +137,11 @@ public class AuthenticationController {
 
   @PostMapping("/logout")
   @PreAuthorize("isAuthenticated()")
+  @Operation(summary = "User logout and clear session cookies")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Logged out successfully"),
+      @ApiResponse(responseCode = "401", description = "Unauthenticated")
+  })
   public ResponseEntity<Void> logout(HttpServletRequest request) {
     String refreshTokenValue = extractRefreshTokenFromCookie(request);
     if (refreshTokenValue != null && !refreshTokenValue.isBlank()) {
@@ -150,3 +180,4 @@ public class AuthenticationController {
     return null;
   }
 }
+
