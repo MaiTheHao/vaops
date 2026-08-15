@@ -47,15 +47,6 @@ class RoleServiceImpl implements RoleService {
 
     Role role = Role.create(code, command.description());
 
-    if (command.permissionIds() != null && !command.permissionIds().isEmpty()) {
-      List<Permission> permissions =
-          permissionQueryRepository.findAllActiveByIdIn(new ArrayList<>(command.permissionIds()));
-      if (permissions.size() != command.permissionIds().size()) {
-        throw new ResourceNotFoundException("One or more permissions were not found", Map.of("reason", "PERMISSIONS_NOT_FOUND"));
-      }
-      role.assignPermissions(permissions);
-    }
-
     return roleWriteRepository.save(role);
   }
 

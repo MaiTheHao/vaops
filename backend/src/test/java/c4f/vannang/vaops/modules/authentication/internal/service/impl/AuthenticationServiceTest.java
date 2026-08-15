@@ -435,7 +435,7 @@ class AuthenticationServiceTest {
       assertThat(result.accessToken()).isEqualTo("new-access-token");
       assertThat(result.refreshToken()).isEqualTo("new-refresh-token");
       assertThat(storedToken.isRevoked()).isTrue();
-      verify(refreshTokenWriteRepository).saveAll(any(List.class));
+      verify(refreshTokenWriteRepository).saveAll(List.of(storedToken));
     }
 
     @Test
@@ -485,7 +485,7 @@ class AuthenticationServiceTest {
           .isInstanceOf(UnauthenticatedException.class)
           .hasMessage("Refresh token has already been used within grace window.");
       assertThat(activeToken.isRevoked()).isFalse();
-      verify(refreshTokenWriteRepository, never()).saveAll(any(List.class));
+      verify(refreshTokenWriteRepository, never()).saveAll(List.of(revokedToken));
     }
 
     @Test
@@ -508,7 +508,7 @@ class AuthenticationServiceTest {
           .isInstanceOf(UnauthenticatedException.class)
           .hasMessage("Refresh token has been revoked previously. Potential breach detected.");
       assertThat(activeToken.isRevoked()).isTrue();
-      verify(refreshTokenWriteRepository).saveAll(any(List.class));
+      verify(refreshTokenWriteRepository).saveAll(List.of(activeToken));
     }
 
     @Test

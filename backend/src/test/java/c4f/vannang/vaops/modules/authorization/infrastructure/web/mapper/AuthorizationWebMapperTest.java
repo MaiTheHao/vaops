@@ -10,7 +10,6 @@ import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.Permi
 import c4f.vannang.vaops.modules.authorization.internal.domain.valueobject.RoleCode;
 import c4f.vannang.vaops.modules.authorization.internal.dto.CreateRoleCommand;
 import c4f.vannang.vaops.shared.dto.PageResponse;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;

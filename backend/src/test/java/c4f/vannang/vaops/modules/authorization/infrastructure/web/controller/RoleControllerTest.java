@@ -64,7 +64,7 @@ class RoleControllerTest {
   @DisplayName("POST /api/v1/roles with valid body returns 201 and created role")
   void createRole_validBody_returnsCreated() throws Exception {
     CreateRoleWebRequestDto request = new CreateRoleWebRequestDto("ADMIN", "Administrator role");
-    CreateRoleCommand command = new CreateRoleCommand("ADMIN", "Administrator role", null);
+    CreateRoleCommand command = new CreateRoleCommand("ADMIN", "Administrator role");
     Role role = Role.create(new RoleCode("ADMIN"), "Administrator role");
     RoleWebResponseDto response = new RoleWebResponseDto(
         roleId, "ADMIN", "Administrator role", true, null, Instant.now(), Instant.now());

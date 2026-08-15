@@ -2,7 +2,6 @@ package c4f.vannang.vaops.modules.identity.infrastructure.web.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,7 +22,6 @@ import c4f.vannang.vaops.modules.identity.internal.dto.ToggleUserStatusCommand;
 import c4f.vannang.vaops.modules.identity.internal.service.UserService;
 import c4f.vannang.vaops.shared.dto.PageResponse;
 import c4f.vannang.vaops.shared.feature.token.AccessTokenSpec;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,8 +43,6 @@ class UserControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
-
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @MockitoBean
   private UserService userService;

@@ -1,7 +1,6 @@
 package c4f.vannang.vaops.core.web.filter;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import c4f.vannang.vaops.modules.identity.api.service.IdentityUserAPIService;

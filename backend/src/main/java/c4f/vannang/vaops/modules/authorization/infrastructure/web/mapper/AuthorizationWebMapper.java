@@ -45,8 +45,10 @@ public interface AuthorizationWebMapper {
 
     UpdatePermissionCommand toUpdatePermissionCommand(UUID id, UpdatePermissionWebRequestDto dto);
 
+    @Mapping(target = "assignedBy", ignore = true)
     AssignRolesToUserCommand toAssignRolesToUserCommand(UUID userId, AssignRolesToUserWebRequestDto dto);
 
+    @Mapping(target = "revokedBy", ignore = true)
     RevokeRoleFromUserCommand toRevokeRoleFromUserCommand(UUID userId, RevokeRoleFromUserWebRequestDto dto);
 
     @Mapping(target = "code", expression = "java(role.getCode().value())")
