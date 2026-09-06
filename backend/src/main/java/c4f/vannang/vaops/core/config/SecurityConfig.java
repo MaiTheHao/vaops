@@ -36,11 +36,11 @@ public class SecurityConfig {
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf((abstractHttpConfig) -> abstractHttpConfig.disable())
+        .csrf(csrf -> csrf.disable())
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .formLogin((abstractHttpConfig) -> abstractHttpConfig.disable())
-        .logout((abstractHttpConfig) -> abstractHttpConfig.disable())
-        .httpBasic((abstractHttpConfig) -> abstractHttpConfig.disable())
+        .formLogin(formLogin -> formLogin.disable())
+        .logout(logout -> logout.disable())
+        .httpBasic(httpBasic -> httpBasic.disable())
         .exceptionHandling(ex -> ex
             .authenticationEntryPoint((req, res, e) -> resolver.resolveException(req, res, null, e))
             .accessDeniedHandler((req, res, e) -> resolver.resolveException(req, res, null, e)))

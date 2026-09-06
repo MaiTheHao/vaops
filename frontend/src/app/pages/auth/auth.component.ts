@@ -1,25 +1,26 @@
-import { Component, computed, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, computed, inject, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
+import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angular';
+
 import { AuthService } from './auth.service';
 import { IdentityContextService } from '../../core/context/identity-context.service';
 import { EventBusService } from '../../core/services/event-bus.service';
 import { DomainErrorBusService } from '../../core/services/domain-error-bus.service';
-import { AppEventKey } from '../../core/constants/app-event.const';
-import { ErrorCode } from '../../core/constants/error-code';
-import { ErrorActionType, ErrorSeverity } from '../../shared/models/domain-error.model';
-import { UserProfile } from '../../shared/models/profile.model';
-import { Subscription } from 'rxjs';
-
 import { LanguageService } from '../../core/services/language.service';
-import { InputComponent } from '../../shared/components/input/input.component';
 import { InputFactoryService } from '../../shared/components/input/input.factory';
+import { ButtonFactoryService } from '../../shared/components/submit-button/submit-button.factory';
+
+import { InputComponent } from '../../shared/components/input/input.component';
 import { PasswordInputComponent } from '../../shared/components/password-input/password-input.component';
 import { SubmitButtonComponent } from '../../shared/components/submit-button/submit-button.component';
-import { ButtonFactoryService } from '../../shared/components/submit-button/submit-button.factory';
-import { TranslateKey } from '../../core/constants/translate-key.const';
 
-import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angular';
+import { AppEventKey } from '../../core/constants/app-event.const';
+import { ErrorCode } from '../../core/constants/error-code';
+import { TranslateKey } from '../../core/constants/translate-key.const';
+import { ErrorActionType, ErrorSeverity } from '../../shared/models/domain-error.model';
+import { UserProfile } from '../../shared/models/profile.model';
 
 @Component({
   selector: 'app-auth',
@@ -34,14 +35,15 @@ import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angula
   templateUrl: './auth.component.html',
   providers: [AuthService],
 })
-export class AuthComponent implements OnInit, OnDestroy {
+export class AuthComponent {
   readonly authService = inject(AuthService);
   readonly langService = inject(LanguageService);
   readonly inputFactory = inject(InputFactoryService);
   readonly buttonFactory = inject(ButtonFactoryService);
   readonly authContext = inject(IdentityContextService);
-  private readonly EventBusService = inject(EventBusService);
+  private readonly eventBus = inject(EventBusService);
   private readonly errorBus = inject(DomainErrorBusService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly mode = signal<'login' | 'register'>('login');
   readonly accountName = signal('');
@@ -52,17 +54,13 @@ export class AuthComponent implements OnInit, OnDestroy {
   readonly userProfile = this.authContext.userProfile;
   readonly lastSyncedTime = signal<string | null>(null);
 
-  private sub?: Subscription;
-
-  ngOnInit() {
-    this.sub = this.EventBusService.listen<UserProfile>(AppEventKey.PROFILE_SYNCED).subscribe(() => {
-      const now = new Date().toLocaleTimeString();
-      this.lastSyncedTime.set(now);
-    });
-  }
-
-  ngOnDestroy() {
-    this.sub?.unsubscribe();
+  constructor() {
+    this.eventBus
+      .listen<UserProfile>(AppEventKey.PROFILE_SYNCED)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.lastSyncedTime.set(new Date().toLocaleTimeString());
+      });
   }
 
   readonly accountNameCfg = computed(() => {
@@ -76,6 +74,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       },
     );
   });
+
   readonly displayNameCfg = computed(() => {
     this.langService.currentLang();
     return this.inputFactory.createTextConfig(
@@ -87,6 +86,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       },
     );
   });
+
   readonly passwordCfg = computed(() => {
     this.langService.currentLang();
     return this.inputFactory.createPasswordConfig(
@@ -94,13 +94,18 @@ export class AuthComponent implements OnInit, OnDestroy {
       { label: this.langService.translate(TranslateKey.auth.label.password), required: true },
     );
   });
+
   readonly confirmPasswordCfg = computed(() => {
     this.langService.currentLang();
     return this.inputFactory.createPasswordConfig(
       { component: LucideLock, position: 'left', cssClass: 'size-5' },
-      { label: this.langService.translate(TranslateKey.auth.label.confirmPassword), required: true },
+      {
+        label: this.langService.translate(TranslateKey.auth.label.confirmPassword),
+        required: true,
+      },
     );
   });
+
   readonly avatarUrlCfg = computed(() => {
     this.langService.currentLang();
     return this.inputFactory.createUrlConfig(
@@ -113,14 +118,15 @@ export class AuthComponent implements OnInit, OnDestroy {
     );
   });
 
-  readonly submitLabel = computed(() =>
-    this.mode() === 'login'
+  readonly submitLabel = computed(() => {
+    this.langService.currentLang();
+    return this.mode() === 'login'
       ? this.langService.translate(TranslateKey.auth.btn.loginSubmit)
-      : this.langService.translate(TranslateKey.auth.btn.registerSubmit),
-  );
+      : this.langService.translate(TranslateKey.auth.btn.registerSubmit);
+  });
 
   toggleMode() {
-    this.mode.update(m => (m === 'login' ? 'register' : 'login'));
+    this.mode.update((m) => (m === 'login' ? 'register' : 'login'));
     this.password.set('');
     this.confirmPassword.set('');
   }
@@ -131,27 +137,29 @@ export class AuthComponent implements OnInit, OnDestroy {
 
     if (this.mode() === 'login') {
       this.authService.login(account, pwd);
-    } else {
-      if (pwd !== this.confirmPassword()) {
-        this.errorBus.emit({
-          code: ErrorCode.VALIDATION_FAILED,
-          title: this.langService.translate(TranslateKey.auth.dialog.registerError),
-          message: this.langService.translate(TranslateKey.auth.dialog.passwordMismatch),
-          httpStatus: 400,
-          severity: ErrorSeverity.WARNING,
-          actionType: ErrorActionType.DIALOG,
-          retryable: false,
-          requestId: `CLIENT-${Date.now()}`,
-        });
-        return;
-      }
-      this.authService.register(
-        account,
-        pwd,
-        this.displayName().trim(),
-        this.avatarUrl().trim() || undefined,
-      );
+      return;
     }
+
+    if (pwd !== this.confirmPassword()) {
+      this.errorBus.emit({
+        code: ErrorCode.VALIDATION_FAILED,
+        title: this.langService.translate(TranslateKey.auth.dialog.registerError),
+        message: this.langService.translate(TranslateKey.auth.dialog.passwordMismatch),
+        httpStatus: 400,
+        severity: ErrorSeverity.WARNING,
+        actionType: ErrorActionType.DIALOG,
+        retryable: false,
+        requestId: `CLIENT-${Date.now()}`,
+      });
+      return;
+    }
+
+    this.authService.register(
+      account,
+      pwd,
+      this.displayName().trim(),
+      this.avatarUrl().trim() || undefined,
+    );
   }
 
   logout() {

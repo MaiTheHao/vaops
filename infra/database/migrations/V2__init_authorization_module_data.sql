@@ -79,10 +79,10 @@ CROSS JOIN permissions p
 WHERE r.code IN ('SUPER_ADMIN', 'ADMIN')
 ON CONFLICT (role_id, permission_id) DO NOTHING;
 
--- USER: Profile read/update and basic user read permission
+-- USER: Profile read/update
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
-JOIN permissions p ON (p.resource = 'PROFILE' OR (p.resource = 'USER' AND p.action = 'READ'))
+JOIN permissions p ON p.resource = 'PROFILE'
 WHERE r.code = 'USER'
 ON CONFLICT (role_id, permission_id) DO NOTHING;

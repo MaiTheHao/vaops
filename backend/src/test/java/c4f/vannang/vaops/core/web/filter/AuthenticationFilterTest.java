@@ -37,7 +37,7 @@ class AuthenticationFilterTest {
   @BeforeEach
   void setUp() {
     SecurityContextHolder.clearContext();
-    filter = new AuthenticationFilter(handlerExceptionResolver, accessTokenSpec, identityUserService);
+    filter = new AuthenticationFilter(accessTokenSpec, identityUserService);
   }
 
   @Test
