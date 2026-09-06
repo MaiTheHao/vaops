@@ -12,7 +12,7 @@ import { ErrorCode } from '../../constants/error-code';
 import { ApiErrorMapper } from '../../mappers/api-error.mapper';
 import { DomainErrorBusService } from '../../services/domain-error-bus.service';
 import { AuthApiService } from '../auth.api.service';
-import { SKIP_ERROR_EMISSION } from '../http-context.tokens';
+import { SKIP_GLOBAL_ERROR_EMISSION } from '../request-error.policy';
 import { ApiError } from '../../../shared/models/api-error.model';
 import { DomainError, ErrorActionType } from '../../../shared/models/domain-error.model';
 
@@ -31,8 +31,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
       catchError((errorResponse: HttpErrorResponse) => {
-        if (req.context.get(SKIP_ERROR_EMISSION)) {
-          // Auth endpoints: auth.service owns error presentation. Still throw so callers can react.
+        if (req.context.get(SKIP_GLOBAL_ERROR_EMISSION)) {
           return throwError(() => errorResponse);
         }
 
