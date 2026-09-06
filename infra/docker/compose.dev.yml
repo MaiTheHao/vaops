@@ -81,8 +81,6 @@ services:
     build:
       context: ../../frontend
       dockerfile: Dockerfile
-      args:
-        NG_APP_API_URL: ${NG_APP_API_URL}
     image: vaops-frontend
     container_name: vaops-frontend-dev
     restart: unless-stopped

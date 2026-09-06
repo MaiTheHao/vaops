@@ -1,6 +1,7 @@
-import { Component, computed, inject, signal, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { map } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideUser, LucideIdCard, LucideLink, LucideLock } from '@lucide/angular';
 
@@ -24,7 +25,6 @@ import { UserProfile } from '../../shared/models/profile.model';
 
 @Component({
   selector: 'app-auth',
-  standalone: true,
   imports: [
     FormsModule,
     TranslatePipe,
@@ -43,7 +43,6 @@ export class AuthComponent {
   readonly authContext = inject(IdentityContextService);
   private readonly eventBus = inject(EventBusService);
   private readonly errorBus = inject(DomainErrorBusService);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly mode = signal<'login' | 'register'>('login');
   readonly accountName = signal('');
@@ -52,16 +51,13 @@ export class AuthComponent {
   readonly avatarUrl = signal('');
   readonly confirmPassword = signal('');
   readonly userProfile = this.authContext.userProfile;
-  readonly lastSyncedTime = signal<string | null>(null);
 
-  constructor() {
+  readonly lastSyncedTime = toSignal(
     this.eventBus
       .listen<UserProfile>(AppEventKey.PROFILE_SYNCED)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.lastSyncedTime.set(new Date().toLocaleTimeString());
-      });
-  }
+      .pipe(map(() => new Date().toLocaleTimeString())),
+    { initialValue: null },
+  );
 
   readonly accountNameCfg = computed(() => {
     this.langService.currentLang();

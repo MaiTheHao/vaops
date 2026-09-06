@@ -2,9 +2,6 @@ FROM node:24-alpine AS build
 
 WORKDIR /app
 
-ARG NG_APP_API_URL
-ENV NG_APP_API_URL=${NG_APP_API_URL}
-
 RUN corepack enable && corepack prepare pnpm@11.1.3 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* .npmrc* ./

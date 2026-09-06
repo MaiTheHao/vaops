@@ -1,17 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LoginRequestDto, RegisterRequestDto, RegisterResponseDto } from '../../shared/models/auth.model';
-import { env } from '../../../env';
+import { AppConfigService } from '../services/app-config.service';
 import { SKIP_ERROR_EMISSION } from './http-context.tokens';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthApiService {
-  private readonly apiUrl = `${env.API_URL}/v1/auth`;
+  private readonly http = inject(HttpClient);
+  private readonly configService = inject(AppConfigService);
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return `${this.configService.apiUrl()}/v1/auth`;
+  }
 
   login(dto: LoginRequestDto): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/login`, dto, {

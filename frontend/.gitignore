@@ -42,3 +42,9 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Runtime Environment Overrides
+/public/config.override.json
+.env
+.env.*
+!.env*.example

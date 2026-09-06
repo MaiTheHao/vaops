@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { LucideLoaderCircle } from '@lucide/angular';
 import { SubmitButtonDto } from './submit-button.dto';
 
@@ -6,6 +6,7 @@ import { SubmitButtonDto } from './submit-button.dto';
   selector: 'app-submit-button',
   standalone: true,
   imports: [LucideLoaderCircle],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <button type="submit" [class]="config().css?.button ?? ''" [disabled]="disabled() || loading()">
       @if (loading()) {

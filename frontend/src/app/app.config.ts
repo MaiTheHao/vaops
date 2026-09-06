@@ -14,6 +14,8 @@ import { DialogErrorListener } from './core/error/listeners/dialog-error.listene
 import { RedirectErrorListener } from './core/error/listeners/redirect-error.listener';
 import { SilentErrorListener } from './core/error/listeners/silent-error.listener';
 
+import { AppConfigService } from './core/services/app-config.service';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -29,6 +31,10 @@ export const appConfig: ApplicationConfig = {
       }),
       lang: 'vi',
       fallbackLang: 'vi'
+    }),
+    provideAppInitializer(() => {
+      const configService = inject(AppConfigService);
+      return configService.loadConfig();
     }),
     provideAppInitializer(() => {
       const eventBusService = inject(EventBusService);

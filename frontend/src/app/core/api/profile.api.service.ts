@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { env } from '../../../env';
+import { AppConfigService } from '../services/app-config.service';
 import {
   UserProfile,
   UpdateProfileReq,
@@ -12,9 +12,12 @@ import {
   providedIn: 'root',
 })
 export class ProfileApiService {
-  private readonly apiUrl = `${env.API_URL}/v1/profile`;
+  private readonly http = inject(HttpClient);
+  private readonly configService = inject(AppConfigService);
 
-  constructor(private http: HttpClient) {}
+  private get apiUrl(): string {
+    return `${this.configService.apiUrl()}/v1/profile`;
+  }
 
   getMyProfile(): Observable<UserProfile> {
     return this.http.get<UserProfile>(this.apiUrl, { withCredentials: true });

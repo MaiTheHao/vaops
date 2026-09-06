@@ -1,4 +1,4 @@
-import { Component, input, model } from '@angular/core';
+import { Component, input, model, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgComponentOutlet } from '@angular/common';
 import { InputDto } from './input.dto';
@@ -7,6 +7,7 @@ import { InputDto } from './input.dto';
   selector: 'app-input',
   standalone: true,
   imports: [FormsModule, NgComponentOutlet],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div [class]="config().css?.container ?? ''">
       @if (config().label) {

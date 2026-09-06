@@ -1,4 +1,11 @@
-import { Component, inject, Injectable, OnDestroy, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  Injectable,
+  OnDestroy,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { LucideCircleAlert, LucideInfo, LucideTriangleAlert, LucideX } from '@lucide/angular';
@@ -25,6 +32,7 @@ const DEFAULT_DURATION_MS = 4500;
   standalone: true,
   selector: 'app-toast-container',
   imports: [LucideCircleAlert, LucideInfo, LucideTriangleAlert, LucideX],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div class="flex flex-col items-end gap-3" role="status" aria-live="polite">
       @for (toast of toastService.toasts(); track toast.id) {
@@ -35,7 +43,10 @@ const DEFAULT_DURATION_MS = 4500;
                 <svg lucideCircleAlert class="size-5 text-error stroke-[2] shrink-0 mt-0.5"></svg>
               }
               @case ('warning') {
-                <svg lucideTriangleAlert class="size-5 text-amber-600 stroke-[2] shrink-0 mt-0.5"></svg>
+                <svg
+                  lucideTriangleAlert
+                  class="size-5 text-amber-600 stroke-[2] shrink-0 mt-0.5"
+                ></svg>
               }
               @default {
                 <svg lucideInfo class="size-5 text-primary stroke-[2] shrink-0 mt-0.5"></svg>

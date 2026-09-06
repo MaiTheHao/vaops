@@ -1,12 +1,23 @@
-<div class="bg-background text-on-background font-body-md min-h-screen w-full flex items-center justify-center relative p-0 sm:p-6 md:p-8">
+<div
+  class="bg-background text-on-background font-body-md min-h-screen w-full flex items-center justify-center relative p-0 sm:p-6 md:p-8"
+>
   <div class="fixed inset-0 z-0">
-    <div class="w-full h-full bg-cover bg-center filter blur-sm scale-105" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRbahh9fhvpfDATg979j1ZhVeflXzBOYTuukWnDJ8XpEHth-aJJTJ6RhIuyS6NqAsI77FpEa5No2Wg-kNosVej875oSMHrTa0aLJ8mBhd4eRlVwMXY00uXWrhD7BIfJrpqa780PfaX5zZ4Yck9dqjaJSIuS-HsqfjSecoAQXCv4F49k1jdQzLypk8cnQ8qJuABfflCXRjN9eMfIPjWuZu51_7eZ9nA7eS8eKndZncFEj5Q2DZKku5cJ8i7D7Il0ebd85YR6plVmw')"></div>
+    <div
+      class="w-full h-full bg-cover bg-center filter blur-sm scale-105"
+      style="
+        background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRbahh9fhvpfDATg979j1ZhVeflXzBOYTuukWnDJ8XpEHth-aJJTJ6RhIuyS6NqAsI77FpEa5No2Wg-kNosVej875oSMHrTa0aLJ8mBhd4eRlVwMXY00uXWrhD7BIfJrpqa780PfaX5zZ4Yck9dqjaJSIuS-HsqfjSecoAQXCv4F49k1jdQzLypk8cnQ8qJuABfflCXRjN9eMfIPjWuZu51_7eZ9nA7eS8eKndZncFEj5Q2DZKku5cJ8i7D7Il0ebd85YR6plVmw');
+      "
+    ></div>
     <div class="absolute inset-0 industrial-overlay z-10"></div>
   </div>
 
-  <main class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0 max-w-md" [class.sm:max-w-2xl]="mode() === 'register'">
-    <div class="bg-surface-container-lowest border border-outline-variant p-6 sm:p-8 md:p-10 shadow-sm relative">
-
+  <main
+    class="relative z-20 w-full transition-all duration-300 px-margin-mobile md:px-0 max-w-md"
+    [class.sm:max-w-2xl]="mode() === 'register'"
+  >
+    <div
+      class="bg-surface-container-lowest border border-outline-variant p-6 sm:p-8 md:p-10 shadow-sm relative"
+    >
       <div class="absolute top-4 right-4 flex gap-2 z-30">
         <button
           (click)="langService.switchLang('vi')"
@@ -35,18 +46,33 @@
         <div class="flex flex-col items-center mb-6">
           <div class="relative group mb-6">
             @if (userProfile()?.avatarUrl) {
-              <img [src]="userProfile()!.avatarUrl" [alt]="'auth.avatar.alt' | translate" class="w-24 h-24 rounded-full border border-outline-variant object-cover shadow-sm transition-transform duration-300" />
+              <img
+                [src]="userProfile()!.avatarUrl"
+                [alt]="'auth.avatar.alt' | translate"
+                class="w-24 h-24 rounded-full border border-outline-variant object-cover shadow-sm transition-transform duration-300"
+              />
             } @else {
-              <div class="w-24 h-24 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-3xl font-bold shadow-sm">
+              <div
+                class="w-24 h-24 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-3xl font-bold shadow-sm"
+              >
                 {{ userProfile()?.displayName?.charAt(0)?.toUpperCase() || 'U' }}
               </div>
             }
           </div>
-          <h1 class="font-headline-md text-headline-md text-primary text-center tracking-tight">{{ 'auth.greeting' | translate:{ name: userProfile()?.displayName } }}</h1>
-          <p class="font-label-technical text-label-technical text-on-secondary-container mt-2">&#64;{{ userProfile()?.accountName }}</p>
+          <h1 class="font-headline-md text-headline-md text-primary text-center tracking-tight">
+            {{
+              'auth.greeting'
+                | translate: { name: $safeNavigationMigration(userProfile()?.displayName) }
+            }}
+          </h1>
+          <p class="font-label-technical text-label-technical text-on-secondary-container mt-2">
+            &#64;{{ userProfile()?.accountName }}
+          </p>
 
           @if (lastSyncedTime()) {
-            <span class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+            <span
+              class="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+            >
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Profile Synced at {{ lastSyncedTime() }}
             </span>
@@ -66,12 +92,21 @@
         </div>
       } @else {
         <div class="flex flex-col items-center mb-6 sm:mb-10">
-          <img [alt]="'auth.logo.alt' | translate" class="h-20 sm:h-28 w-auto mb-4" src="/logo/logo-full--blue-blue-orange.svg"/>
+          <img
+            [alt]="'auth.logo.alt' | translate"
+            class="h-20 sm:h-28 w-auto mb-4"
+            src="/logo/logo-full--blue-blue-orange.svg"
+          />
         </div>
 
         <form (ngSubmit)="onSubmit()" #authForm="ngForm" class="flex flex-col gap-6">
-          <div [class]="mode() === 'register' ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4' : 'flex flex-col gap-6'">
-
+          <div
+            [class]="
+              mode() === 'register'
+                ? 'grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4'
+                : 'flex flex-col gap-6'
+            "
+          >
             <app-input
               name="accountName"
               [config]="accountNameCfg()"
@@ -116,10 +151,20 @@
           @if (mode() === 'login') {
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
               <label class="flex items-center space-x-2 cursor-pointer group">
-                <input class="w-4 h-4 rounded-none border-outline-variant text-primary focus:ring-primary cursor-pointer" type="checkbox"/>
-                <span class="font-body-md text-on-secondary-container text-sm group-hover:text-primary transition-colors">{{ 'auth.label.rememberLogin' | translate }}</span>
+                <input
+                  class="w-4 h-4 rounded-none border-outline-variant text-primary focus:ring-primary cursor-pointer"
+                  type="checkbox"
+                />
+                <span
+                  class="font-body-md text-on-secondary-container text-sm group-hover:text-primary transition-colors"
+                  >{{ 'auth.label.rememberLogin' | translate }}</span
+                >
               </label>
-              <a class="text-sm font-button text-on-primary-container hover:text-primary transition-colors underline decoration-outline-variant underline-offset-4" href="#">{{ 'auth.link.forgotPassword' | translate }}</a>
+              <a
+                class="text-sm font-button text-on-primary-container hover:text-primary transition-colors underline decoration-outline-variant underline-offset-4"
+                href="#"
+                >{{ 'auth.link.forgotPassword' | translate }}</a
+              >
             </div>
           }
 
@@ -131,7 +176,9 @@
         </form>
 
         <div class="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-outline-variant text-center">
-          <p class="font-body-md text-on-secondary-container text-sm flex flex-col sm:flex-row items-center justify-center gap-1">
+          <p
+            class="font-body-md text-on-secondary-container text-sm flex flex-col sm:flex-row items-center justify-center gap-1"
+          >
             @if (mode() === 'login') {
               <span>{{ 'auth.footer.noAccountText' | translate }}</span>
             } @else {
@@ -155,8 +202,12 @@
     </div>
 
     <div class="mt-8 flex flex-col items-center space-y-2 opacity-60">
-      <p class="font-label-technical text-[10px] sm:text-xs text-on-secondary-container uppercase">{{ 'auth.footer.companyCopyright' | translate }}</p>
-      <span class="font-label-technical text-[10px] text-outline">{{ 'auth.footer.taxId' | translate }}</span>
+      <p class="font-label-technical text-[10px] sm:text-xs text-on-secondary-container uppercase">
+        {{ 'auth.footer.companyCopyright' | translate }}
+      </p>
+      <span class="font-label-technical text-[10px] text-outline">{{
+        'auth.footer.taxId' | translate
+      }}</span>
     </div>
   </main>
 </div>

@@ -1,13 +1,14 @@
-import { Component, input, model, signal } from '@angular/core';
+import { Component, input, model, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgComponentOutlet } from '@angular/common';
-import { LucideEye, LucideEyeOff} from '@lucide/angular';
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { PasswordInputDto } from './password-input.dto';
 
 @Component({
   selector: 'app-password-input',
   standalone: true,
   imports: [FormsModule, NgComponentOutlet, LucideEye, LucideEyeOff],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div [class]="config().css?.container ?? ''">
       @if (config().label) {
